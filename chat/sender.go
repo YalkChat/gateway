@@ -17,7 +17,7 @@ Run:
 			log.Println("Sender - got shutdown signal")
 			break Run
 		case payload := <-ctx.ClientData.Msgs:
-			err := clientWriteWithTimeout(ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
+			err := ClientWriteWithTimeout(ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
 			if err != nil {
 				break Run
 			}

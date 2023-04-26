@@ -116,7 +116,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		log.Printf("Error in initial payload: %v\n", err)
 	}
 
-	if ClientWriteWithTimeout(r.Context(), time.Second*5, conn, payload); err != nil {
+	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, payload); err != nil {
 		log.Printf("Timeout in initial payload: %v\n", err)
 	}
 

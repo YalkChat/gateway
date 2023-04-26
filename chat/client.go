@@ -12,7 +12,7 @@ type Client struct {
 	CloseSlow func()
 }
 
-func clientWriteWithTimeout(ctx context.Context, timeout time.Duration, c *websocket.Conn, msg []byte) error {
+func ClientWriteWithTimeout(ctx context.Context, timeout time.Duration, c *websocket.Conn, msg []byte) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
