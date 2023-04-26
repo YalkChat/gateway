@@ -1,48 +1,38 @@
-package main
+package chat
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 )
 
-type server struct {
-	// instance int
-	// config   NetworkConfig
-	// settings Settings
-	channels  channels
-	websocket *webSocketServer
-	dbconn    *sql.DB
-}
-
-func (server *server) router() {
+func (server *Server) Router() {
 	for {
 		select {
-		case payload := <-server.channels.Conn:
+		case payload := <-server.Channels.Conn:
 			fmt.Println("Router: Conn received")
 			_payload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
-			for i, wsClient := range server.websocket.Clients {
+			for i, wsClient := range server.Clients {
 				if i != payload.Origin {
 					wsClient.Msgs <- _payload
 				}
 			}
 
-		case payload := <-server.channels.Disconn:
+		case payload := <-server.Channels.Disconn:
 			_payload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
-			for i, wsClient := range server.websocket.Clients {
+			for i, wsClient := range server.Clients {
 				if i != payload.Origin {
 					wsClient.Msgs <- _payload
 				}
 			}
 
-		case payload := <-server.channels.Msg:
+		case payload := <-server.Channels.Msg:
 			_payload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
@@ -50,14 +40,14 @@ func (server *server) router() {
 			// for _, client_chan := range server.webserver.Clients {
 			// 	client_chan <- _payload
 			// }
-			for _, wsClient := range server.websocket.Clients {
+			for _, wsClient := range server.Clients {
 				wsClient.Msgs <- _payload
 			}
 
-		case _p := <-server.channels.Dm:
+		case _p := <-server.Channels.Dm:
 			fmt.Println("Router: Dm received")
 			dest := _p["users"].([]string)
-			payload := _p["payload"].(payload)
+			payload := _p["payload"].(Payload)
 			_payload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
@@ -65,7 +55,7 @@ func (server *server) router() {
 
 			for _, id := range dest {
 				// sseClient := server.webserver.SSEClients[id]
-				wsClient := server.websocket.Clients[id]
+				wsClient := server.Clients[id]
 
 				// if sseClient != nil {
 				// 	sseClient <- _payload
@@ -75,7 +65,7 @@ func (server *server) router() {
 				}
 			}
 
-		case _payload := <-server.channels.Notify:
+		case _payload := <-server.Channels.Notify:
 			fmt.Println("Router: Notify received")
 			payload, err := json.Marshal(_payload)
 			if err != nil {
@@ -84,7 +74,7 @@ func (server *server) router() {
 			// for _, client_chan := range server.SSEClients {
 			// 	client_chan <- payload
 			// }
-			for _, wsClient := range server.websocket.Clients {
+			for _, wsClient := range server.Clients {
 				wsClient.Msgs <- payload
 			}
 

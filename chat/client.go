@@ -1,0 +1,20 @@
+package chat
+
+import (
+	"context"
+	"time"
+
+	"nhooyr.io/websocket"
+)
+
+type Client struct {
+	Msgs      chan []byte
+	CloseSlow func()
+}
+
+func clientWriteWithTimeout(ctx context.Context, timeout time.Duration, c *websocket.Conn, msg []byte) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	return c.Write(ctx, websocket.MessageText, msg)
+}

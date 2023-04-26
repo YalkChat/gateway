@@ -17,11 +17,11 @@ package main
 
 import (
 	"yalk-backend/cattp"
+	"yalk-backend/chat"
 	"yalk-backend/logger"
 
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -34,14 +34,15 @@ import (
 )
 
 func init() {
+	var version string = "pre-alpha"
+	logger.Info("CORE", "Booting..")
+	logger.Info("CORE", fmt.Sprintf("Chat Server version: %s", version)) // make it os.env
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
 	}
-	log.Print("\033[H\033[2J")
-	var version string = "pre-alpha" // make it os.env
-	logger.LogColor("CORE", "Booting..")
-	logger.LogColor("CORE", fmt.Sprintf("Chat Server version: %s", version)) // make it os.env
+	log.Print("\033[H\033[2J") // Clear console
+
 }
 
 func main() {
@@ -53,143 +54,85 @@ func main() {
 		URL:  os.Getenv("HTTP_URL"),
 	}
 
-	_channels := channels{
-		Msg:     make(chan payload, 1),
-		Dm:      make(chan map[string]any, 1),
-		Notify:  make(chan payload, 1),
-		Cmd:     make(chan payload),
-		Conn:    make(chan payload),
-		Disconn: make(chan payload),
-	}
+	chatServer := chat.NewServer(16)
 
-	_websocket := newWebSocketServer(nil, _channels)
-
-	chatServer := &server{
-		channels:  _channels,
-		websocket: _websocket,
-	}
-
-	err := startHTTPServer[any](netConf, chatServer, nil)
+	err := startHttpServer(netConf, chatServer, nil)
 	if err != nil {
 		panic(err)
 	}
 	wg.Add(1)
-	go chatServer.router()
+	go chatServer.Router()
 	wg.Wait()
 }
 
-var connectHandle = cattp.HandlerFunc[*server](func(w http.ResponseWriter, r *http.Request, context *server) {
+// TODO: Enum log events and colors 'info' 'warning 'error'
+var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
 
-	logger.LogColor("WEBSOCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
+	logger.Info("WEBSOCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
 
+	// Upgrading HTTP request to Websocket
 	conn, err := upgradeHttpRequest(w, r)
-	logger.LogColor("WEBSOCK", fmt.Sprintf("Can't start accepting - %s", r.RemoteAddr))
+	if err != nil {
+		logger.Err("WEBSOCK", fmt.Sprintf("Can't start accepting - %s", r.RemoteAddr))
+	}
 
-	defer conn.Close(websocket.StatusInternalError, "Client disconnected")
+	// Defering normal closing if the function returns
+	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
+
+	// Register and return client with Chat Server
+	// Todo: Use profile instead of User ID?
+	client := server.RegisterClient(conn, "test")
 
 	notify := make(chan bool)
 
-	client := &websocketClient{
-		Msgs: make(chan []byte, context.websocket.SubscriberMessageBuffer),
-		CloseSlow: func() {
-			conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
-		},
-	}
-	context.websocket.SubscribersMu.Lock()
-	// context.websocket.Clients[session.UserID] = client
-	context.websocket.Clients["test"] = client
-	context.websocket.SubscribersMu.Unlock()
-
 	var wg sync.WaitGroup
+	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
 	// TODO: Properly introduce ping detection
-	ticker := time.NewTicker(time.Second * time.Duration(100000))
+	channelsContext := &chat.MessageChannelsContext{
+		NotifyChannel: notify,
+		PingTicket:    ticker,
+		WaitGroup:     &wg,
+		ClientData:    client,
+		Request:       r,
+		Connection:    conn,
+	}
 
 	// **	Sender - From CLI to SRV	**	//
 	wg.Add(1)
-	go func(ticker *time.Ticker) {
-		defer func() {
-			wg.Done()
-			notify <- true
-		}()
-	Run:
-		for {
-			t, payload, err := conn.Read(r.Context())
-			fmt.Printf("Payload len: %v\n", len(payload))
-			if err != nil && err != io.EOF {
-				statusCode := websocket.CloseStatus(err)
-				if statusCode == websocket.StatusGoingAway {
-					log.Println("Graceful sender shutdown")
-					ticker.Stop()
-					break Run
-				} else {
-					log.Println("Sender - Error in reading from websocket context, client closed? Check main.go")
-					break Run
-				}
-			}
-			if t.String() == "MessageText" && err == nil {
-				fmt.Printf("Message received: %s", payload)
-				// err = server.handlePayload(payload, session.UserID)
-				// if err != nil {
-				// log.Printf("Sender - errors in broadcast: %v", err)
-				// wg.Done()
-				// return
-				// }
-			}
-		}
-	}(ticker)
+	go chat.Receiver(channelsContext)
 
 	// **		Receiver from SRV to CLI		**	//
 	wg.Add(1)
-	go func(ticker *time.Ticker) {
-		defer func() {
-			wg.Done()
-		}()
+	go chat.Sender(channelsContext)
 
-	Run:
-		for {
-			select {
-			case <-notify:
-				log.Println("Receiver - got shutdown signal")
-				break Run
-			case payload := <-client.Msgs:
-				err = writeTimeout(r.Context(), time.Second*5, conn, payload)
-				if err != nil {
-					break Run
-				}
-			}
-		}
-	}(ticker)
-
-	_payload := payload{
+	_payload := chat.Payload{
 		Success: true,
 		Event:   "user_conn",
 	}
 
 	payload, err := json.Marshal(_payload)
-
-	testPayload, err := json.Marshal(payload)
 	if err != nil {
 		log.Printf("Error in initial payload: %v\n", err)
 	}
-	err = writeTimeout(r.Context(), time.Second*5, conn, testPayload)
 
-	if err != nil {
+	if ClientWriteWithTimeout(r.Context(), time.Second*5, conn, payload); err != nil {
 		log.Printf("Timeout in initial payload: %v\n", err)
 	}
+
 	log.Printf("OK - Full data sent to ID: %v\n", "test")
 
 	wg.Wait()
 
-	context.websocket.SubscribersMu.Lock()
-	delete(context.websocket.Clients, "test")
-	context.websocket.SubscribersMu.Unlock()
+	server.ClientsMu.Lock()
+	delete(server.Clients, "test")
+	server.ClientsMu.Unlock()
 	onlineTick := time.NewTicker(time.Second * 10)
 	<-onlineTick.C
 
 })
 
-func startHTTPServer[T any](conf cattp.Config, chatServer *server, gorm *gorm.DB) *cattp.Router[T] {
+func startHttpServer[T chat.Server](conf cattp.Config, chatServer *chat.Server, gorm *gorm.DB) *cattp.Router[T] {
 	context := chatServer
 
 	router := cattp.New(context)
