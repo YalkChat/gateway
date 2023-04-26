@@ -9,7 +9,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-func Receiver(ctx *MessageChannelsContext) {
+func Receiver(ctx *EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
 		ctx.NotifyChannel <- true
@@ -17,7 +17,7 @@ func Receiver(ctx *MessageChannelsContext) {
 Run:
 	for {
 		t, payload, err := ctx.Connection.Read(ctx.Request.Context())
-		logger.Info("RCV", fmt.Sprintf("Receiced payload lenght: %d", len(payload)))
+		logger.Info("RCV", fmt.Sprintf("Received payload lenght: %d", len(payload)))
 
 		if err != nil && err != io.EOF {
 			statusCode := websocket.CloseStatus(err)

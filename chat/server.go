@@ -14,7 +14,7 @@ func NewServer(bufferLenght int) *Server {
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[string]*Client)
-	messageChannels := makeMessageChannels()
+	messageChannels := makeEventChannels()
 
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,

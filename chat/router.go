@@ -11,24 +11,24 @@ func (server *Server) Router() {
 		select {
 		case payload := <-server.Channels.Conn:
 			fmt.Println("Router: Conn received")
-			_payload, err := json.Marshal(payload)
+			jsonPayload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
 			for i, wsClient := range server.Clients {
 				if i != payload.Origin {
-					wsClient.Msgs <- _payload
+					wsClient.Msgs <- jsonPayload
 				}
 			}
 
 		case payload := <-server.Channels.Disconn:
-			_payload, err := json.Marshal(payload)
+			jsonPayload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
 			for i, wsClient := range server.Clients {
 				if i != payload.Origin {
-					wsClient.Msgs <- _payload
+					wsClient.Msgs <- jsonPayload
 				}
 			}
 
