@@ -74,6 +74,9 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	conn, err := upgradeHttpRequest(w, r)
 	if err != nil {
 		logger.Err("WEBSOCK", fmt.Sprintf("Can't start accepting - %s", r.RemoteAddr))
+		w.WriteHeader(http.StatusInternalServerError)
+		r.Body.Close()
+		return
 	}
 
 	// Defering normal closing if the function returns
@@ -83,12 +86,15 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// Todo: Use profile instead of User ID?
 	client := server.RegisterClient(conn, "test")
 
+	// Create closing client notification channel
 	notify := make(chan bool)
 
 	var wg sync.WaitGroup
+
+	// Ping ticker which must be switched to the literally already fully made
+	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	// TODO: Properly introduce ping detection
 	channelsContext := &chat.MessageChannelsContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
@@ -98,38 +104,33 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		Connection:    conn,
 	}
 
-	// **	Sender - From CLI to SRV	**	//
 	wg.Add(1)
 	go chat.Receiver(channelsContext)
 
-	// **		Receiver from SRV to CLI		**	//
 	wg.Add(1)
 	go chat.Sender(channelsContext)
 
-	_payload := chat.Payload{
-		Success: true,
-		Event:   "user_conn",
-	}
-
-	payload, err := json.Marshal(_payload)
+	initalPayload, err := makeInitialPayload()
 	if err != nil {
-		log.Printf("Error in initial payload: %v\n", err)
+		return
 	}
 
-	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, payload); err != nil {
+	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, initalPayload); err != nil {
 		log.Printf("Timeout in initial payload: %v\n", err)
 	}
 
-	log.Printf("OK - Full data sent to ID: %v\n", "test")
+	logger.Info("Full data sent to ID: %v\n", "test")
 
 	wg.Wait()
 
-	server.ClientsMu.Lock()
-	delete(server.Clients, "test")
-	server.ClientsMu.Unlock()
-	onlineTick := time.NewTicker(time.Second * 10)
-	<-onlineTick.C
-
+	go func() {
+		server.ClientsMu.Lock()
+		delete(server.Clients, "test")
+		server.ClientsMu.Unlock()
+		onlineTick := time.NewTicker(time.Second * 10)
+		<-onlineTick.C
+	}()
+	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })
 
 func startHttpServer[T chat.Server](conf cattp.Config, chatServer *chat.Server, gorm *gorm.DB) *cattp.Router[T] {
@@ -159,4 +160,19 @@ func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn
 
 	conn.SetReadLimit(defaultSize)
 	return conn, nil
+}
+
+func makeInitialPayload() ([]byte, error) {
+	payload := chat.Payload{
+		Success: true,
+		Event:   "user_conn",
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		logger.Err("CORE", "Error marshalling payload")
+		return nil, err
+	}
+
+	return jsonPayload, nil
 }
