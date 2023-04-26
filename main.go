@@ -29,11 +29,11 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
 func init() {
+	log.Print("\033[H\033[2J") // Clear console
 	var version string = "pre-alpha"
 	logger.Info("CORE", "Booting..")
 	logger.Info("CORE", fmt.Sprintf("Chat Server version: %s", version)) // make it os.env
@@ -41,7 +41,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	log.Print("\033[H\033[2J") // Clear console
 
 }
 
@@ -56,12 +55,12 @@ func main() {
 
 	chatServer := chat.NewServer(16)
 
-	err := startHttpServer(netConf, chatServer, nil)
-	if err != nil {
-		panic(err)
-	}
 	wg.Add(1)
 	go chatServer.Router()
+
+	wg.Add(1)
+	go startHttpServer(netConf, chatServer)
+
 	wg.Wait()
 }
 
@@ -69,6 +68,7 @@ func main() {
 var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
 
 	logger.Info("WEBSOCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
+	// server.Channels.Conn <- chat.Payload{Success: true, Event: "chat_message"}
 
 	// Upgrading HTTP request to Websocket
 	conn, err := upgradeHttpRequest(w, r)
@@ -95,15 +95,14 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	channelsContext := &chat.MessageChannelsContext{
+	channelsContext := &chat.EventContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,
-		ClientData:    client,
+		Client:        client,
 		Request:       r,
 		Connection:    conn,
-		Channels:      &server.Channels,
-		Db:            server.Db,
+		Server:        server,
 	}
 
 	wg.Add(1)
@@ -137,14 +136,13 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })
 
-func startHttpServer[T chat.Server](conf cattp.Config, chatServer *chat.Server, gorm *gorm.DB) *cattp.Router[T] {
-	context := chatServer
-
-	router := cattp.New(context)
+func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
+	router := cattp.New(chatServer)
 	router.HandleFunc("/ws", connectHandle)
 
 	err := router.Listen(&conf)
 	if err != nil {
+		return err
 		panic("can't start webapp")
 	}
 

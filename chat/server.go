@@ -36,7 +36,7 @@ type Server struct {
 	Clients              map[string]*Client
 	ClientsMu            sync.Mutex
 	ClientsMessageBuffer int
-	Channels             MessageChannels
+	Channels             *EventChannels
 	Db                   *gorm.DB
 }
 
@@ -49,7 +49,6 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
 			conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
 		},
 	}
-
 	server.ClientsMu.Lock()
 	server.Clients[id] = client
 	server.ClientsMu.Unlock()
