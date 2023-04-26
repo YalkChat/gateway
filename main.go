@@ -102,6 +102,8 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		ClientData:    client,
 		Request:       r,
 		Connection:    conn,
+		Channels:      &server.Channels,
+		Db:            server.Db,
 	}
 
 	wg.Add(1)
@@ -112,14 +114,16 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 
 	initalPayload, err := makeInitialPayload()
 	if err != nil {
+		logger.Err("CORE", "Error marshalling payload")
 		return
 	}
 
 	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, initalPayload); err != nil {
-		log.Printf("Timeout in initial payload: %v\n", err)
+		logger.Info("CLIENT", "Timeout Initial Payload")
+
 	}
 
-	logger.Info("Full data sent to ID: %v\n", "test")
+	logger.Info("CLIENT", fmt.Sprintf("Full data sent to ID: %v", "test"))
 
 	wg.Wait()
 
@@ -147,6 +151,7 @@ func startHttpServer[T chat.Server](conf cattp.Config, chatServer *chat.Server, 
 	log.Println("HTTP Server succesfully started") // TODO: Move back in main func
 	return nil
 }
+
 func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	var defaultOptions = &websocket.AcceptOptions{CompressionMode: websocket.CompressionNoContextTakeover, InsecureSkipVerify: true}
 	var defaultSize int64 = 2097152 // 2Mb in bytes
@@ -170,7 +175,6 @@ func makeInitialPayload() ([]byte, error) {
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		logger.Err("CORE", "Error marshalling payload")
 		return nil, err
 	}
 

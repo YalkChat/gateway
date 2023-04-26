@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
@@ -36,4 +37,6 @@ type MessageChannelsContext struct {
 	Connection    *websocket.Conn
 	Request       *http.Request
 	ClientData    *Client
+	Channels      *MessageChannels
+	Db            *gorm.DB
 }

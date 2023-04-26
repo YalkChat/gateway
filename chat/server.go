@@ -1,11 +1,11 @@
 package chat
 
 import (
-	"database/sql"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
+	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
@@ -37,7 +37,7 @@ type Server struct {
 	ClientsMu            sync.Mutex
 	ClientsMessageBuffer int
 	Channels             MessageChannels
-	db                   *sql.DB
+	Db                   *gorm.DB
 }
 
 func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"yalk-backend/logger"
 
 	"nhooyr.io/websocket"
 )
@@ -16,7 +17,8 @@ func Receiver(ctx *MessageChannelsContext) {
 Run:
 	for {
 		t, payload, err := ctx.Connection.Read(ctx.Request.Context())
-		fmt.Printf("Payload len: %v\n", len(payload))
+		logger.Info("RCV", fmt.Sprintf("Receiced payload lenght: %d", len(payload)))
+
 		if err != nil && err != io.EOF {
 			statusCode := websocket.CloseStatus(err)
 			if statusCode == websocket.StatusGoingAway {
@@ -29,13 +31,12 @@ Run:
 			}
 		}
 		if t.String() == "MessageText" && err == nil {
-			fmt.Printf("Message received: %s", payload)
-			// err = server.handlePayload(payload, session.UserID)
-			// if err != nil {
-			// log.Printf("Sender - errors in broadcast: %v", err)
-			// wg.Done()
-			// return
-			// }
+			logger.Info("RCV", fmt.Sprintf("Message received: %s", payload))
+			err = handlePayload(payload, "test", ctx)
+			if err != nil {
+				log.Printf("Sender - errors in broadcast: %v", err)
+				return
+			}
 		}
 	}
 }
