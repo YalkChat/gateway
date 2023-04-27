@@ -11,24 +11,24 @@ func (server *Server) Router() {
 		select {
 		case payload := <-server.Channels.Conn:
 			fmt.Println("Router: Conn received")
-			_payload, err := json.Marshal(payload)
+			jsonPayload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
 			for i, wsClient := range server.Clients {
 				if i != payload.Origin {
-					wsClient.Msgs <- _payload
+					wsClient.Msgs <- jsonPayload
 				}
 			}
 
 		case payload := <-server.Channels.Disconn:
-			_payload, err := json.Marshal(payload)
+			jsonPayload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
 			for i, wsClient := range server.Clients {
 				if i != payload.Origin {
-					wsClient.Msgs <- _payload
+					wsClient.Msgs <- jsonPayload
 				}
 			}
 
@@ -54,12 +54,7 @@ func (server *Server) Router() {
 			}
 
 			for _, id := range dest {
-				// sseClient := server.webserver.SSEClients[id]
 				wsClient := server.Clients[id]
-
-				// if sseClient != nil {
-				// 	sseClient <- _payload
-				// }
 				if wsClient != nil {
 					wsClient.Msgs <- _payload
 				}
@@ -71,24 +66,9 @@ func (server *Server) Router() {
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
-			// for _, client_chan := range server.SSEClients {
-			// 	client_chan <- payload
-			// }
 			for _, wsClient := range server.Clients {
 				wsClient.Msgs <- payload
 			}
-
-			// case payload := <-server.channels.Cmd:
-			// 	// TODO: Check user admin status
-			// fields := strings.Fields(payload.Data["message"].(map[string]string))
-			// command := fields[0]
-			// srvMessage := fields[1]
-			// //? CHANGE PLACE?
-			// switch command {
-			// case "/test":
-			// 	payload.Event = "server_message"
-			// 	payload.Message.Text = srvMessage
-			// 	server.channels.Notify <- payload
 		}
 	}
 }

@@ -29,11 +29,11 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
 func init() {
+	log.Print("\033[H\033[2J") // Clear console
 	var version string = "pre-alpha"
 	logger.Info("CORE", "Booting..")
 	logger.Info("CORE", fmt.Sprintf("Chat Server version: %s", version)) // make it os.env
@@ -41,7 +41,6 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	log.Print("\033[H\033[2J") // Clear console
 
 }
 
@@ -56,12 +55,12 @@ func main() {
 
 	chatServer := chat.NewServer(16)
 
-	err := startHttpServer(netConf, chatServer, nil)
-	if err != nil {
-		panic(err)
-	}
 	wg.Add(1)
 	go chatServer.Router()
+
+	wg.Add(1)
+	go startHttpServer(netConf, chatServer)
+
 	wg.Wait()
 }
 
@@ -69,11 +68,15 @@ func main() {
 var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
 
 	logger.Info("WEBSOCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
+	// server.Channels.Conn <- chat.Payload{Success: true, Event: "chat_message"}
 
 	// Upgrading HTTP request to Websocket
 	conn, err := upgradeHttpRequest(w, r)
 	if err != nil {
 		logger.Err("WEBSOCK", fmt.Sprintf("Can't start accepting - %s", r.RemoteAddr))
+		w.WriteHeader(http.StatusInternalServerError)
+		r.Body.Close()
+		return
 	}
 
 	// Defering normal closing if the function returns
@@ -83,69 +86,70 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// Todo: Use profile instead of User ID?
 	client := server.RegisterClient(conn, "test")
 
+	// Create closing client notification channel
 	notify := make(chan bool)
 
 	var wg sync.WaitGroup
+
+	// Ping ticker which must be switched to the literally already fully made
+	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	// TODO: Properly introduce ping detection
-	channelsContext := &chat.MessageChannelsContext{
+	channelsContext := &chat.EventContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,
-		ClientData:    client,
+		Client:        client,
 		Request:       r,
 		Connection:    conn,
+		Server:        server,
 	}
 
-	// **	Sender - From CLI to SRV	**	//
 	wg.Add(1)
 	go chat.Receiver(channelsContext)
 
-	// **		Receiver from SRV to CLI		**	//
 	wg.Add(1)
 	go chat.Sender(channelsContext)
 
-	_payload := chat.Payload{
-		Success: true,
-		Event:   "user_conn",
-	}
-
-	payload, err := json.Marshal(_payload)
+	initalPayload, err := makeInitialPayload()
 	if err != nil {
-		log.Printf("Error in initial payload: %v\n", err)
+		logger.Err("CORE", "Error marshalling payload")
+		return
 	}
 
-	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, payload); err != nil {
-		log.Printf("Timeout in initial payload: %v\n", err)
+	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, initalPayload); err != nil {
+		logger.Info("CLIENT", "Timeout Initial Payload")
+
 	}
 
-	log.Printf("OK - Full data sent to ID: %v\n", "test")
+	logger.Info("CLIENT", fmt.Sprintf("Full data sent to ID: %v", "test"))
 
 	wg.Wait()
 
-	server.ClientsMu.Lock()
-	delete(server.Clients, "test")
-	server.ClientsMu.Unlock()
-	onlineTick := time.NewTicker(time.Second * 10)
-	<-onlineTick.C
-
+	go func() {
+		server.ClientsMu.Lock()
+		delete(server.Clients, "test")
+		server.ClientsMu.Unlock()
+		onlineTick := time.NewTicker(time.Second * 10)
+		<-onlineTick.C
+	}()
+	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })
 
-func startHttpServer[T chat.Server](conf cattp.Config, chatServer *chat.Server, gorm *gorm.DB) *cattp.Router[T] {
-	context := chatServer
-
-	router := cattp.New(context)
+func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
+	router := cattp.New(chatServer)
 	router.HandleFunc("/ws", connectHandle)
 
 	err := router.Listen(&conf)
 	if err != nil {
+		return err
 		panic("can't start webapp")
 	}
 
 	log.Println("HTTP Server succesfully started") // TODO: Move back in main func
 	return nil
 }
+
 func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	var defaultOptions = &websocket.AcceptOptions{CompressionMode: websocket.CompressionNoContextTakeover, InsecureSkipVerify: true}
 	var defaultSize int64 = 2097152 // 2Mb in bytes
@@ -159,4 +163,18 @@ func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn
 
 	conn.SetReadLimit(defaultSize)
 	return conn, nil
+}
+
+func makeInitialPayload() ([]byte, error) {
+	payload := chat.Payload{
+		Success: true,
+		Event:   "user_conn",
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonPayload, nil
 }

@@ -1,11 +1,11 @@
 package chat
 
 import (
-	"database/sql"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
+	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
@@ -14,7 +14,7 @@ func NewServer(bufferLenght int) *Server {
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[string]*Client)
-	messageChannels := makeMessageChannels()
+	messageChannels := makeEventChannels()
 
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,
@@ -36,8 +36,8 @@ type Server struct {
 	Clients              map[string]*Client
 	ClientsMu            sync.Mutex
 	ClientsMessageBuffer int
-	Channels             MessageChannels
-	db                   *sql.DB
+	Channels             *EventChannels
+	Db                   *gorm.DB
 }
 
 func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
@@ -49,7 +49,6 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
 			conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
 		},
 	}
-
 	server.ClientsMu.Lock()
 	server.Clients[id] = client
 	server.ClientsMu.Unlock()
