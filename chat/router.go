@@ -6,6 +6,14 @@ import (
 	"log"
 )
 
+func (server *Server) SendMessage(senderId string, jsonPayload []byte, echoToSender bool) {
+	for userId, client := range server.Clients {
+		if userId != senderId || echoToSender {
+			client.Msgs <- jsonPayload
+		}
+	}
+}
+
 func (server *Server) Router() {
 	for {
 		select {
@@ -15,34 +23,21 @@ func (server *Server) Router() {
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
-			for i, wsClient := range server.Clients {
-				if i != payload.Origin {
-					wsClient.Msgs <- jsonPayload
-				}
-			}
+			server.SendMessage(payload.Origin, jsonPayload, false)
 
 		case payload := <-server.Channels.Disconn:
 			jsonPayload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
-			for i, wsClient := range server.Clients {
-				if i != payload.Origin {
-					wsClient.Msgs <- jsonPayload
-				}
-			}
+			server.SendMessage(payload.Origin, jsonPayload, false)
 
 		case payload := <-server.Channels.Msg:
-			_payload, err := json.Marshal(payload)
+			jsonPayload, err := json.Marshal(payload)
 			if err != nil {
 				log.Printf("Marshaling err")
 			}
-			// for _, client_chan := range server.webserver.Clients {
-			// 	client_chan <- _payload
-			// }
-			for _, wsClient := range server.Clients {
-				wsClient.Msgs <- _payload
-			}
+			server.SendMessage(payload.Origin, jsonPayload, true)
 
 		case _p := <-server.Channels.Dm:
 			fmt.Println("Router: Dm received")

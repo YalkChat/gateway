@@ -11,9 +11,11 @@ import (
 
 func Receiver(ctx *EventContext) {
 	defer func() {
+		// Signalign that client is closing
 		ctx.WaitGroup.Done()
 		ctx.NotifyChannel <- true
 	}()
+
 Run:
 	for {
 		t, payload, err := ctx.Connection.Read(ctx.Request.Context())
