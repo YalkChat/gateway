@@ -1,15 +1,27 @@
 package chat
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
+	"yalk-backend/logger"
 )
 
-func (server *Server) SendMessage(senderId string, jsonPayload []byte, echoToSender bool) {
+// Echoing to client is default behavior for error checking.
+
+// Broadcast to all
+// TODO: Error checking
+func (server *Server) SendMessage(event *EventMessage) {
 	for userId, client := range server.Clients {
-		if userId != senderId || echoToSender {
-			client.Msgs <- jsonPayload
+		if userId != event.Sender {
+			client.Msgs <- event.Payload
+		}
+	}
+}
+
+// Send to one or multiple connected clients
+func (server *Server) SendToClients(event *EventMessage) {
+	for _, id := range event.Receivers {
+		wsClient := server.Clients[id]
+		if wsClient != nil {
+			wsClient.Msgs <- event.Payload
 		}
 	}
 }
@@ -17,53 +29,25 @@ func (server *Server) SendMessage(senderId string, jsonPayload []byte, echoToSen
 func (server *Server) Router() {
 	for {
 		select {
-		case payload := <-server.Channels.Conn:
-			fmt.Println("Router: Conn received")
-			jsonPayload, err := json.Marshal(payload)
-			if err != nil {
-				log.Printf("Marshaling err")
-			}
-			server.SendMessage(payload.Origin, jsonPayload, false)
+		case event := <-server.Channels.Notify:
+			logger.Info("ROUTER", "Router: Notify received")
+			server.SendMessage(event)
+		case event := <-server.Channels.Login:
+			logger.Info("ROUTER", "Router: Login received")
+			server.SendMessage(event)
 
-		case payload := <-server.Channels.Disconn:
-			jsonPayload, err := json.Marshal(payload)
-			if err != nil {
-				log.Printf("Marshaling err")
-			}
-			server.SendMessage(payload.Origin, jsonPayload, false)
+		case event := <-server.Channels.Logout:
+			logger.Info("ROUTER", "Router: Logout received")
+			server.SendMessage(event)
 
-		case payload := <-server.Channels.Msg:
-			jsonPayload, err := json.Marshal(payload)
-			if err != nil {
-				log.Printf("Marshaling err")
-			}
-			server.SendMessage(payload.Origin, jsonPayload, true)
+		case event := <-server.Channels.Msg:
+			logger.Info("ROUTER", "Router: Broadcast message received")
+			server.SendMessage(event)
 
-		case _p := <-server.Channels.Dm:
-			fmt.Println("Router: Dm received")
-			dest := _p["users"].([]string)
-			payload := _p["payload"].(Payload)
-			_payload, err := json.Marshal(payload)
-			if err != nil {
-				log.Printf("Marshaling err")
-			}
+		case event := <-server.Channels.Dm:
+			logger.Info("ROUTER", "Router: Dm received")
+			server.SendToClients(event)
 
-			for _, id := range dest {
-				wsClient := server.Clients[id]
-				if wsClient != nil {
-					wsClient.Msgs <- _payload
-				}
-			}
-
-		case _payload := <-server.Channels.Notify:
-			fmt.Println("Router: Notify received")
-			payload, err := json.Marshal(_payload)
-			if err != nil {
-				log.Printf("Marshaling err")
-			}
-			for _, wsClient := range server.Clients {
-				wsClient.Msgs <- payload
-			}
 		}
 	}
 }

@@ -20,7 +20,6 @@ func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 	err := router.Listen(&conf)
 	if err != nil {
 		return err
-		panic("can't start webapp")
 	}
 
 	log.Println("HTTP Server succesfully started") // TODO: Move back in main func
@@ -57,17 +56,15 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,
-		Client:        client,
 		Request:       r,
 		Connection:    conn,
-		Server:        server,
 	}
 
 	wg.Add(1)
-	go chat.Receiver(channelsContext)
+	go server.Receiver(channelsContext)
 
 	wg.Add(1)
-	go chat.Sender(channelsContext)
+	go server.Sender(client, channelsContext)
 
 	initalPayload, err := makeInitialPayload()
 	if err != nil {
@@ -85,6 +82,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	wg.Wait()
 
 	go func() {
+		channelsContext.NotifyChannel <- true
 		server.ClientsMu.Lock()
 		delete(server.Clients, "test")
 		server.ClientsMu.Unlock()

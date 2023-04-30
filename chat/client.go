@@ -8,6 +8,7 @@ import (
 )
 
 type Client struct {
+	Id        string
 	Msgs      chan []byte
 	CloseSlow func()
 }

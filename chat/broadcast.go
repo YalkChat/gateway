@@ -7,65 +7,55 @@ import (
 	"yalk-backend/logger"
 )
 
-// * Handle incoming user payload and process it eventually forwarding in the correct routine channels for other users to receive.
-func handlePayload(msg []byte, origin string, ctx *EventContext) (err error) {
-	var _req any
-	var _payload map[string]any
-	var data Payload
-	var event string
+func decodeEventMessage(jsonEvent []byte) (*EventMessage, error) {
+	var event *EventMessage
 
-	err = json.Unmarshal(msg, &_req)
-	if err != nil {
+	if err := json.Unmarshal(jsonEvent, &event); err != nil {
 		logger.Err("BROAD", "Listener - Error deserializing JSON")
+		return nil, err
+	}
+	return event, nil
+}
+
+// * Handle incoming user payload and process it eventually
+// * forwarding in the correct routine channels for other users to receive.
+func (server *Server) handlePayload(jsonEventMessage []byte) (err error) {
+
+	message, err := decodeEventMessage(jsonEventMessage)
+	if err != nil {
+		logger.Err("BROAD", "Listener - Error decoding EventMessage")
 		return err
 	}
 
-	switch p := _req.(type) {
-	case map[string]any:
-		_payload = p
-	default:
-		logger.Err("BROAD", "Listener - can't decode payload")
-	}
-
-	switch v := _payload["event"].(type) {
-	case string:
-		event = v
-	default:
-		log.Println("BROAD", "Listener - can't decode event")
-	}
-
-	data = Payload{
-		Success: true,
-		Origin:  origin,
-		Event:   event,
-	}
-
 	// * Routing event to server
-	switch event {
-	case "chat_message":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "chat_message"}
+	switch message.Type {
+	case "channel_message":
+		server.Channels.Notify <- message
 
-	case "user_logout":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "user_logout"}
+	// case "direct_message":
+	// 	server.Channels.Notify <- EventMessage{}
 
-	case "user_update":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "user_update"}
+	// case "user_logout":
+	// 	server.Channels.Notify <- Payload{Success: true, Event: "user_logout"}
 
-	case "chat_create":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "chat_create"}
+	// case "user_update":
+	// 	server.Channels.Notify <- Payload{Success: true, Event: "user_update"}
 
-	case "chat_delete":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "chat_delete"}
+	// case "chat_create":
+	// 	server.Channels.Notify <- Payload{Success: true, Event: "chat_create"}
 
-	case "chat_join":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "chat_join"}
+	// case "chat_delete":
+	// 	server.Channels.Notify <- Payload{Success: true, Event: "chat_delete"}
 
-	case "user_login":
-		ctx.Server.Channels.Notify <- Payload{Success: true, Event: "user_conn"}
+	// case "chat_join":
+	// 	server.Channels.Notify <- Payload{Success: true, Event: "chat_join"}
+
+	// case "user_login":
+	// 	server.Channels.Notify <- Payload{Success: true, Event: "user_conn"}
 
 	default:
 		log.Println("Broadcast received an invalid request")
-		data.Success = false
+		message.Success = false
 		return fmt.Errorf("invalid_request")
 	}
 	return nil

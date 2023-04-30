@@ -5,10 +5,8 @@ import (
 	"time"
 )
 
-func Sender(ctx *EventContext) {
-	defer func() {
-		ctx.WaitGroup.Done()
-	}()
+func (server *Server) Sender(client *Client, ctx *EventContext) {
+	defer ctx.WaitGroup.Done()
 
 Run:
 	for {
@@ -16,7 +14,7 @@ Run:
 		case <-ctx.NotifyChannel:
 			log.Println("Sender - got shutdown signal")
 			break Run
-		case payload := <-ctx.Client.Msgs:
+		case payload := <-client.Msgs:
 			err := ClientWriteWithTimeout(ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
 			if err != nil {
 				break Run
