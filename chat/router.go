@@ -1,8 +1,17 @@
 package chat
 
 import (
+	"encoding/json"
 	"yalk-backend/logger"
 )
+
+func encodePayload(event *EventMessage) ([]byte, error) {
+	eventMessageJson, err := json.Marshal(event)
+	if err != nil {
+		return nil, err
+	}
+	return eventMessageJson, nil
+}
 
 // Echoing to client is default behavior for error checking.
 
@@ -11,7 +20,11 @@ import (
 func (server *Server) SendMessage(event *EventMessage) {
 	for userId, client := range server.Clients {
 		if userId != event.Sender {
-			client.Msgs <- event.Payload
+			payload, err := encodePayload(event)
+			if err != nil {
+				logger.Err("ROUTER", "Erroƒr encoding payload")
+			}
+			client.Msgs <- payload
 		}
 	}
 }
@@ -21,7 +34,12 @@ func (server *Server) SendToClients(event *EventMessage) {
 	for _, id := range event.Receivers {
 		wsClient := server.Clients[id]
 		if wsClient != nil {
-			wsClient.Msgs <- event.Payload
+			payload, err := encodePayload(event)
+
+			if err != nil {
+				logger.Err("ROUTER", "Error encoding payload")
+			}
+			wsClient.Msgs <- payload
 		}
 	}
 }

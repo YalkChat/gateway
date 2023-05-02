@@ -25,7 +25,7 @@ type EventMessage struct {
 	Type      string   `json:"type"`
 	Sender    string   `json:"sender"`
 	Receivers []string `json:"receivers"`
-	Payload   []byte   `json:"payload,omitempty"`
+	Payload   string   `json:"payload,omitempty"`
 }
 
 type EventChannels struct {
