@@ -74,7 +74,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 
 	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, initalPayload); err != nil {
 		logger.Info("CLIENT", "Timeout Initial Payload")
-
+		return
 	}
 
 	logger.Info("CLIENT", fmt.Sprintf("Full data sent to ID: %v", "test"))
