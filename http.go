@@ -10,6 +10,8 @@ import (
 	"yalk-backend/chat"
 	"yalk-backend/logger"
 
+	"math/rand"
+
 	"nhooyr.io/websocket"
 )
 
@@ -42,7 +44,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
 
 	// Todo: Use profile instead of User ID?
-	client := server.RegisterClient(conn, "test")
+	client := server.RegisterClient(conn, fmt.Sprintf("%v", rand.Int()))
 
 	notify := make(chan bool)
 
@@ -86,8 +88,8 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		server.ClientsMu.Lock()
 		delete(server.Clients, "test")
 		server.ClientsMu.Unlock()
-		onlineTick := time.NewTicker(time.Second * 10)
-		<-onlineTick.C
+		// onlineTick := time.NewTicker(time.Second * 10)
+		// <-onlineTick.C
 	}()
 	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })

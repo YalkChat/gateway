@@ -22,7 +22,7 @@ func (server *Server) SendMessage(event *EventMessage) {
 		if userId != event.Sender {
 			payload, err := encodePayload(event)
 			if err != nil {
-				logger.Err("ROUTER", "Erroƒr encoding payload")
+				logger.Err("ROUTER", "Error encoding payload")
 			}
 			client.Msgs <- payload
 		}
