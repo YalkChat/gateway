@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"yalk-backend/logger"
+
+	"math/rand"
 )
 
 func decodeEventMessage(jsonEvent []byte) (*EventMessage, error) {
@@ -30,6 +32,7 @@ func (server *Server) handlePayload(jsonEventMessage []byte) (err error) {
 	// * Routing event to server
 	switch message.Type {
 	case "channel_message":
+		message.ID = fmt.Sprintf("%v", rand.Int())
 		server.Channels.Notify <- message
 
 	// case "direct_message":
