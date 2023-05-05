@@ -22,10 +22,11 @@ func makeEventChannels() *EventChannels {
 
 type EventMessage struct {
 	Success   bool     `json:"success"`
+	ID        string   `json:"id"`
 	Type      string   `json:"type"`
 	Sender    string   `json:"sender"`
 	Receivers []string `json:"receivers"`
-	Payload   string   `json:"payload,omitempty"`
+	Message   string   `json:"message,omitempty"`
 }
 
 type EventChannels struct {
