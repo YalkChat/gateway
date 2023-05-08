@@ -9,6 +9,15 @@ import (
 	"nhooyr.io/websocket"
 )
 
+type ChatServer interface {
+	RegisterClient(*websocket.Conn, string)
+	SendMessage(*EventMessage)
+	SendMessageToAll(*EventMessage)
+	Sender(*Client, *EventContext)
+	Receiver(*EventContext)
+	HandlePayload([]byte)
+}
+
 // TODO: db
 func NewServer(bufferLenght int) *Server {
 
@@ -25,10 +34,6 @@ func NewServer(bufferLenght int) *Server {
 	}
 
 	return chatServer
-}
-
-type ChatServer interface {
-	RegisterClient()
 }
 
 type Server struct {
