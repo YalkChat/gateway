@@ -46,13 +46,22 @@ func init() {
 func main() {
 	var wg sync.WaitGroup
 
+	// ? Separate function
+	dbConfig := &chat.PgConf{
+		IP:       os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		DB:       os.Getenv("DB_NAME"),
+		SslMode:  os.Getenv("DB_SSLMODE"),
+	}
+
 	netConf := cattp.Config{
 		Host: os.Getenv("HTTP_HOST"),
 		Port: os.Getenv("HTTP_PORT_PLAIN"),
 		URL:  os.Getenv("HTTP_URL"),
 	}
-
-	chatServer := chat.NewServer(16)
+	chatServer := chat.NewServer(16, dbConfig)
 
 	wg.Add(1)
 	go chatServer.Router()
