@@ -40,7 +40,7 @@ Run:
 
 		if messageType.String() == "MessageText" && err == nil {
 			logger.Info("RCV", fmt.Sprintf("Message received: %s", payload))
-			server.handlePayload(payload)
+			server.HandlePayload(payload)
 			if err != nil {
 				log.Printf("Sender - errors in broadcast: %v", err)
 				return
