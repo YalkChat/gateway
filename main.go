@@ -2,7 +2,7 @@ package main
 
 // ** Server events and meaning ** //
 
-// ** - 'user_conn' -- User connecting to server
+// ** - 'user_login' -- User connecting to server
 // ** - 'user_disconn' -- User disconnecting from server
 // ** - 'user_new' -- New user account
 // ** - 'user_delete' -- User account deleted
@@ -20,7 +20,6 @@ import (
 	"yalk-backend/chat"
 	"yalk-backend/logger"
 
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -56,12 +55,19 @@ func main() {
 		SslMode:  os.Getenv("DB_SSLMODE"),
 	}
 
+	db, err := chat.OpenDbConnection(dbConfig)
+
+	if err != nil {
+		logger.Err("CORE", fmt.Sprintf("Error opening db connection: %v\n", err))
+		return
+	}
+
 	netConf := cattp.Config{
 		Host: os.Getenv("HTTP_HOST"),
 		Port: os.Getenv("HTTP_PORT_PLAIN"),
 		URL:  os.Getenv("HTTP_URL"),
 	}
-	chatServer := chat.NewServer(16, dbConfig)
+	chatServer := chat.NewServer(16, db)
 
 	wg.Add(1)
 	go chatServer.Router()
@@ -85,18 +91,4 @@ func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn
 
 	conn.SetReadLimit(defaultSize)
 	return conn, nil
-}
-
-func makeInitialPayload() ([]byte, error) {
-	payload := chat.Payload{
-		Success: true,
-		Event:   "user_conn",
-	}
-
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	return jsonPayload, nil
 }

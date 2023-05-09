@@ -9,17 +9,18 @@ import (
 )
 
 type UserProfile struct {
-	ID            int       `gorm:"primaryKey" json:"user_id"`
+	ID            int       `gorm:"primaryKey" json:"userId"`
 	Username      string    `gorm:"username" json:"username"`
 	Email         string    `gorm:"email" json:"email"`
-	DisplayedName string    `gorm:"displayed_name" json:"display_name"`
+	DisplayedName string    `gorm:"displayedName" json:"displayName"`
+	AvatarUrl     string    `gorm:"avatarUrl" json:"avatarUrl"`
 	IsOnline      bool      `gorm:"isOnline" json:"isOnline"`
-	LastLogin     time.Time `gorm:"last_login" json:"lastLogin"`
-	LastOffline   time.Time `gorm:"last_offline" json:"lastOffline"`
+	LastLogin     time.Time `gorm:"lastLogin" json:"lastLogin"`
+	LastOffline   time.Time `gorm:"lastOffline" json:"lastOffline"`
 	IsAdmin       bool      `gorm:"isAdmin" json:"isAdmin"`
 }
 
-func getUserProfile(userId string, db *gorm.DB) *UserProfile {
+func GetUserProfile(userId string, db *gorm.DB) *UserProfile {
 	var userProfile *UserProfile
 	tx := db.Find(&UserProfile{}).Where("id = ?", userId).Scan(&userProfile)
 

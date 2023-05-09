@@ -17,7 +17,7 @@ type PgConf struct {
 	SslMode  string
 }
 
-func openDbConnection(conf *PgConf) (*gorm.DB, error) {
+func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", conf.IP, conf.Port, conf.User, conf.Password, conf.DB, conf.SslMode)
 	db := postgres.Open(psqlInfo)
 	gorm, err := gorm.Open(db, &gorm.Config{QueryFields: true})

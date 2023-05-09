@@ -1,11 +1,8 @@
 package chat
 
 import (
-	"fmt"
 	"sync"
 	"time"
-
-	"yalk-backend/logger"
 
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
@@ -22,17 +19,12 @@ type ChatServer interface {
 }
 
 // TODO: db
-func NewServer(bufferLenght int, dbConfig *PgConf) *Server {
+func NewServer(bufferLenght int, db *gorm.DB) *Server {
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[string]*Client)
 	messageChannels := makeEventChannels()
-	db, err := openDbConnection(dbConfig)
 
-	if err != nil {
-		logger.Err("SRV", fmt.Sprintf("Error opening db connection: %v\n", err))
-		return nil
-	}
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,
 		Clients:              clientsMap,
@@ -73,7 +65,7 @@ type Payload struct {
 	Origin  string `json:"origin,omitempty"`
 	Event   string `json:"event"`
 	Type    string `json:"type"`
-	// Data    string `json:"data,omitempty"`
+	Data    any    `json:"data,omitempty"`
 }
 
 type BinaryPayload struct {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 
 	"math/rand"
 
+	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
@@ -68,7 +70,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	wg.Add(1)
 	go server.Sender(client, channelsContext)
 
-	initalPayload, err := makeInitialPayload()
+	initalPayload, err := makeInitialPayload(server.Db)
 	if err != nil {
 		logger.Err("CORE", "Error marshalling payload")
 		return
@@ -93,3 +95,26 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	}()
 	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })
+
+func makeInitialPayload(db *gorm.DB) ([]byte, error) {
+
+	profile := chat.GetUserProfile("1", db)
+
+	// jsonProfile, err := json.Marshal(profile)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	payload := chat.Payload{
+		Success: true,
+		Type:    "user_login",
+		Data:    profile,
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonPayload, nil
+}
