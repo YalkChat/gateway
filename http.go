@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"yalk-backend/cattp"
-	"yalk-backend/chat"
-	"yalk-backend/logger"
+	"yalk/cattp"
+	"yalk/chat"
+	"yalk/chat/clients"
+	"yalk/chat/events"
+	"yalk/logger"
 
 	"math/rand"
 
@@ -46,7 +48,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
 
 	// Todo: Use profile instead of User ID?
-	client := server.RegisterClient(conn, fmt.Sprintf("%v", rand.Int()))
+	client := server.RegisterClient(conn, uint(rand.Uint32()))
 
 	notify := make(chan bool)
 
@@ -56,7 +58,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	channelsContext := &chat.EventContext{
+	channelsContext := &events.EventContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,
@@ -76,7 +78,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		return
 	}
 
-	if chat.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, initalPayload); err != nil {
+	if clients.ClientWriteWithTimeout(r.Context(), time.Second*5, conn, initalPayload); err != nil {
 		logger.Info("CLIENT", "Timeout Initial Payload")
 		return
 	}
@@ -88,7 +90,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	go func() {
 		channelsContext.NotifyChannel <- true
 		server.ClientsMu.Lock()
-		delete(server.Clients, "test")
+		delete(server.Clients, client.ID)
 		server.ClientsMu.Unlock()
 		// onlineTick := time.NewTicker(time.Second * 10)
 		// <-onlineTick.C
@@ -98,20 +100,14 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 
 func makeInitialPayload(db *gorm.DB) ([]byte, error) {
 
-	profile := chat.GetUserProfile("1", db)
+	profile := chat.GetUserProfile(1, db)
 
 	// jsonProfile, err := json.Marshal(profile)
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	payload := chat.Payload{
-		Success: true,
-		Type:    "user_login",
-		Data:    profile,
-	}
-
-	jsonPayload, err := json.Marshal(payload)
+	jsonPayload, err := json.Marshal(profile)
 	if err != nil {
 		return nil, err
 	}

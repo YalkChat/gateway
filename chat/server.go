@@ -3,7 +3,10 @@ package chat
 import (
 	"sync"
 	"time"
+	"yalk/chat/clients"
+	"yalk/chat/events"
 
+	"github.com/lib/pq"
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 	"nhooyr.io/websocket"
@@ -11,19 +14,19 @@ import (
 
 type ChatServer interface {
 	RegisterClient(*websocket.Conn, string)
-	SendMessage(*EventMessage)
-	SendMessageToAll(*EventMessage)
-	Sender(*Client, *EventContext)
-	Receiver(*EventContext)
+	SendMessage(*events.Event)
+	SendMessageToAll(*events.Event)
+	Sender(*clients.Client, *events.EventContext)
+	Receiver(*events.EventContext)
 	HandlePayload([]byte)
 }
 
 // TODO: db
-func NewServer(bufferLenght int, db *gorm.DB) *Server {
+func NewServer(bufferLenght uint, db *gorm.DB) *Server {
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
-	clientsMap := make(map[string]*Client)
-	messageChannels := makeEventChannels()
+	clientsMap := make(map[uint]*clients.Client)
+	messageChannels := events.MakeEventChannels()
 
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,
@@ -38,18 +41,18 @@ func NewServer(bufferLenght int, db *gorm.DB) *Server {
 
 type Server struct {
 	SendLimiter          *rate.Limiter
-	Clients              map[string]*Client
+	Clients              map[uint]*clients.Client
 	ClientsMu            sync.Mutex
-	ClientsMessageBuffer int
-	Channels             *EventChannels
+	ClientsMessageBuffer uint
+	Channels             *events.EventChannels
 	Db                   *gorm.DB
 }
 
-func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
+func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *clients.Client {
 	messageChan := make(chan []byte, server.ClientsMessageBuffer)
 
-	client := &Client{
-		Id:   id,
+	client := &clients.Client{
+		ID:   id,
 		Msgs: messageChan,
 		CloseSlow: func() {
 			conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
@@ -61,17 +64,17 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
 	return client
 }
 
-type Payload struct {
-	Success bool   `json:"success"`
-	Origin  string `json:"origin,omitempty"`
-	Event   string `json:"event"`
-	Type    string `json:"type"`
-	Data    any    `json:"data,omitempty"`
-}
-
 type BinaryPayload struct {
 	Success bool   `json:"success"`
 	Origin  string `json:"origin,omitempty"`
 	Event   string `json:"event"`
 	// Data    []byte `json:"data,omitempty"`
+}
+
+type ChatList struct {
+	ID           uint           `gorm:"id;primaryKey"`
+	Name         string         `gorm:"name" json:"name"`
+	Users        pq.StringArray `gorm:"type:text[];users" json:"users"`
+	CreatedBy    string         `gorm:"createdBy" json:"createdBy"`
+	CreationDate time.Time      `gorm:"creationDate" json:"creationDate"`
 }

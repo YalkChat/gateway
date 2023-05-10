@@ -16,9 +16,9 @@ package main
 // ** - 'chat_leave' -- Chat left by another user
 
 import (
-	"yalk-backend/cattp"
-	"yalk-backend/chat"
-	"yalk-backend/logger"
+	"yalk/cattp"
+	"yalk/chat"
+	"yalk/logger"
 
 	"fmt"
 	"log"

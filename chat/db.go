@@ -2,7 +2,9 @@ package chat
 
 import (
 	"fmt"
-	"yalk-backend/logger"
+	"yalk/chat/chats"
+	"yalk/chat/users"
+	"yalk/logger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -41,7 +43,7 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 }
 
 func createUserProfileTable(gorm *gorm.DB) error {
-	err := gorm.AutoMigrate(&UserProfile{})
+	err := gorm.AutoMigrate(&users.User{})
 	if err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func createChatTable(gorm *gorm.DB) error {
 	// chat.ID = uuid.New()
 	// chat.ID = uuid.NewString()
 
-	err := gorm.AutoMigrate(&Chat{})
+	err := gorm.AutoMigrate(&chats.Chat{})
 	if err != nil {
 		return err
 	}

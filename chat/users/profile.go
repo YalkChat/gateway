@@ -1,15 +1,15 @@
-package chat
+package users
 
 import (
 	"fmt"
 	"time"
-	"yalk-backend/logger"
+	"yalk/logger"
 
 	"gorm.io/gorm"
 )
 
-type UserProfile struct {
-	ID            int       `gorm:"primaryKey" json:"userId"`
+type User struct {
+	ID            uint      `gorm:"primaryKey" json:"userId"`
 	Username      string    `gorm:"username" json:"username"`
 	Email         string    `gorm:"email" json:"email"`
 	DisplayedName string    `gorm:"displayedName" json:"displayName"`
@@ -20,13 +20,13 @@ type UserProfile struct {
 	IsAdmin       bool      `gorm:"isAdmin" json:"isAdmin"`
 }
 
-func GetUserProfile(userId string, db *gorm.DB) *UserProfile {
-	var userProfile *UserProfile
-	tx := db.Find(&UserProfile{}).Where("id = ?", userId).Scan(&userProfile)
+func GetUserProfile(userId uint, db *gorm.DB) *User {
+	var userProfile *User
+	tx := db.Find(&User{}).Where("id = ?", userId).Scan(&userProfile)
 
 	if tx.Error != nil {
 		// TODO: Extend session upon device validation
-		logger.Err("PROFILE", fmt.Sprintf("Error getting User Profile ID: %s\n", userId))
+		logger.Err("PROFILE", fmt.Sprintf("Error getting User Profile ID: %d\n", userId))
 		return nil
 	}
 

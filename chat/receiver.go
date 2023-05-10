@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"yalk-backend/logger"
+	"yalk/chat/events"
+	"yalk/logger"
 
 	"nhooyr.io/websocket"
 )
 
-func (server *Server) Receiver(ctx *EventContext) {
+func (server *Server) Receiver(ctx *events.EventContext) {
 	// TODO: var closingReason string
 	defer func() {
 		// Signalign that client is closing

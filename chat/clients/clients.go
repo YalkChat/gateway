@@ -1,4 +1,4 @@
-package chat
+package clients
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 )
 
 type Client struct {
-	Id        string
+	ID        uint
 	Msgs      chan []byte
 	CloseSlow func()
 }

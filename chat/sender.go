@@ -3,9 +3,12 @@ package chat
 import (
 	"log"
 	"time"
+
+	"yalk/chat/clients"
+	"yalk/chat/events"
 )
 
-func (server *Server) Sender(client *Client, ctx *EventContext) {
+func (server *Server) Sender(c *clients.Client, ctx *events.EventContext) {
 	defer ctx.WaitGroup.Done()
 
 Run:
@@ -14,8 +17,8 @@ Run:
 		case <-ctx.NotifyChannel:
 			log.Println("Sender - got shutdown signal")
 			break Run
-		case payload := <-client.Msgs:
-			err := ClientWriteWithTimeout(ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
+		case payload := <-c.Msgs:
+			err := clients.ClientWriteWithTimeout(ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
 			if err != nil {
 				break Run
 			}

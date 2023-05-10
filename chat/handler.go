@@ -3,35 +3,36 @@ package chat
 import (
 	"encoding/json"
 	"fmt"
-	"yalk-backend/logger"
 
-	"math/rand"
+	"yalk/chat/events"
+	"yalk/chat/messages"
+	"yalk/logger"
 )
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
 func (server *Server) HandlePayload(jsonEventMessage []byte) (err error) {
 
-	eventMessage, err := decodeEventMessage(jsonEventMessage)
+	eventMessage, err := events.DecodeEventMessage(jsonEventMessage)
 	if err != nil {
 		logger.Err("BROAD", "Listener - Error decoding EventMessage")
 		return err
 	}
 
-	// ! TEMP
-	eventMessage.ID = fmt.Sprintf("%v", rand.Int())
+	// ! TEMPs
+	// eventMessage.ID = fmt.Sprintf("%v", rand.Uint32())
 
 	// * Broadcasting event to correct channel
 	switch eventMessage.Type {
 	case "channel_message":
 		// ? It's own function to share with DM?
-		var message *Message
-		if err := json.Unmarshal([]byte(eventMessage.Content), &message); err != nil {
+		var message *messages.Message
+		if err := json.Unmarshal([]byte(message.Content), &message); err != nil {
 			logger.Err("HNDL", fmt.Sprintf("Failed to unmarshal channel message content: %v", err))
 			return err
 		}
 
-		if err := message.saveToDb(message.To, server.Db); err != nil {
+		if err := message.SaveToDb(message.ConversationID, server.Db); err != nil {
 			return err
 		}
 		server.Channels.Msg <- eventMessage
@@ -59,7 +60,6 @@ func (server *Server) HandlePayload(jsonEventMessage []byte) (err error) {
 
 	default:
 		logger.Warn("HNDL", "Payload Handler received an invalid event type")
-		eventMessage.Success = false
 		return fmt.Errorf("invalid_request")
 	}
 	return nil

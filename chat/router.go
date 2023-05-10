@@ -1,15 +1,16 @@
 package chat
 
 import (
-	"yalk-backend/logger"
+	"yalk/chat/events"
+	"yalk/logger"
 )
 
 // Echoing to client is default behavior for error checking.
 
 // Broadcast to all
 // TODO: Error checking
-func (server *Server) SendMessage(event *EventMessage) {
-	payload, err := encodeEventMessage(event)
+func (server *Server) SendMessage(event *events.Event) {
+	payload, err := events.EncodeEventMessage(event)
 
 	if err != nil {
 		logger.Err("ROUTER", "Error encoding payload")
@@ -23,13 +24,14 @@ func (server *Server) SendMessage(event *EventMessage) {
 }
 
 // Send to one or multiple connected clients
-func (server *Server) SendMessageToAll(event *EventMessage) {
-	payload, err := encodeEventMessage(event)
+func (server *Server) SendMessageToAll(event *events.Event) {
+	payload, err := events.EncodeEventMessage(event)
 
 	if err != nil {
 		logger.Err("ROUTER", "Error encoding payload")
 	}
 
+	// TODO: New logic
 	for _, id := range event.Receivers {
 		wsClient := server.Clients[id]
 		if wsClient != nil {
