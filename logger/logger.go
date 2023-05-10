@@ -22,14 +22,15 @@ var White = "\033[97m"
 
 func Info(component string, message string) {
 	color := Blue
-	fmt.Printf("%s[INFO]%s[%s] | %s\n", color, Reset, component, message)
+	fmt.Printf("%s[INFO][%s] | %s%s\n", color, component, message, Reset)
 }
 func Warn(component string, message string) {
 	color := Orange
-	fmt.Printf("%s[WARN]%s[%s] | %s\n", color, Reset, component, message)
+	fmt.Printf("%s[WARN][%s] | %s%s\n", color, component, message, Reset)
 }
 
 func Err(component string, message string) {
 	color := Red
-	fmt.Printf("%s[ERR]%s[%s] | %s\n", color, Reset, component, message)
+	fmt.Printf("%s[ERR][%s] | %s%s\n", color, component, message, Reset)
+
 }

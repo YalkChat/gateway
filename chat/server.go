@@ -9,8 +9,17 @@ import (
 	"nhooyr.io/websocket"
 )
 
+type ChatServer interface {
+	RegisterClient(*websocket.Conn, string)
+	SendMessage(*EventMessage)
+	SendMessageToAll(*EventMessage)
+	Sender(*Client, *EventContext)
+	Receiver(*EventContext)
+	HandlePayload([]byte)
+}
+
 // TODO: db
-func NewServer(bufferLenght int) *Server {
+func NewServer(bufferLenght int, db *gorm.DB) *Server {
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[string]*Client)
@@ -21,14 +30,10 @@ func NewServer(bufferLenght int) *Server {
 		Clients:              clientsMap,
 		ClientsMessageBuffer: bufferLenght,
 		Channels:             messageChannels,
-		// db: db,
+		Db:                   db,
 	}
 
 	return chatServer
-}
-
-type ChatServer interface {
-	RegisterClient()
 }
 
 type Server struct {
@@ -44,6 +49,7 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
 	messageChan := make(chan []byte, server.ClientsMessageBuffer)
 
 	client := &Client{
+		Id:   id,
 		Msgs: messageChan,
 		CloseSlow: func() {
 			conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
@@ -60,7 +66,7 @@ type Payload struct {
 	Origin  string `json:"origin,omitempty"`
 	Event   string `json:"event"`
 	Type    string `json:"type"`
-	// Data    string `json:"data,omitempty"`
+	Data    any    `json:"data,omitempty"`
 }
 
 type BinaryPayload struct {
