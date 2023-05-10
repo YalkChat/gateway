@@ -49,6 +49,7 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id string) *Client {
 	messageChan := make(chan []byte, server.ClientsMessageBuffer)
 
 	client := &Client{
+		Id:   id,
 		Msgs: messageChan,
 		CloseSlow: func() {
 			conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
