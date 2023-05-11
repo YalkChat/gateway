@@ -2,12 +2,9 @@ package chat
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
-
-	"yalk/logger"
 
 	"nhooyr.io/websocket"
 )
@@ -21,6 +18,15 @@ type Event interface {
 	Type() string
 	Serialize() ([]byte, error)
 	Deserialize(data []byte) error
+	SaveToDb() error
+}
+
+func (event *RawEvent) Marshal() ([]byte, error) {
+	return json.Marshal(event)
+}
+
+func (event *RawEvent) Unmarshal(jsonEvent []byte) error {
+	return json.Unmarshal(jsonEvent, event)
 }
 
 // TODO: Return &ServerMessageChannels
@@ -50,22 +56,4 @@ type EventContext struct {
 	PingTicket    *time.Ticker
 	Connection    *websocket.Conn
 	Request       *http.Request
-}
-
-func EncodeEventMessage(event *RawEvent) ([]byte, error) {
-	eventMessageJson, err := json.Marshal(event)
-	if err != nil {
-		return nil, err
-	}
-	return eventMessageJson, nil
-}
-
-func DecodeEventMessage(jsonEvent []byte) (*RawEvent, error) {
-	var event *RawEvent
-
-	if err := json.Unmarshal(jsonEvent, &event); err != nil {
-		logger.Err("EVENT", fmt.Sprintf("Error deserializing message to RawEvent: %v", err))
-		return nil, err
-	}
-	return event, nil
 }
