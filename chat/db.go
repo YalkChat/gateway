@@ -26,16 +26,12 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = createUserTable(gorm)
-	if err != nil {
+	if err := createUserTable(gorm); err != nil {
 		logger.Warn("DB", fmt.Sprintf("Failed to migrate user profile table: %v", err))
-		// return nil, err
 	}
 
-	err = createChatTable(gorm)
-	if err != nil {
+	if err := createChatTable(gorm); err != nil {
 		logger.Warn("DB", fmt.Sprintf("Failed to migrate chat table: %v", err))
-		// return nil, err
 	}
 
 	return gorm, nil
