@@ -14,7 +14,6 @@ type Message struct {
 	ID             uint      `json:"id,omitempty"`
 	UserID         uint      `json:"user_id,omitempty"`
 	User           User      `json:"user,omitempty"`
-	From           string    `json:"from,omitempty"`
 	ConversationID uint      `json:"conversationId,omitempty"` // convention to use it as Foreign Key
 	Conversation   Chat      `json:"conversation,omitempty"`   // message belongs to conversation
 	MessageType    string    `json:"type,omitempty"`
