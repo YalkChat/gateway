@@ -4,27 +4,24 @@ import (
 	"fmt"
 
 	"yalk/logger"
+
+	"gorm.io/gorm"
 )
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
 func (server *Server) HandlePayload(jsonEventMessage []byte) (err error) {
 
-	rawEvent, err := DecodeEventMessage(jsonEventMessage)
-	if err != nil {
-		logger.Err("HNDL", "Error decoding RawEvent")
+	var rawEvent *RawEvent
+	if err := rawEvent.Unmarshal(jsonEventMessage); err != nil {
+		logger.Err("HNDL", "Error unmarshaling RawEvent")
 		return err
 	}
 
 	switch rawEvent.Type {
 	case "chat_message":
-		message, err := newMessage(rawEvent)
+		message, err := handleChatMessage(rawEvent, server.Db)
 		if err != nil {
-			logger.Err("HNDL", " - Error creating Chat Message")
-			return err
-		}
-
-		if err := message.SaveToDb(server.Db); err != nil {
 			return err
 		}
 		server.Channels.Msg <- message
@@ -56,6 +53,21 @@ func (server *Server) HandlePayload(jsonEventMessage []byte) (err error) {
 		return fmt.Errorf("invalid_request")
 	}
 	return nil
+}
+
+func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
+	message, err := newMessage(rawEvent)
+	if err != nil {
+		logger.Err("HNDL", " - Error creating Chat Message")
+		return nil, err
+	}
+
+	if err := message.SaveToDb(db); err != nil {
+		logger.Err("HNDL", " - Error saving to DB Chat Message")
+		return nil, err
+	}
+	return message, nil
+
 }
 
 func newMessage(rawEvent *RawEvent) (*Message, error) {
