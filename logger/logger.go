@@ -25,7 +25,7 @@ func Info(component string, message string) {
 	fmt.Printf("%s[INFO][%s] | %s%s\n", color, component, message, Reset)
 }
 func Warn(component string, message string) {
-	color := Orange
+	color := Yellow
 	fmt.Printf("%s[WARN][%s] | %s%s\n", color, component, message, Reset)
 }
 
