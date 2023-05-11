@@ -10,7 +10,6 @@ import (
 	"yalk/cattp"
 	"yalk/chat"
 	"yalk/chat/clients"
-	"yalk/chat/events"
 	"yalk/logger"
 
 	"math/rand"
@@ -58,7 +57,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	channelsContext := &events.EventContext{
+	channelsContext := &chat.EventContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,

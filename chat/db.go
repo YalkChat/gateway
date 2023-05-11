@@ -2,8 +2,7 @@ package chat
 
 import (
 	"fmt"
-	"yalk/chat/chats"
-	"yalk/chat/users"
+	"time"
 	"yalk/logger"
 
 	"gorm.io/driver/postgres"
@@ -27,7 +26,7 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = createUserProfileTable(gorm)
+	err = createUserTable(gorm)
 	if err != nil {
 		logger.Warn("DB", fmt.Sprintf("Failed to migrate user profile table: %v", err))
 		// return nil, err
@@ -42,10 +41,25 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 	return gorm, nil
 }
 
-func createUserProfileTable(gorm *gorm.DB) error {
-	err := gorm.AutoMigrate(&users.User{})
+func createUserTable(db *gorm.DB) error {
+	err := db.AutoMigrate(&User{})
 	if err != nil {
 		return err
+	}
+	testUser := &User{
+		Username:      "TestUser",
+		Email:         "test@test.com",
+		DisplayedName: "TestDisplayedName",
+		AvatarUrl:     "/testpp.png",
+		IsOnline:      false,
+		LastLogin:     time.Now(),
+		LastOffline:   time.Now(),
+		IsAdmin:       false,
+	}
+	if err := testUser.Create(db); err != nil {
+
+		return err
+
 	}
 	return nil
 }
@@ -59,7 +73,7 @@ func createChatTable(gorm *gorm.DB) error {
 	// chat.ID = uuid.New()
 	// chat.ID = uuid.NewString()
 
-	err := gorm.AutoMigrate(&chats.Chat{})
+	err := gorm.AutoMigrate(&Chat{})
 	if err != nil {
 		return err
 	}
