@@ -62,7 +62,7 @@ func createUserTable(db *gorm.DB) error {
 
 func createChatTable(gorm *gorm.DB) error {
 	// testMsg := make(map[string]*Message)
-	// testMsg["test1"] = &Message{ID: "test1", From: "test", To: "MAIN", Type: "channel_pub", Data: "Eh basta porco dio"}
+	// testMsg["test1"] = &Message{ID: "test1", From: "test", To: 1, Type: "channel_pub", Data: "Eh basta porco dio"}
 
 	// var chat = &Chat{ID: uuid.New(), Type: "channel_pub", Name: "NameTest", Users: []string{"test"}, Messages: testMap, Creator: "test", CreationDate: time.Now()}
 	// chat :=
