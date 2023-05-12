@@ -28,7 +28,7 @@ func (c *Chat) BeforeCreate(db *gorm.DB) error {
 	return nil
 }
 
-type ChatUsers struct {
+type ChatUser struct {
 	ID     uint
 	ChatID uint
 	Chat   Chat
@@ -37,7 +37,7 @@ type ChatUsers struct {
 }
 
 func GetChatUserIds(chatId uint, db *gorm.DB) ([]uint, error) {
-	var chatUsers []ChatUsers
+	var chatUsers []ChatUser
 
 	result := db.Find(&chatUsers, chatId)
 

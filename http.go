@@ -66,7 +66,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	}
 
 	wg.Add(1)
-	go server.Receiver(channelsContext)
+	go server.Receiver(client.ID, channelsContext)
 
 	wg.Add(1)
 	go server.Sender(client, channelsContext)

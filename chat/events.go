@@ -6,13 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"nhooyr.io/websocket"
 )
-
-type RawEvent struct {
-	Type string          `gorm:"-" json:"type"`
-	Data json.RawMessage `gorm:"-" json:"Data"`
-}
 
 type Event interface {
 	Type() string
@@ -21,11 +17,18 @@ type Event interface {
 	SaveToDb() error
 }
 
-func (event *RawEvent) Marshal() ([]byte, error) {
+type RawEvent struct {
+	Type   string          `gorm:"-" json:"type"`
+	UserID string          `gorm:"-" json:"userId"`
+	Token  jwt.Token       `gorm:"-" json:"token"`
+	Data   json.RawMessage `gorm:"-" json:"data"`
+}
+
+func (event *RawEvent) Serialize() ([]byte, error) {
 	return json.Marshal(event)
 }
 
-func (event *RawEvent) Unmarshal(jsonEvent []byte) error {
+func (event *RawEvent) Deserialize(jsonEvent []byte) error {
 	return json.Unmarshal(jsonEvent, event)
 }
 

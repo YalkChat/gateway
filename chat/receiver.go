@@ -9,7 +9,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-func (server *Server) Receiver(ctx *EventContext) {
+func (server *Server) Receiver(clientId uint, ctx *EventContext) {
 	// TODO: var closingReason string
 	defer func() {
 		// Signalign that client is closing
@@ -40,7 +40,7 @@ Run:
 
 		if messageType.String() == "MessageText" && err == nil {
 			logger.Info("RCV", fmt.Sprintf("Message received: %s", payload))
-			server.HandlePayload(payload)
+			server.HandlePayload(clientId, payload)
 			if err != nil {
 				log.Printf("Sender - errors in broadcast: %v", err)
 				return

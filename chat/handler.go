@@ -10,16 +10,19 @@ import (
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
-func (server *Server) HandlePayload(jsonEventMessage []byte) (err error) {
+func (server *Server) HandlePayload(clientId uint, jsonEventMessage []byte) error {
+	rawEvent := &RawEvent{}
 
-	var rawEvent *RawEvent
-	if err := rawEvent.Unmarshal(jsonEventMessage); err != nil {
+	if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
 		logger.Err("HNDL", "Error unmarshaling RawEvent")
 		return err
 	}
 
+	// server.SessionsManager.Validate()
+
 	switch rawEvent.Type {
 	case "chat_message":
+
 		message, err := handleChatMessage(rawEvent, server.Db)
 		if err != nil {
 			return err
@@ -58,12 +61,12 @@ func (server *Server) HandlePayload(jsonEventMessage []byte) (err error) {
 func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 	message, err := newMessage(rawEvent)
 	if err != nil {
-		logger.Err("HNDL", " - Error creating Chat Message")
+		logger.Err("HNDL", "Error creating Chat Message")
 		return nil, err
 	}
 
 	if err := message.SaveToDb(db); err != nil {
-		logger.Err("HNDL", " - Error saving to DB Chat Message")
+		logger.Err("HNDL", "Error saving to DB Chat Message")
 		return nil, err
 	}
 	return message, nil
@@ -74,7 +77,7 @@ func newMessage(rawEvent *RawEvent) (*Message, error) {
 	message := &Message{}
 
 	if err := message.Deserialize(rawEvent.Data); err != nil {
-		logger.Err("HNDL", " - Error Deserializing Chat Message")
+		logger.Err("HNDL", "Error Deserializing Chat Message")
 		return nil, err
 	}
 	return message, nil

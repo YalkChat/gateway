@@ -27,11 +27,17 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 	}
 
 	if err := createUserTable(gorm); err != nil {
-		logger.Warn("DB", fmt.Sprintf("Failed to migrate user profile table: %v", err))
+		logger.Warn("DB", fmt.Sprintf("Failed to migrate users profile table: %v", err))
 	}
 
 	if err := createChatTable(gorm); err != nil {
-		logger.Warn("DB", fmt.Sprintf("Failed to migrate chat table: %v", err))
+		logger.Warn("DB", fmt.Sprintf("Failed to migrate chats table: %v", err))
+	}
+	if err := createMessagesTable(gorm); err != nil {
+		logger.Warn("DB", fmt.Sprintf("Failed to migrate messages table: %v", err))
+	}
+	if err := createChatUsersTable(gorm); err != nil {
+		logger.Warn("DB", fmt.Sprintf("Failed to migrate chat users table: %v", err))
 	}
 
 	return gorm, nil
@@ -72,6 +78,32 @@ func createChatTable(gorm *gorm.DB) error {
 	err := gorm.AutoMigrate(&Chat{})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func createMessagesTable(db *gorm.DB) error {
+	err := db.AutoMigrate(&Message{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createChatUsersTable(db *gorm.DB) error {
+	err := db.AutoMigrate(&ChatUser{})
+	if err != nil {
+		return err
+	}
+
+	user := &ChatUser{
+		ChatID: 1,
+		UserID: 1,
+	}
+
+	tx := db.Create(user)
+	if tx.Error != nil {
+		return tx.Error
 	}
 	return nil
 }

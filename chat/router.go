@@ -54,7 +54,7 @@ func (server *Server) Router() {
 		case message := <-server.Channels.Msg:
 			logger.Info("ROUTER", "Router: Broadcast message received")
 
-			userIds, err := GetChatUserIds(message.ConversationID, server.Db)
+			userIds, err := GetChatUserIds(message.ChatID, server.Db)
 			if err != nil {
 				logger.Err("ROUTER", "Shurizzle si e' rotto il cazzo")
 				return
