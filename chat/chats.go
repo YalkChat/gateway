@@ -37,11 +37,11 @@ type ChatUser struct {
 }
 
 func GetChatUserIds(chatId uint, db *gorm.DB) ([]uint, error) {
-	var chatUsers []ChatUser
+	var chatUsers []*ChatUser
 
-	result := db.Find(&chatUsers, chatId)
+	result := db.Where("chat_id = ?", chatId).Find(&chatUsers)
 
-	if result.Error == nil {
+	if result.Error != nil {
 		return nil, result.Error
 	}
 
