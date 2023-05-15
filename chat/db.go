@@ -2,7 +2,6 @@ package chat
 
 import (
 	"fmt"
-	"time"
 	"yalk/logger"
 
 	"gorm.io/driver/postgres"
@@ -48,33 +47,25 @@ func createUserTable(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	testUser := &User{
-		Username:      "TestUser",
-		Email:         "test@test.com",
-		DisplayedName: "TestDisplayedName",
-		AvatarUrl:     "/testpp.png",
-		IsOnline:      false,
-		LastLogin:     time.Now(),
-		LastOffline:   time.Now(),
-		IsAdmin:       false,
-	}
-	if err := testUser.Create(db); err != nil {
+	// testUser := &User{
+	// 	Username:      "TestUser",
+	// 	Email:         "test@test.com",
+	// 	DisplayedName: "TestDisplayedName",
+	// 	AvatarUrl:     "/testpp.png",
+	// 	IsOnline:      false,
+	// 	LastLogin:     time.Now(),
+	// 	LastOffline:   time.Now(),
+	// 	IsAdmin:       false,
+	// }
+	// if err := testUser.Create(db); err != nil {
 
-		return err
+	// 	return err
 
-	}
+	// }
 	return nil
 }
 
 func createChatTable(gorm *gorm.DB) error {
-	// testMsg := make(map[string]*Message)
-	// testMsg["test1"] = &Message{ID: "test1", From: "test", To: 1, Type: "channel_pub", Data: "Eh basta porco dio"}
-
-	// var chat = &Chat{ID: uuid.New(), Type: "channel_pub", Name: "NameTest", Users: []string{"test"}, Messages: testMap, Creator: "test", CreationDate: time.Now()}
-	// chat :=
-	// chat.ID = uuid.New()
-	// chat.ID = uuid.NewString()
-
 	err := gorm.AutoMigrate(&Chat{})
 	if err != nil {
 		return err
@@ -96,14 +87,14 @@ func createChatUsersTable(db *gorm.DB) error {
 		return err
 	}
 
-	user := &ChatUser{
-		ChatID: 1,
-		UserID: 1,
-	}
+	// user := &ChatUser{
+	// 	ChatID: 1,
+	// 	UserID: 1,
+	// }
 
-	tx := db.Create(user)
-	if tx.Error != nil {
-		return tx.Error
-	}
+	// tx := db.Create(user)
+	// if tx.Error != nil {
+	// 	return tx.Error
+	// }
 	return nil
 }
