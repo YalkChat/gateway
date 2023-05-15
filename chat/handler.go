@@ -69,6 +69,15 @@ func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 		logger.Err("HNDL", "Error saving to DB Chat Message")
 		return nil, err
 	}
+
+	user := GetUserProfile(message.UserID, db)
+
+	// if user == nil {
+	// 	logger.Err("HNDL", "User not found")
+	// 	return nil, fmt.Errorf("user_not_found")
+	// }
+
+	message.User = user
 	return message, nil
 
 }
