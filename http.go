@@ -12,8 +12,6 @@ import (
 	"yalk/chat/clients"
 	"yalk/logger"
 
-	"math/rand"
-
 	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
@@ -47,7 +45,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
 
 	// Todo: Use profile instead of User ID?
-	client := server.RegisterClient(conn, uint(rand.Uint32()))
+	client := server.RegisterClient(conn, 1)
 
 	notify := make(chan bool)
 
