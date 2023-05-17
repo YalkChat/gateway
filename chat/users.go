@@ -34,7 +34,6 @@ func (user *User) Create(db *gorm.DB) (*User, error) {
 func (user *User) GetInfo(db *gorm.DB) (*User, error) {
 
 	tx := db.Preload("Chats").Preload("Chats.ChatType").Find(&user)
-	// tx := db.Preload("Chats").Preload("Chats.Type").Find(&user)
 
 	if tx.Error != nil {
 		return nil, tx.Error
