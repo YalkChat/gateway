@@ -107,9 +107,11 @@ func makeInitialPayload(db *gorm.DB) ([]byte, error) {
 	tx := db.Joins("left join chat_users on chat_users.chat_id=chats.id").
 		Where("chat_users.user_id = ?", user.ID). // TODO: Check for public chat
 		Preload("Messages").
+		Preload("Messages.User").
+		Preload("ChatType").
 		Find(&chats)
 	if tx.Error != nil {
-		return nil, err
+		return nil, tx.Error
 	}
 
 	temp := struct {
@@ -125,7 +127,7 @@ func makeInitialPayload(db *gorm.DB) ([]byte, error) {
 	newRawEvent := &chat.RawEvent{Type: "initial", Data: jsonPayload}
 
 	jsonEvent, err := newRawEvent.Serialize()
-
+	fmt.Println(string(jsonEvent))
 	if err != nil {
 		return nil, err
 	}

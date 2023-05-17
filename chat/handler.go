@@ -70,14 +70,19 @@ func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 		return nil, err
 	}
 
-	// message.User = &User{ID: message.UserID}
-	// message.User.GetInfo(db)
-	// if err != nil {
-	// 	logger.Err("PROFILE", fmt.Sprintf("Error getting User Profile ID: %d\n", message.UserID))
-	// 	return nil, err
-	// }
+	message.User = &User{ID: message.UserID}
+	message.User.GetInfo(db)
+	if err != nil {
+		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", message.UserID))
+		return nil, err
+	}
 
-	// message.Chat, err = GetChat(db)
+	message.Chat = &Chat{ID: message.ChatID}
+	message.Chat.GetInfo(db)
+	if err != nil {
+		logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
+		return nil, err
+	}
 
 	// if err != nil {
 	// 	logger.Err("PROFILE", fmt.Sprintf("Error getting Chat ID: %d\n", message.ChatID))

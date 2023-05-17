@@ -35,8 +35,9 @@ func (message *Message) Deserialize(data []byte) error {
 
 func (message *Message) SaveToDb(db *gorm.DB) error {
 	message.UserID = 1 // ! Debug
-	tx := db.Preload("User").Preload("Chat").Create(message)
+	tx := db.Create(message)
 	if tx.Error != nil {
+		tx.Rollback()
 		return tx.Error
 	}
 	logger.Info("MSG", fmt.Sprintf("Rows affected: %d", tx.RowsAffected))
