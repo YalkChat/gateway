@@ -96,18 +96,39 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 })
 
 func makeInitialPayload(db *gorm.DB) ([]byte, error) {
-
-	profile := chat.GetUserProfile(1, db)
-
-	// jsonProfile, err := json.Marshal(profile)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	jsonPayload, err := json.Marshal(profile)
+	// TODO: Check for duplicate data everywhere
+	var user = &chat.User{ID: 1}
+	_, err := user.GetInfo(db)
 	if err != nil {
 		return nil, err
 	}
 
-	return jsonPayload, nil
+	var chats *[]chat.Chat
+	tx := db.Joins("left join chat_users on chat_users.chat_id=chats.id").
+		Where("chat_users.user_id = ?", user.ID). // TODO: Check for public chat
+		Preload("Messages").
+		Find(&chats)
+	if tx.Error != nil {
+		return nil, err
+	}
+
+	temp := struct {
+		User  *chat.User   `json:"user,omitempty"`
+		Chats *[]chat.Chat `json:"chats,omitempty"`
+	}{user, chats}
+
+	jsonPayload, err := json.Marshal(&temp)
+	if err != nil {
+		return nil, err
+	}
+
+	newRawEvent := &chat.RawEvent{Type: "initial", Data: jsonPayload}
+
+	jsonEvent, err := newRawEvent.Serialize()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonEvent, nil
 }

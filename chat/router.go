@@ -3,17 +3,15 @@ package chat
 import (
 	"encoding/json"
 	"yalk/logger"
-
-	"golang.org/x/exp/slices"
 )
 
 // Echoing to client is default behavior for error checking.
 
 // Broadcast to all
 // TODO: Error checking
-func (server *Server) SendMessage(userIds []uint, payload []byte) {
-	for userId, client := range server.Clients {
-		if slices.Contains(userIds, userId) {
+func (server *Server) SendToChat(message *Message, payload []byte) {
+	for _, user := range message.Chat.Users {
+		if client, ok := server.Clients[user.ID]; ok {
 			client.Msgs <- payload
 		}
 	}
@@ -40,25 +38,8 @@ func (server *Server) SendMessage(userIds []uint, payload []byte) {
 func (server *Server) Router() {
 	for {
 		select {
-		// case event := <-server.Channels.Notify:
-		// 	logger.Info("ROUTER", "Router: Notify received")
-		// 	server.SendMessage(event)
-		// case event := <-server.Channels.Login:
-		// 	logger.Info("ROUTER", "Router: Login received")
-		// 	server.SendMessage(event)
-
-		// case event := <-server.Channels.Logout:
-		// 	logger.Info("ROUTER", "Router: Logout received")
-		// 	server.SendMessage(event)
-
 		case message := <-server.Channels.Msg:
 			logger.Info("ROUTER", "Router: Broadcast message received")
-
-			userIds, err := GetChatUserIds(message.ChatID, server.Db)
-			if err != nil {
-				logger.Err("ROUTER", "Shurizzle si e' rotto il cazzo")
-				return
-			}
 
 			serializedData, err := message.Serialize()
 			if err != nil {
@@ -72,7 +53,7 @@ func (server *Server) Router() {
 				logger.Err("ROUTER", "Error serializing RawEvent")
 			}
 
-			server.SendMessage(userIds, jsonEvent)
+			server.SendToChat(message, jsonEvent)
 
 			// case event := <-server.Channels.Dm:
 			// 	logger.Info("ROUTER", "Router: Dm received")

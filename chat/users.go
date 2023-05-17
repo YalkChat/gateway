@@ -2,55 +2,59 @@ package chat
 
 import (
 	"errors"
-	"fmt"
 	"time"
-	"yalk/logger"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID            uint      `gorm:"primaryKey" json:"userId"`
-	Username      string    `gorm:"username" json:"username"`
-	Email         string    `gorm:"email" json:"email"`
-	DisplayedName string    `gorm:"displayedName" json:"displayName"`
-	AvatarUrl     string    `gorm:"avatarUrl" json:"avatarUrl"`
-	IsOnline      bool      `gorm:"isOnline" json:"isOnline"`
-	LastLogin     time.Time `gorm:"lastLogin" json:"lastLogin"`
-	LastOffline   time.Time `gorm:"lastOffline" json:"lastOffline"`
-	IsAdmin       bool      `gorm:"isAdmin" json:"isAdmin"`
+	ID            uint      `json:"userId"`
+	Username      string    `json:"username"`
+	Email         string    `json:"email"`
+	DisplayedName string    `json:"displayName"`
+	AvatarUrl     string    `json:"avatarUrl"`
+	IsOnline      bool      `json:"isOnline"`
+	LastLogin     time.Time `json:"lastLogin"`
+	LastOffline   time.Time `json:"lastOffline"`
+	IsAdmin       bool      `json:"isAdmin"`
+	Chats         []*Chat   `gorm:"many2many:chat_users;" json:"chats"`
 }
 
-func (user *User) Create(db *gorm.DB) error {
+// * We both return and assign to the user to allow method chaining.
+func (user *User) Create(db *gorm.DB) (*User, error) {
+
 	tx := db.Create(&user)
+
 	if tx.Error != nil {
-		return tx.Error
+		return nil, tx.Error
 	}
-	return nil
+	return user, nil
 }
 
-func (user *User) Get(db *gorm.DB) error {
+func (user *User) GetInfo(db *gorm.DB) (*User, error) {
+
+	tx := db.Preload("Chats").Find(&user)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return user, nil
+}
+
+func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
+	var chats []*Chat
+
+	tx := db.Preload("Chats").Find(&chats)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return chats, nil
+}
+
+func (user *User) CheckValid() (*User, error) {
 	if user.ID == 0 {
-		return errors.New("no user ID")
+		return nil, errors.New("no user ID")
 	}
-
-	tx := db.Find(&user)
-	if tx.Error != nil {
-		return tx.Error
-	}
-
-	return nil
-}
-
-func GetUserProfile(userId uint, db *gorm.DB) *User {
-	var userProfile *User
-	tx := db.Find(&User{}).Where("id = ?", userId).Scan(&userProfile)
-
-	if tx.Error != nil {
-		// TODO: Extend session upon device validation
-		logger.Err("PROFILE", fmt.Sprintf("Error getting User Profile ID: %d\n", userId))
-		return nil
-	}
-
-	return userProfile
+	return user, nil
 }

@@ -11,14 +11,14 @@ import (
 )
 
 type Message struct {
-	ID     uint  `json:"id,omitempty"`
-	UserID uint  `json:"userId,omitempty"`
-	User   *User `json:"user,omitempty"`
-	ChatID uint  `json:"chatId,omitempty"` // convention to use it as Foreign Key
-	Chat   Chat  `json:"chat,omitempty"`   // message belongs to conversation
-	// MessageType string    `json:"type,omitempty"`
+	ID        uint      `json:"id,omitempty"`
+	UserID    uint      `json:"userId,omitempty"`
+	User      *User     `json:"user,omitempty"`
+	ChatID    uint      `json:"chatId,omitempty"` // convention to use it as Foreign Key
+	Chat      *Chat     `json:"chat,omitempty"`   // message belongs to conversation
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	Content   string    `json:"content,omitempty"`
+	// MessageType string    `json:"type,omitempty"`
 }
 
 func (message *Message) Type() string {
@@ -34,8 +34,8 @@ func (message *Message) Deserialize(data []byte) error {
 }
 
 func (message *Message) SaveToDb(db *gorm.DB) error {
-	message.UserID = 1
-	tx := db.Create(message)
+	message.UserID = 1 // ! Debug
+	tx := db.Preload("User").Preload("Chat").Create(message)
 	if tx.Error != nil {
 		return tx.Error
 	}

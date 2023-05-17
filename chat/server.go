@@ -48,6 +48,8 @@ type Server struct {
 	ClientsMessageBuffer uint
 	Channels             *EventChannels
 	Db                   *gorm.DB
+	// Chats                []*Chat
+	// Users                []*User
 	// SessionsManager      *sessions.Manager
 }
 
