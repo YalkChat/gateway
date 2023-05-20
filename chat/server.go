@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 	"yalk/chat/clients"
+	"yalk/sessions"
 
 	"github.com/lib/pq"
 	"golang.org/x/time/rate"
@@ -21,7 +22,7 @@ type ChatServer interface {
 }
 
 // TODO: db
-func NewServer(bufferLenght uint, db *gorm.DB) *Server {
+func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager) *Server {
 	// sessionLen := time.Hour * 720
 	// sessionsManager := sessions.New(sessionLen)
 
@@ -35,7 +36,7 @@ func NewServer(bufferLenght uint, db *gorm.DB) *Server {
 		ClientsMessageBuffer: bufferLenght,
 		Channels:             messageChannels,
 		Db:                   db,
-		// SessionsManager:      sessionsManager,
+		SessionsManager:      sessionsManager,
 	}
 
 	return chatServer
@@ -48,9 +49,7 @@ type Server struct {
 	ClientsMessageBuffer uint
 	Channels             *EventChannels
 	Db                   *gorm.DB
-	// Chats                []*Chat
-	// Users                []*User
-	// SessionsManager      *sessions.Manager
+	SessionsManager      *sessions.Manager
 }
 
 func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *clients.Client {
