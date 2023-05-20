@@ -18,7 +18,13 @@ import (
 
 func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 	router := cattp.New(chatServer)
+
 	router.HandleFunc("/ws", connectHandle)
+
+	router.HandleFunc("/auth", validateHandle)
+	router.HandleFunc("/auth/validate", validateHandle)
+	router.HandleFunc("/auth/signin", signinHandle)
+	router.HandleFunc("/auth/signout", signoutHandle)
 
 	err := router.Listen(&conf)
 	if err != nil {
@@ -31,8 +37,29 @@ func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 
 // TODO: Enum log events and colors 'info' 'warning 'error'
 var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
-
 	logger.Info("WEBSOCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
+
+	// TODO: Custom config for on admin site
+
+	session, err := server.SessionsManager.Validate(server.Db, r, "YLK") // TODO: Separate in other config
+	if err != nil {
+		logger.Warn("HTTP", "Can't validate session")
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	session.SetClientCookie(w) // TODO: Reimplement for JWT and WebSession
+	if err != nil {
+		log.Println("Error marshaling JWT Token")
+		return
+	}
+
+	_ = &chat.User{ID: uint(session.UserID)}
+
+	// TODO: Here we check if the cookie exist and it's valid
+	// TODO: if it is, we provide a new websocket token
+	// TODO: if not we return a 401 Unauthorized error and redirect
+	// TODO: the user to login
 
 	conn, err := upgradeHttpRequest(w, r)
 	if err != nil {
@@ -96,7 +123,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 })
 
 func makeInitialPayload(db *gorm.DB) ([]byte, error) {
-	// TODO: Check for duplicate data everywhere
+
 	var user = &chat.User{ID: 1}
 	_, err := user.GetInfo(db)
 	if err != nil {

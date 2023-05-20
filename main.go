@@ -16,9 +16,11 @@ package main
 // ** - 'chat_leave' -- Chat left by another user
 
 import (
+	"time"
 	"yalk/cattp"
 	"yalk/chat"
 	"yalk/logger"
+	"yalk/sessions"
 
 	"fmt"
 	"log"
@@ -67,7 +69,10 @@ func main() {
 		Port: os.Getenv("HTTP_PORT_PLAIN"),
 		URL:  os.Getenv("HTTP_URL"),
 	}
-	chatServer := chat.NewServer(16, db)
+	sessionLenght := time.Hour * 720
+	sessionsManager := sessions.New(db, sessionLenght)
+
+	chatServer := chat.NewServer(16, db, sessionsManager)
 
 	wg.Add(1)
 	go chatServer.Router()
