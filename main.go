@@ -29,6 +29,7 @@ import (
 	"sync"
 
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
@@ -58,10 +59,27 @@ func main() {
 	}
 
 	db, err := chat.OpenDbConnection(dbConfig)
-
 	if err != nil {
 		logger.Err("CORE", fmt.Sprintf("Error opening db connection: %v\n", err))
 		return
+	}
+
+	if err := chat.CreateDbTables(db); err != nil {
+		logger.Warn("DB", fmt.Sprintf("Failed to AutoMigrate DB tables: %v", err))
+	}
+
+	if isInitialized := checkIsInitialized(db); !isInitialized {
+		serverBot := &chat.User{Username: "bot", Email: "admin@example.com", DisplayedName: "Bot", AvatarUrl: "/bot.png"}
+		_, err := serverBot.Create(db)
+		if err != nil {
+			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create initial DB user, error: %v", err.Error()))
+			return
+		}
+		logger.Info("CORE", fmt.Sprintf("Created initial DB user: %v", serverBot.Username))
+
+		serverSettings := &chat.ServerSettings{IsInitialized: true}
+		serverSettings.Create(db)
+		logger.Info("CORE", "Created initial DB settings")
 	}
 
 	netConf := cattp.Config{
@@ -96,4 +114,10 @@ func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn
 
 	conn.SetReadLimit(defaultSize)
 	return conn, nil
+}
+
+func checkIsInitialized(db *gorm.DB) bool {
+	var serverSettings *chat.ServerSettings
+	tx := db.Select("is_initialized").First(&serverSettings, "is_initialized = true")
+	return tx.Error == nil
 }
