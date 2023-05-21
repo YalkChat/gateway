@@ -1,11 +1,11 @@
 package sessions
 
 import (
+	"crypto/rand"
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
 	"log"
-	"math/rand"
 )
 
 // TODO: Move to bcrypt from b64
