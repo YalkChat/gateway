@@ -9,8 +9,8 @@ import (
 )
 
 type Credentials struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email,omitempty"`
+	ID       uint   `json:"id"`
+	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -20,7 +20,7 @@ type Claims struct {
 }
 
 type Token = string
-type UserID = int
+type UserID = uint
 type SessionLenght = time.Time
 
 func New(db *gorm.DB, dl time.Duration) *Manager {
@@ -54,8 +54,3 @@ func (s *Session) SetClientCookie(w http.ResponseWriter) {
 func (s *Session) isExpired() bool {
 	return s.Expiry.Before(time.Now())
 }
-
-// func store(db *sql.DB, id string, token string, created time.Time, expires time.Time) (err error) {
-
-// 	return
-// }
