@@ -20,7 +20,7 @@ type Chat struct {
 	CreatedBy   *User      `json:"createdBy,omitempty"`
 	CreatedAt   time.Time  `json:"createdAt,omitempty"`
 	Users       []*User    `gorm:"many2many:chat_users;" json:"users,omitempty"`
-	Messages    []*Message `json:"messages,omitempty"`
+	Messages    []*Message `json:"messages"`
 }
 
 func (chat *Chat) GetInfo(db *gorm.DB) (*Chat, error) {
