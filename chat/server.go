@@ -6,7 +6,6 @@ import (
 	"yalk/chat/clients"
 	"yalk/sessions"
 
-	"github.com/lib/pq"
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
 	"nhooyr.io/websocket"
@@ -75,10 +74,23 @@ type BinaryPayload struct {
 	// Data    []byte `json:"data,omitempty"`
 }
 
-type ChatList struct {
-	ID           uint           `gorm:"id;primaryKey"`
-	Name         string         `gorm:"name" json:"name"`
-	Users        pq.StringArray `gorm:"type:text[];users" json:"users"`
-	CreatedBy    string         `gorm:"createdBy" json:"createdBy"`
-	CreationDate time.Time      `gorm:"creationDate" json:"creationDate"`
+// type ChatList struct {
+// 	ID           uint           `gorm:"id;primaryKey"`
+// 	Name         string         `gorm:"name" json:"name"`
+// 	Users        pq.StringArray `gorm:"type:text[];users" json:"users"`
+// 	CreatedBy    string         `gorm:"createdBy" json:"createdBy"`
+// 	CreationDate time.Time      `gorm:"creationDate" json:"creationDate"`
+// }
+
+type ServerSettings struct {
+	gorm.Model
+	IsInitialized bool `json:"is_initialized"`
+}
+
+func (s *ServerSettings) Create(db *gorm.DB) error {
+	return db.Create(s).Error
+}
+
+func (s *ServerSettings) Update(db *gorm.DB) error {
+	return db.Save(s).Error
 }
