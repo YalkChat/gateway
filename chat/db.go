@@ -2,7 +2,6 @@ package chat
 
 import (
 	"fmt"
-	"yalk/logger"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -27,16 +26,11 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err := createDbTables(gorm); err != nil {
-		logger.Warn("DB", fmt.Sprintf("Failed to migrate DB tables: %v", err))
-	}
-
 	return gorm, nil
 }
 
-func createDbTables(db *gorm.DB) error {
-	err := db.AutoMigrate(&User{}, &Chat{}, &Message{})
-	if err != nil {
+func CreateDbTables(db *gorm.DB) error {
+	if err := db.AutoMigrate(&User{}, &Chat{}, &Message{}, &ServerSettings{}); err != nil {
 		return err
 	}
 	return nil
