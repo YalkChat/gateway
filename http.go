@@ -39,7 +39,7 @@ func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
 	logger.Info("WEBSOCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
 
-	// TODO: Custom config for on admin site
+	// TODO: Custom config for parameters on admin site
 
 	session, err := server.SessionsManager.Validate(server.Db, r, "YLK") // TODO: Separate in other config
 	if err != nil {
@@ -53,13 +53,6 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		log.Println("Error marshaling JWT Token")
 		return
 	}
-
-	_ = &chat.User{ID: uint(session.UserID)}
-
-	// TODO: Here we check if the cookie exist and it's valid
-	// TODO: if it is, we provide a new websocket token
-	// TODO: if not we return a 401 Unauthorized error and redirect
-	// TODO: the user to login
 
 	conn, err := upgradeHttpRequest(w, r)
 	if err != nil {
@@ -96,7 +89,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	wg.Add(1)
 	go server.Sender(client, channelsContext)
 
-	initalPayload, err := makeInitialPayload(server.Db)
+	initalPayload, err := makeInitialPayload(server.Db, session.UserID)
 	if err != nil {
 		logger.Err("CORE", "Error marshalling payload")
 		return
@@ -122,9 +115,9 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })
 
-func makeInitialPayload(db *gorm.DB) ([]byte, error) {
+func makeInitialPayload(db *gorm.DB, userId uint) ([]byte, error) {
 
-	var user = &chat.User{ID: 1}
+	var user = &chat.User{ID: userId}
 	_, err := user.GetInfo(db)
 	if err != nil {
 		return nil, err
