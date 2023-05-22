@@ -7,14 +7,30 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
 )
+
+type Claims struct {
+	jwt.StandardClaims
+}
+
+type Token = string
+type SessionLenght = time.Time
 
 type SessionManager interface {
 	Create(*sql.DB, Token, UserID, SessionLenght) *Session
 	Delete(*sql.DB, string) error
 	Validate(*sql.DB, string) (*Session, error)
 	Read(*sql.DB, string) (*Session, error)
+}
+
+func New(db *gorm.DB, dl time.Duration) *Manager {
+	db.AutoMigrate(&Session{})
+	return &Manager{
+		defaultLenght:  dl,
+		activeSessions: make([]*Session, 0),
+	}
 }
 
 type Manager struct {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"yalk/logger"
-	"yalk/sessions"
 
 	"gorm.io/gorm"
 )
@@ -110,8 +109,8 @@ func newMessage(rawEvent *RawEvent) (*Message, error) {
 	return message, nil
 }
 
-func handleAccountCreate(rawEvent *RawEvent, db *gorm.DB) (*sessions.Account, error) {
-	account := &sessions.Account{}
+func handleAccountCreate(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
+	account := &Account{}
 
 	if err := account.Deserialize(rawEvent.Data); err != nil {
 		logger.Err("HNDL", "Error Deserializing User")

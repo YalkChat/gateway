@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"yalk/sessions"
 
 	"github.com/golang-jwt/jwt"
 	"nhooyr.io/websocket"
@@ -38,7 +37,7 @@ func MakeEventChannels() *EventChannels {
 	return &EventChannels{
 		Messages: make(chan *Message, 1),
 		// Dm:     make(chan *RawEvent, 1),
-		Accounts: make(chan *sessions.Account, 1),
+		Accounts: make(chan *Account, 1),
 		Notify:   make(chan *RawEvent, 1),
 		Cmd:      make(chan *RawEvent),
 		Login:    make(chan *RawEvent),
@@ -48,7 +47,7 @@ func MakeEventChannels() *EventChannels {
 
 type EventChannels struct {
 	Messages chan *Message
-	Accounts chan *sessions.Account
+	Accounts chan *Account
 
 	// Dm     chan *RawEvent
 	Notify chan *RawEvent
