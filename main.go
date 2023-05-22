@@ -77,6 +77,23 @@ func main() {
 		}
 		logger.Info("CORE", fmt.Sprintf("Created initial DB user: %v", serverBot.Username))
 
+		adminUserPwd := "$2a$14$QuxLu/0REKoTuZGcwZwX2eLsNKFrook.QMh/Esd8d4FocaE2sKHca"
+
+		adminCredentials := &sessions.Account{Email: "admin@example.com", Password: adminUserPwd, Username: "admin"}
+
+		if err := adminCredentials.Create(db); err != nil {
+			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create admin credentials, error: %v", err.Error()))
+			return
+		}
+
+		logger.Info("CORE", fmt.Sprintf("Created admin credentials: %v", adminCredentials.Username))
+
+		adminUser := &chat.User{Username: "admin", Email: "admin@example.com", DisplayedName: "Admin", AvatarUrl: "/default.png"}
+
+		adminUser.Create(db)
+
+		logger.Info("CORE", fmt.Sprintf("Created admin user: %v", adminUser.Username))
+
 		serverSettings := &chat.ServerSettings{IsInitialized: true}
 		serverSettings.Create(db)
 		logger.Info("CORE", "Created initial DB settings")

@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -8,11 +9,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type Credentials struct {
+type Account struct {
 	ID       uint   `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func (account *Account) Type() string {
+	return "account"
+}
+
+func (account *Account) Serialize() ([]byte, error) {
+	return json.Marshal(account)
+}
+
+func (account *Account) Deserialize(data []byte) error {
+	return json.Unmarshal(data, account)
+}
+
+func (c *Account) Create(db *gorm.DB) error {
+	return db.Create(&c).Error
 }
 
 type Claims struct {
@@ -24,7 +41,7 @@ type UserID = uint
 type SessionLenght = time.Time
 
 func New(db *gorm.DB, dl time.Duration) *Manager {
-	db.AutoMigrate(&Credentials{}, &Session{})
+	db.AutoMigrate(&Account{}, &Session{})
 	return &Manager{
 		defaultLenght:  dl,
 		activeSessions: make([]*Session, 0),
@@ -32,7 +49,7 @@ func New(db *gorm.DB, dl time.Duration) *Manager {
 }
 
 type Session struct {
-	ID      uint
+	ID      uint `gorm:"primaryKey"`
 	UserID  UserID
 	Token   string `gorm:"primaryKey"`
 	Created time.Time

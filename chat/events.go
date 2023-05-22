@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"yalk/sessions"
 
 	"github.com/golang-jwt/jwt"
 	"nhooyr.io/websocket"
@@ -35,18 +36,21 @@ func (event *RawEvent) Deserialize(jsonEvent []byte) error {
 // TODO: Return &ServerMessageChannels
 func MakeEventChannels() *EventChannels {
 	return &EventChannels{
-		Msg:    make(chan *Message, 1),
-		Dm:     make(chan *RawEvent, 1),
-		Notify: make(chan *RawEvent, 1),
-		Cmd:    make(chan *RawEvent),
-		Login:  make(chan *RawEvent),
-		Logout: make(chan *RawEvent),
+		Messages: make(chan *Message, 1),
+		// Dm:     make(chan *RawEvent, 1),
+		Accounts: make(chan *sessions.Account, 1),
+		Notify:   make(chan *RawEvent, 1),
+		Cmd:      make(chan *RawEvent),
+		Login:    make(chan *RawEvent),
+		Logout:   make(chan *RawEvent),
 	}
 }
 
 type EventChannels struct {
-	Msg    chan *Message
-	Dm     chan *RawEvent
+	Messages chan *Message
+	Accounts chan *sessions.Account
+
+	// Dm     chan *RawEvent
 	Notify chan *RawEvent
 	Cmd    chan *RawEvent
 	Login  chan *RawEvent

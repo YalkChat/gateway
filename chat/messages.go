@@ -11,13 +11,13 @@ import (
 )
 
 type Message struct {
-	ID        uint      `json:"id,omitempty"`
-	UserID    uint      `json:"userId,omitempty"`
-	User      *User     `json:"user,omitempty"`
-	ChatID    uint      `json:"chatId,omitempty"` // convention to use it as Foreign Key
-	Chat      *Chat     `json:"chat,omitempty"`   // message belongs to conversation
-	Timestamp time.Time `json:"timestamp,omitempty"`
-	Content   string    `json:"content,omitempty"`
+	ID        uint      `json:"id"`
+	UserID    uint      `json:"userId"`
+	User      *User     `json:"user"`
+	ChatID    uint      `json:"chatId"` // convention to use it as Foreign Key
+	Chat      *Chat     `json:"chat"`   // message belongs to conversation
+	Timestamp time.Time `json:"timestamp"`
+	Content   string    `json:"content"`
 	// MessageType string    `json:"type,omitempty"`
 }
 

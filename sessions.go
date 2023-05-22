@@ -30,7 +30,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var login *sessions.Credentials
+	var login *sessions.Account
 	// payload, err := io.ReadAll(r.Body)
 	err = json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
@@ -43,7 +43,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	// 	return
 	// }
 
-	dbCredentials := &sessions.Credentials{}
+	dbCredentials := &sessions.Account{}
 
 	if tx := context.Db.First(&dbCredentials, "email = ?", login.Email); tx.Error != nil {
 		return
@@ -85,12 +85,6 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 		return
 	}
 
-	// TODO: Post response for WebSock?
-	// payload, err := json.Marshal("/chat/1")
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	return
-	// }
 	log.Printf("%s succesfully logged in.", dbCredentials.Email)
 	// w.Write(payload)
 	// http.Redirect(w, r, "/chat", http.StatusFound)

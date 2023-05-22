@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -18,6 +19,18 @@ type User struct {
 	LastOffline   time.Time `json:"lastOffline"`
 	IsAdmin       bool      `json:"isAdmin"`
 	Chats         []*Chat   `gorm:"many2many:chat_users;" json:"chats"`
+}
+
+func (user *User) Type() string {
+	return "chat_message"
+}
+
+func (user *User) Serialize() ([]byte, error) {
+	return json.Marshal(user)
+}
+
+func (user *User) Deserialize(data []byte) error {
+	return json.Unmarshal(data, user)
 }
 
 // * We both return and assign to the user to allow method chaining.

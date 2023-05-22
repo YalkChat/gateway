@@ -38,7 +38,7 @@ func (server *Server) SendToChat(message *Message, payload []byte) {
 func (server *Server) Router() {
 	for {
 		select {
-		case message := <-server.Channels.Msg:
+		case message := <-server.Channels.Messages:
 			logger.Info("ROUTER", "Router: Broadcast message received")
 
 			serializedData, err := message.Serialize()
