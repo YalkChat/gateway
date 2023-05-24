@@ -5,14 +5,12 @@ import (
 	"time"
 )
 
-type UserID uint
-
 type Session struct {
-	ID      uint `gorm:"primaryKey"`
-	UserID  UserID
-	Token   string `gorm:"primaryKey"`
-	Created time.Time
-	Expiry  time.Time
+	ID        uint `gorm:"primaryKey"`
+	AccountID uint
+	Token     string `gorm:"primaryKey"`
+	Created   time.Time
+	Expiry    time.Time
 }
 
 func (s *Session) SetClientCookie(w http.ResponseWriter) {
@@ -22,8 +20,8 @@ func (s *Session) SetClientCookie(w http.ResponseWriter) {
 		Expires: s.Expiry,
 		// SameSite: http.SameSiteNoneMode,
 		// Secure:   true, //! SET AGAIN WHEN USING HTTPS
-		HttpOnly: true,
-		Path:     "/",
+		// HttpOnly: true,
+		Path: "/",
 	})
 }
 
