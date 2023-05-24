@@ -19,7 +19,7 @@ type Token = string
 type SessionLenght = time.Time
 
 type SessionManager interface {
-	Create(*sql.DB, Token, UserID, SessionLenght) *Session
+	Create(*sql.DB, Token, uint, SessionLenght) *Session
 	Delete(*sql.DB, string) error
 	Validate(*sql.DB, string) (*Session, error)
 	Read(*sql.DB, string) (*Session, error)
@@ -40,7 +40,7 @@ type Manager struct {
 
 // !!!!!!! JUST USE REDIS INSTEAD!!!!!!!
 // TODO: Some decent in error checking would be nice
-func (sm *Manager) Create(db *gorm.DB, token Token, id UserID, lenght SessionLenght) (*Session, error) {
+func (sm *Manager) Create(db *gorm.DB, token Token, id uint, lenght SessionLenght) (*Session, error) {
 	var _lenght time.Time = time.Now().Add(sm.defaultLenght)
 
 	if !lenght.IsZero() {
@@ -48,10 +48,10 @@ func (sm *Manager) Create(db *gorm.DB, token Token, id UserID, lenght SessionLen
 	}
 
 	session := &Session{
-		UserID:  id,
-		Token:   token,
-		Created: time.Now(),
-		Expiry:  _lenght,
+		AccountID: id,
+		Token:     token,
+		Created:   time.Now(),
+		Expiry:    _lenght,
 	}
 
 	if tx := db.Create(&session); tx.Error != nil {
@@ -97,7 +97,7 @@ func (sm *Manager) Validate(db *gorm.DB, r *http.Request, cookieName string) (*S
 	if session.isExpired() {
 		sm.Delete(db, session.Token)
 
-		sm.activeSessions[session.UserID] = nil
+		sm.activeSessions[session.AccountID] = nil
 
 		log.Println("Session expired, removed")
 		return nil, errors.New("expired")
