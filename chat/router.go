@@ -17,6 +17,14 @@ func (server *Server) SendToChat(message *Message, payload []byte) {
 	}
 }
 
+func (server *Server) SendBack(id uint, payload []byte) {
+	if client, ok := server.Clients[id]; ok {
+		client.Msgs <- payload
+	}
+}
+
+func (server *Server) SendToAdmins(message *Message, payload []byte) {}
+
 // Send to one or multiple connected clients
 // func (server *Server[T]) SendMessageToAll(event *Event) {
 // 	payload, err := EncodeEventMessage(event)
@@ -55,10 +63,13 @@ func (server *Server) Router() {
 
 			server.SendToChat(message, jsonEvent)
 
-			// case event := <-server.Channels.Dm:
-			// 	logger.Info("ROUTER", "Router: Dm received")
-
-			// server.SendMessageToAll(event)
+		case rawEvent := <-server.Channels.Accounts:
+			logger.Info("ROUTER", "Router: Account event received")
+			jsonEvent, err := json.Marshal(rawEvent)
+			if err != nil {
+				logger.Err("ROUTER", "Error serializing RawEvent")
+			}
+			server.SendBack(rawEvent.UserID, jsonEvent)
 
 		}
 	}
