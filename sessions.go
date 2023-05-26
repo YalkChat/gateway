@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 	"yalk/cattp"
 	"yalk/chat"
+	"yalk/logger"
 	"yalk/sessions"
 
 	"github.com/golang-jwt/jwt"
@@ -18,11 +20,16 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 
 	dbSession, err := context.SessionsManager.Validate(context.Db, r, "YLK")
 
+	if err != nil && err.Error() != "cookie_not_found" {
+		logger.Err("SESS", "Validation failed")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	if err == nil {
 		// TODO: Extend session upon device validation
 		log.Println("Session found - redirecting to app")
 		dbSession.SetClientCookie(w)
-		w.WriteHeader(http.StatusAccepted)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
@@ -30,26 +37,31 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var login *sessions.Account
+	var login *chat.Account
 	// payload, err := io.ReadAll(r.Body)
 	err = json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		panic(err)
+		logger.Err("SESS", fmt.Sprintf("Failed to decode login request: %v", err))
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	// if err != nil {
-	// 	log.Println("Can't get credentials from DB, wrong Email/Username")
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	return
-	// }
-
-	dbCredentials := &sessions.Account{}
+	dbCredentials := &chat.Account{}
 
 	if tx := context.Db.First(&dbCredentials, "email = ?", login.Email); tx.Error != nil {
+		log.Println("Can't get credentials from DB, wrong Email/Username")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if login.Email == "" {
+		log.Println("Empty Email")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if login.Password == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("Empty password")
 		return
 	}
@@ -57,7 +69,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	err = bcrypt.CompareHashAndPassword([]byte(dbCredentials.Password), []byte(login.Password))
 	if err != nil {
 		log.Println("Incorrect password")
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -71,17 +83,22 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	authToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := authToken.SignedString(jwtKey)
 	if err != nil {
+		logger.Err("SESS", fmt.Sprintf("Error signing token: %v", err))
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session, err := context.SessionsManager.Create(context.Db, token, dbCredentials.ID, time.Time{})
 	if err != nil {
+		logger.Err("SESS", fmt.Sprintf("Error creating session: %v", err))
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session.SetClientCookie(w) // TODO: Reimplement for JWT and WebSession
 	if err != nil {
-		log.Println("Error marshaling JWT Token")
+		logger.Err("SESS", fmt.Sprintf("Error setting client cookie: %v", err))
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -110,7 +127,7 @@ var validateHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter,
 	// session.SetClientCookie(w)
 	// TODO: Post response for WebSock?
 	w.Header().Add("Content-Type", "application/json")
-	log.Printf("[%d][ID %v] Validated Session\n", http.StatusOK, session.UserID)
+	log.Printf("[%d][ID %v] Validated Session\n", http.StatusOK, session.AccountID)
 	w.WriteHeader(http.StatusOK)
 })
 
