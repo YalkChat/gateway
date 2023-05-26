@@ -63,9 +63,32 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	}
 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
+	account := &chat.Account{}
+	account.ID = session.AccountID
+
+	if err = account.GetInfo(server.Db); err != nil {
+		logger.Err("WEBSOCK", fmt.Sprintf("Can't get account info - %s", r.RemoteAddr))
+		w.WriteHeader(http.StatusInternalServerError)
+		r.Body.Close()
+		return
+	}
+
+	var user *chat.User
+	tx := server.Db.Preload("Account").Preload("Chats").Preload("Chats.ChatType").Find(&user, "account_id =?", account.ID)
+	if tx.Error != nil {
+		logger.Err("WEBSOCK", fmt.Sprintf("Can't get user info - %s", r.RemoteAddr))
+		w.WriteHeader(http.StatusInternalServerError)
+		r.Body.Close()
+		return
+	}
+
+	// // user := &chat.User{ID: account.ID}
+	// if _, err := user.GetInfo(server.Db); err != nil {
+	// 	logger.Err("WEBSOCK", fmt.Sprintf("Can't get user info - %s", r.RemoteAddr))
+	// }
 
 	// Todo: Use profile instead of User ID?
-	client := server.RegisterClient(conn, 1)
+	client := server.RegisterClient(conn, user.ID)
 
 	notify := make(chan bool)
 
@@ -89,7 +112,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	wg.Add(1)
 	go server.Sender(client, channelsContext)
 
-	initalPayload, err := makeInitialPayload(server.Db, session.UserID)
+	initalPayload, err := makeInitialPayload(server.Db, user)
 	if err != nil {
 		logger.Err("CORE", "Error marshalling payload")
 		return
@@ -115,13 +138,7 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
 })
 
-func makeInitialPayload(db *gorm.DB, userId uint) ([]byte, error) {
-
-	var user = &chat.User{ID: userId}
-	_, err := user.GetInfo(db)
-	if err != nil {
-		return nil, err
-	}
+func makeInitialPayload(db *gorm.DB, user *chat.User) ([]byte, error) {
 
 	var chats *[]chat.Chat
 	tx := db.Joins("left join chat_users on chat_users.chat_id=chats.id").
@@ -134,12 +151,28 @@ func makeInitialPayload(db *gorm.DB, userId uint) ([]byte, error) {
 		return nil, tx.Error
 	}
 
-	temp := struct {
-		User  *chat.User   `json:"user,omitempty"`
-		Chats *[]chat.Chat `json:"chats,omitempty"`
-	}{user, chats}
+	var serverAccounts *[]chat.Account
+	if user.IsAdmin {
+		tx = db.Find(&serverAccounts)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
+	}
 
-	jsonPayload, err := json.Marshal(&temp)
+	var users *[]chat.User
+	tx = db.Find(&users)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	initialPayload := struct {
+		User     *chat.User      `json:"user"`
+		Chats    *[]chat.Chat    `json:"chats"`
+		Accounts *[]chat.Account `json:"accounts,omitempty"`
+		Users    *[]chat.User    `json:"users"`
+	}{user, chats, serverAccounts, users}
+
+	jsonPayload, err := json.Marshal(&initialPayload)
 	if err != nil {
 		return nil, err
 	}
@@ -154,3 +187,26 @@ func makeInitialPayload(db *gorm.DB, userId uint) ([]byte, error) {
 
 	return jsonEvent, nil
 }
+
+var signupHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
+	defer r.Body.Close()
+
+	cookie, err := r.Cookie("YLK")
+	if err != nil {
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:   "YLK",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+
+	err = context.SessionsManager.Delete(context.Db, cookie.Value) // TODO: Even just a property on the SessionManager is ok
+	if err != nil {
+		log.Println("Error deleting session", err)
+	}
+	log.Println("Signed out")
+	w.WriteHeader(http.StatusOK)
+})
