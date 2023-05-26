@@ -71,7 +71,7 @@ func (sm *Manager) Validate(db *gorm.DB, r *http.Request, cookieName string) (*S
 
 	cookie, err := r.Cookie("YLK")
 	if err != nil {
-		return nil, err
+		return nil, errors.New("cookie_missing")
 	}
 
 	err = cookie.Valid()
