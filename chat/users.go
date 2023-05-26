@@ -10,8 +10,8 @@ import (
 
 type User struct {
 	ID            uint      `json:"userId"`
-	Username      string    `json:"username"`
-	Email         string    `json:"email"`
+	AccountID     uint      `json:"accountId"`
+	Account       *Account  `json:"account"`
 	DisplayedName string    `json:"displayName"`
 	AvatarUrl     string    `json:"avatarUrl"`
 	IsOnline      bool      `json:"isOnline"`
@@ -34,25 +34,12 @@ func (user *User) Deserialize(data []byte) error {
 }
 
 // * We both return and assign to the user to allow method chaining.
-func (user *User) Create(db *gorm.DB) (*User, error) {
-
-	tx := db.Create(&user)
-
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	return user, nil
+func (user *User) Create(db *gorm.DB) error {
+	return db.Create(&user).Error
 }
 
-func (user *User) GetInfo(db *gorm.DB) (*User, error) {
-
-	tx := db.Preload("Chats").Preload("Chats.ChatType").Find(&user)
-
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	return user, nil
+func (user *User) GetInfo(db *gorm.DB) error {
+	return db.Preload("Chats").Preload("Chats.ChatType").Preload("Account").Find(&user).Error
 }
 
 func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
