@@ -19,7 +19,7 @@ type Event interface {
 
 type RawEvent struct {
 	Type   string          `gorm:"-" json:"type"`
-	UserID string          `gorm:"-" json:"userId"`
+	UserID uint            `gorm:"-" json:"userId"`
 	Token  jwt.Token       `gorm:"-" json:"token"`
 	Data   json.RawMessage `gorm:"-" json:"data"`
 }
@@ -37,7 +37,8 @@ func MakeEventChannels() *EventChannels {
 	return &EventChannels{
 		Messages: make(chan *Message, 1),
 		// Dm:     make(chan *RawEvent, 1),
-		Accounts: make(chan *Account, 1),
+		Accounts: make(chan *RawEvent, 1),
+		Users:    make(chan *User, 1),
 		Notify:   make(chan *RawEvent, 1),
 		Cmd:      make(chan *RawEvent),
 		Login:    make(chan *RawEvent),
@@ -47,7 +48,8 @@ func MakeEventChannels() *EventChannels {
 
 type EventChannels struct {
 	Messages chan *Message
-	Accounts chan *Account
+	Accounts chan *RawEvent
+	Users    chan *User
 
 	// Dm     chan *RawEvent
 	Notify chan *RawEvent
