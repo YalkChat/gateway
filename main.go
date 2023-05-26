@@ -69,30 +69,32 @@ func main() {
 	}
 
 	if isInitialized := checkIsInitialized(db); !isInitialized {
-		serverBot := &chat.User{Username: "bot", Email: "admin@example.com", DisplayedName: "Bot", AvatarUrl: "/bot.png"}
-		_, err := serverBot.Create(db)
-		if err != nil {
+
+		if err := createBotUser(db); err != nil {
 			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create initial DB user, error: %v", err.Error()))
+		}
+		logger.Info("CORE", "Created Bot user")
+
+		adminUser, err := createAdmin(db)
+		if err != nil {
 			return
 		}
-		logger.Info("CORE", fmt.Sprintf("Created initial DB user: %v", serverBot.Username))
+		logger.Info("CORE", "Admin creation succesful")
 
-		adminUserPwd := "$2a$14$QuxLu/0REKoTuZGcwZwX2eLsNKFrook.QMh/Esd8d4FocaE2sKHca"
-
-		adminCredentials := &sessions.Account{Email: "admin@example.com", Password: adminUserPwd, Username: "admin"}
-
-		if err := adminCredentials.Create(db); err != nil {
-			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create admin credentials, error: %v", err.Error()))
-			return
+		chatType := &chat.ChatType{Type: "channel"}
+		tx := db.Create(chatType)
+		if tx.Error != nil {
+			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create chat type, error: %v", tx.Error))
 		}
+		logger.Info("CORE", "Channel type creation succesful")
 
-		logger.Info("CORE", fmt.Sprintf("Created admin credentials: %v", adminCredentials.Username))
+		mainChat := &chat.Chat{Name: "Main", ChatType: chatType, CreatedBy: adminUser, Users: []*chat.User{adminUser}}
 
-		adminUser := &chat.User{Username: "admin", Email: "admin@example.com", DisplayedName: "Admin", AvatarUrl: "/default.png"}
-
-		adminUser.Create(db)
-
-		logger.Info("CORE", fmt.Sprintf("Created admin user: %v", adminUser.Username))
+		tx = db.Create(mainChat)
+		if tx.Error != nil {
+			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create main chat, error: %v", tx.Error))
+		}
+		logger.Info("CORE", "Main chat creation succesful")
 
 		serverSettings := &chat.ServerSettings{IsInitialized: true}
 		serverSettings.Create(db)
@@ -118,6 +120,28 @@ func main() {
 	wg.Wait()
 }
 
+func createAdmin(db *gorm.DB) (*chat.User, error) {
+	// ! Hash for default admin's "admin" password in BCrypt, it will not be this and
+	// ! not be set this way.
+	adminAccountPwd := "$2a$14$QuxLu/0REKoTuZGcwZwX2eLsNKFrook.QMh/Esd8d4FocaE2sKHca"
+	adminAccount := &chat.Account{Email: "admin@example.com", Username: "admin", Password: adminAccountPwd, Verified: true}
+	err := adminAccount.Create(db)
+	if err != nil {
+		logger.Err("CORE", fmt.Sprintf("FATAL - Can't create admin credentials, error: %v", err))
+		return nil, err
+	}
+	logger.Info("CORE", fmt.Sprintf("Created admin credentials: %v", adminAccount.Username))
+
+	adminUser := &chat.User{Account: adminAccount, DisplayedName: "Admin", AvatarUrl: "/default.png"}
+	err = adminUser.Create(db)
+	if err != nil {
+		logger.Err("CORE", fmt.Sprintf("FATAL - Can't create admin profile, error: %v", err.Error()))
+		return nil, err
+	}
+	logger.Info("CORE", fmt.Sprintf("Created admin user: %v", adminUser.DisplayedName))
+	return adminUser, nil
+}
+
 func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	var defaultOptions = &websocket.AcceptOptions{CompressionMode: websocket.CompressionNoContextTakeover, InsecureSkipVerify: true}
 	var defaultSize int64 = 2097152 // 2Mb in bytes
@@ -137,4 +161,21 @@ func checkIsInitialized(db *gorm.DB) bool {
 	var serverSettings *chat.ServerSettings
 	tx := db.Select("is_initialized").First(&serverSettings, "is_initialized = true")
 	return tx.Error == nil
+}
+
+func createBotUser(db *gorm.DB) error {
+	botAccountPwd := "none"
+	botAccount := &chat.Account{Email: "invalid@example.com", Username: "bot", Password: botAccountPwd, Verified: false}
+	err := botAccount.Create(db)
+	if err != nil {
+		logger.Err("CORE", fmt.Sprintf("FATAL - Can't create bot credentials, error: %v", err))
+		return nil
+	}
+	logger.Info("CORE", fmt.Sprintf("Created bot credentials: %v", botAccount.Username))
+	serverBot := &chat.User{DisplayedName: "Bot", AvatarUrl: "/bot.png", Account: botAccount}
+	err = serverBot.Create(db)
+	if err != nil {
+		return err
+	}
+	return nil
 }
