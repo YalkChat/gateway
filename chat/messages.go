@@ -34,7 +34,6 @@ func (message *Message) Deserialize(data []byte) error {
 }
 
 func (message *Message) SaveToDb(db *gorm.DB) error {
-	message.UserID = 1 // ! Debug
 	tx := db.Create(message)
 	if tx.Error != nil {
 		tx.Rollback()
