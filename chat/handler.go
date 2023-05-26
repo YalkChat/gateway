@@ -10,19 +10,17 @@ import (
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
-func (server *Server) HandlePayload(clientId uint, jsonEventMessage []byte) error {
-	rawEvent := &RawEvent{}
+func (server *Server) HandleIncomingEvent(clientID uint, jsonEventMessage []byte) error {
+
+	rawEvent := &RawEvent{UserID: clientID}
 
 	if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
 		logger.Err("HNDL", "Error unmarshaling RawEvent")
 		return err
 	}
 
-	// server.SessionsManager.Validate()
-
 	switch rawEvent.Type {
 	case "chat_message":
-
 		message, err := handleChatMessage(rawEvent, server.Db)
 		if err != nil {
 			return err
@@ -36,12 +34,25 @@ func (server *Server) HandlePayload(clientId uint, jsonEventMessage []byte) erro
 	case "user_login":
 		server.Channels.Notify <- rawEvent
 
+	// ? Non forwarded events - server only
 	case "account_create":
-		account, err := handleAccountCreate(rawEvent, server.Db)
+		newAccount, err := handleAccountCreate(rawEvent, server.Db)
 		if err != nil {
 			return err
 		}
-		server.Channels.Accounts <- account
+		// // TODO: To move to initial profile setup
+		// newUser, err := handleUserCreate(rawEvent, server.Db, newAccount)
+		// if err != nil {
+		// 	return err
+		// }
+		serializedData, err := newAccount.Serialize()
+		if err != nil {
+			logger.Err("ROUTER", "Error serializing")
+		}
+
+		rawEvent.Data = serializedData
+
+		server.Channels.Accounts <- rawEvent
 
 	case "user_logout":
 		server.Channels.Notify <- rawEvent
@@ -66,9 +77,10 @@ func (server *Server) HandlePayload(clientId uint, jsonEventMessage []byte) erro
 }
 
 func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
-	message, err := newMessage(rawEvent)
-	if err != nil {
-		logger.Err("HNDL", "Error creating Chat Message")
+	message := &Message{UserID: rawEvent.UserID}
+
+	if err := message.Deserialize(rawEvent.Data); err != nil {
+		logger.Err("HNDL", "Error Deserializing Chat Message")
 		return nil, err
 	}
 
@@ -78,35 +90,20 @@ func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 	}
 
 	message.User = &User{ID: message.UserID}
-	message.User.GetInfo(db)
-	if err != nil {
+	if err := message.User.GetInfo(db); err != nil {
 		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", message.UserID))
 		return nil, err
 	}
 
 	message.Chat = &Chat{ID: message.ChatID}
-	message.Chat.GetInfo(db)
-	if err != nil {
+
+	if _, err := message.Chat.GetInfo(db); err != nil {
 		logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
 		return nil, err
 	}
 
-	// if err != nil {
-	// 	logger.Err("PROFILE", fmt.Sprintf("Error getting Chat ID: %d\n", message.ChatID))
-	// 	return nil, err
-	// }
 	return message, nil
 
-}
-
-func newMessage(rawEvent *RawEvent) (*Message, error) {
-	message := &Message{}
-
-	if err := message.Deserialize(rawEvent.Data); err != nil {
-		logger.Err("HNDL", "Error Deserializing Chat Message")
-		return nil, err
-	}
-	return message, nil
 }
 
 func handleAccountCreate(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
@@ -121,7 +118,24 @@ func handleAccountCreate(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
 		logger.Err("HNDL", fmt.Sprintf("Error Creating Account: %d\n", account.ID))
 		return nil, err
 	}
-	logger.Err("HNDL", "Error Deserializing User")
+
 	logger.Info("HNDL", fmt.Sprintf("Account Created: %d\n", account.ID))
 	return account, nil
+}
+
+func handleUserCreate(rawEvent *RawEvent, db *gorm.DB, account *Account) (*User, error) {
+	user := &User{Account: account}
+
+	if err := user.Deserialize(rawEvent.Data); err != nil {
+		logger.Err("HNDL", "Error Deserializing User")
+		return nil, err
+	}
+
+	if err := user.Create(db); err != nil {
+		logger.Err("HNDL", fmt.Sprintf("Error Creating User: %d\n", user.ID))
+		return nil, err
+	}
+
+	logger.Info("HNDL", fmt.Sprintf("User Created: %d\n", user.ID))
+	return user, nil
 }
