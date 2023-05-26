@@ -20,7 +20,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 
 	dbSession, err := context.SessionsManager.Validate(context.Db, r, "YLK")
 
-	if err != nil && err.Error() != "cookie_not_found" {
+	if err != nil && err.Error() != "cookie_missing" {
 		logger.Err("SESS", "Validation failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
