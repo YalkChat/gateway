@@ -30,7 +30,7 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 }
 
 func CreateDbTables(db *gorm.DB) error {
-	if err := db.AutoMigrate(&Account{}, &User{}, &Chat{}, &Message{}, &ServerSettings{}); err != nil {
+	if err := db.AutoMigrate(&Account{}, &User{}, &Chat{}, &Message{}, &ServerSettings{}, &Status{}); err != nil {
 		return err
 	}
 	return nil

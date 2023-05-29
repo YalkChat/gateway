@@ -15,6 +15,8 @@ type User struct {
 	DisplayedName string    `json:"displayName"`
 	AvatarUrl     string    `json:"avatarUrl"`
 	IsOnline      bool      `json:"isOnline"`
+	StatusName    string    `gorm:"foreignKey:Name" json:"statusName"`
+	Status        *Status   `json:"status"`
 	LastLogin     time.Time `json:"lastLogin"`
 	LastOffline   time.Time `json:"lastOffline"`
 	IsAdmin       bool      `json:"isAdmin"`
@@ -38,8 +40,12 @@ func (user *User) Create(db *gorm.DB) error {
 	return db.Create(&user).Error
 }
 
+func (user *User) SaveToDb(db *gorm.DB) error {
+	return db.Save(&user).Error
+}
+
 func (user *User) GetInfo(db *gorm.DB) error {
-	return db.Preload("Chats").Preload("Chats.ChatType").Preload("Account").Find(&user).Error
+	return db.Preload("Chats").Preload("Chats.ChatType").Preload("Account").Preload("Status").First(&user).Error
 }
 
 func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
@@ -51,6 +57,10 @@ func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
 	}
 	return chats, nil
 }
+
+// func (user *User) ChangeStatus(db *gorm.DB, statusName string) error {
+// 	return db.Model(user).Update("status_name", statusName).Error
+// }
 
 func (user *User) CheckValid() (*User, error) {
 	if user.ID == 0 {

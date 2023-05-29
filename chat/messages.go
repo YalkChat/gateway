@@ -22,7 +22,7 @@ type Message struct {
 }
 
 func (message *Message) Type() string {
-	return "chat_message"
+	return "message"
 }
 
 func (message *Message) Serialize() ([]byte, error) {

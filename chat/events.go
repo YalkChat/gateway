@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"nhooyr.io/websocket"
 )
 
@@ -19,8 +18,8 @@ type Event interface {
 
 type RawEvent struct {
 	Type   string          `gorm:"-" json:"type"`
+	Action string          `gorm:"-" json:"action"`
 	UserID uint            `gorm:"-" json:"userId"`
-	Token  jwt.Token       `gorm:"-" json:"token"`
 	Data   json.RawMessage `gorm:"-" json:"data"`
 }
 
@@ -36,9 +35,8 @@ func (event *RawEvent) Deserialize(jsonEvent []byte) error {
 func MakeEventChannels() *EventChannels {
 	return &EventChannels{
 		Messages: make(chan *Message, 1),
-		// Dm:     make(chan *RawEvent, 1),
 		Accounts: make(chan *RawEvent, 1),
-		Users:    make(chan *User, 1),
+		Users:    make(chan *RawEvent, 1),
 		Notify:   make(chan *RawEvent, 1),
 		Cmd:      make(chan *RawEvent),
 		Login:    make(chan *RawEvent),
@@ -49,13 +47,11 @@ func MakeEventChannels() *EventChannels {
 type EventChannels struct {
 	Messages chan *Message
 	Accounts chan *RawEvent
-	Users    chan *User
-
-	// Dm     chan *RawEvent
-	Notify chan *RawEvent
-	Cmd    chan *RawEvent
-	Login  chan *RawEvent
-	Logout chan *RawEvent
+	Users    chan *RawEvent
+	Notify   chan *RawEvent
+	Cmd      chan *RawEvent
+	Login    chan *RawEvent
+	Logout   chan *RawEvent
 }
 
 type EventContext struct {

@@ -5,43 +5,7 @@ import (
 	"yalk/logger"
 )
 
-// Echoing to client is default behavior for error checking.
-
-// Broadcast to all
-// TODO: Error checking
-func (server *Server) SendToChat(message *Message, payload []byte) {
-	for _, user := range message.Chat.Users {
-		if client, ok := server.Clients[user.ID]; ok {
-			client.Msgs <- payload
-		}
-	}
-}
-
-func (server *Server) SendBack(id uint, payload []byte) {
-	if client, ok := server.Clients[id]; ok {
-		client.Msgs <- payload
-	}
-}
-
-func (server *Server) SendToAdmins(message *Message, payload []byte) {}
-
-// Send to one or multiple connected clients
-// func (server *Server[T]) SendMessageToAll(event *Event) {
-// 	payload, err := EncodeEventMessage(event)
-
-// 	if err != nil {
-// 		logger.Err("ROUTER", "Error encoding payload")
-// 	}
-
-// 	// TODO: New logic
-// 	for _, id := range event.Receivers {
-// 		wsClient := server.Clients[id]
-// 		if wsClient != nil {
-
-// 			wsClient.Msgs <- payload
-// 		}
-// 	}
-// }
+// func (server *Server) SendToAdmins(message *Message, payload []byte) {}
 
 func (server *Server) Router() {
 	for {
@@ -54,7 +18,7 @@ func (server *Server) Router() {
 				logger.Err("ROUTER", "Error serializing")
 			}
 
-			newRawEvent := RawEvent{Type: message.Type(), Data: serializedData}
+			newRawEvent := RawEvent{UserID: message.UserID, Type: message.Type(), Data: serializedData}
 
 			jsonEvent, err := json.Marshal(newRawEvent)
 			if err != nil {
@@ -71,6 +35,36 @@ func (server *Server) Router() {
 			}
 			server.SendBack(rawEvent.UserID, jsonEvent)
 
+		case rawEvent := <-server.Channels.Users:
+			logger.Info("ROUTER", "Router: User event received")
+			jsonEvent, err := json.Marshal(rawEvent)
+			if err != nil {
+				logger.Err("ROUTER", "Error serializing RawEvent")
+			}
+			server.SendAll(jsonEvent)
 		}
+	}
+}
+
+// Echoing to client is default behavior for error checking.
+
+// TODO: Error checking
+func (server *Server) SendToChat(message *Message, payload []byte) {
+	for _, user := range message.Chat.Users {
+		if client, ok := server.Clients[user.ID]; ok {
+			client.Msgs <- payload
+		}
+	}
+}
+
+func (server *Server) SendBack(id uint, payload []byte) {
+	if client, ok := server.Clients[id]; ok {
+		client.Msgs <- payload
+	}
+}
+
+func (server *Server) SendAll(payload []byte) {
+	for _, client := range server.Clients {
+		client.Msgs <- payload
 	}
 }

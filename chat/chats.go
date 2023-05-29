@@ -1,8 +1,6 @@
 package chat
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -12,15 +10,15 @@ type ChatType struct {
 }
 
 type Chat struct {
-	ID          uint       `json:"id,omitempty"`
-	Name        string     `json:"name,omitempty"`
-	ChatTypeID  uint       `json:"chatTypeID,omitempty"`
-	ChatType    *ChatType  `json:"chatType"`
-	CreatedByID uint       `json:"createdByID,omitempty"`
-	CreatedBy   *User      `json:"createdBy,omitempty"`
-	CreatedAt   time.Time  `json:"createdAt,omitempty"`
-	Users       []*User    `gorm:"many2many:chat_users;" json:"users,omitempty"`
-	Messages    []*Message `json:"messages"`
+	ID          uint      `json:"id,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	ChatTypeID  uint      `json:"chatTypeID,omitempty"`
+	ChatType    *ChatType `json:"chatType"`
+	CreatedByID uint      `json:"createdByID,omitempty"`
+	CreatedBy   *User     `json:"createdBy,omitempty"`
+	// CreatedAt   time.Time  `json:"createdAt,omitempty"`
+	Users    []*User    `gorm:"many2many:chat_users;" json:"users,omitempty"`
+	Messages []*Message `json:"messages"`
 }
 
 func (chat *Chat) GetInfo(db *gorm.DB) (*Chat, error) {

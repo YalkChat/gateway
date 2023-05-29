@@ -20,23 +20,19 @@ func (server *Server) HandleIncomingEvent(clientID uint, jsonEventMessage []byte
 	}
 
 	switch rawEvent.Type {
-	case "chat_message":
-		message, err := handleChatMessage(rawEvent, server.Db)
+	case "message":
+		newMessage, err := handleMessage(rawEvent, server.Db)
 		if err != nil {
 			return err
 		}
-		server.Channels.Messages <- message
-
-	case "direct_message":
-
-		// server.Channels.Dm <- rawEvent
+		server.Channels.Messages <- newMessage
 
 	case "user_login":
 		server.Channels.Notify <- rawEvent
 
 	// ? Non forwarded events - server only
-	case "account_create":
-		newAccount, err := handleAccountCreate(rawEvent, server.Db)
+	case "account":
+		newAccount, err := handleAccount(rawEvent, server.Db)
 		if err != nil {
 			return err
 		}
@@ -54,20 +50,18 @@ func (server *Server) HandleIncomingEvent(clientID uint, jsonEventMessage []byte
 
 		server.Channels.Accounts <- rawEvent
 
-	case "user_logout":
-		server.Channels.Notify <- rawEvent
+	case "user":
+		updateUser, err := handleUser(rawEvent, server.Db)
+		if err != nil {
+			return err
+		}
+		serializedData, err := updateUser.Serialize()
+		if err != nil {
+			logger.Err("ROUTER", "Error serializing")
+		}
 
-	case "user_update":
-		server.Channels.Notify <- rawEvent
-
-	case "chat_create":
-		server.Channels.Notify <- rawEvent
-
-	case "chat_delete":
-		server.Channels.Notify <- rawEvent
-
-	case "chat_join":
-		server.Channels.Notify <- rawEvent
+		rawEvent.Data = serializedData
+		server.Channels.Users <- rawEvent
 
 	default:
 		logger.Warn("HNDL", "Payload Handler received an invalid event type")
@@ -76,41 +70,76 @@ func (server *Server) HandleIncomingEvent(clientID uint, jsonEventMessage []byte
 	return nil
 }
 
-func handleChatMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
-	message := &Message{UserID: rawEvent.UserID}
+func handleMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
+	var user *User
+	var message *Message
+	var chat *Chat
 
-	if err := message.Deserialize(rawEvent.Data); err != nil {
-		logger.Err("HNDL", "Error Deserializing Chat Message")
-		return nil, err
+	switch rawEvent.Action {
+	case "send":
+		user = &User{ID: rawEvent.UserID}
+		if err := user.GetInfo(db); err != nil {
+			logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", rawEvent.UserID))
+			return nil, err
+
+		}
+
+		message = &Message{UserID: rawEvent.UserID, User: user}
+		if err := message.Deserialize(rawEvent.Data); err != nil {
+			logger.Err("HNDL", "Error Deserializing Chat Message")
+			return nil, err
+		}
+
+		chat = &Chat{ID: message.ChatID}
+		if _, err := chat.GetInfo(db); err != nil {
+			logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
+			return nil, err
+		}
+
+		message.Chat = chat
+
+		if err := message.SaveToDb(db); err != nil {
+			logger.Err("HNDL", "Error saving to DB Chat Message")
+			return nil, err
+		}
+
 	}
-
-	if err := message.SaveToDb(db); err != nil {
-		logger.Err("HNDL", "Error saving to DB Chat Message")
-		return nil, err
-	}
-
-	message.User = &User{ID: message.UserID}
-	if err := message.User.GetInfo(db); err != nil {
-		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", message.UserID))
-		return nil, err
-	}
-
-	message.Chat = &Chat{ID: message.ChatID}
-
-	if _, err := message.Chat.GetInfo(db); err != nil {
-		logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
-		return nil, err
-	}
-
 	return message, nil
+
+	// message := &Message{UserID: rawEvent.UserID}
+
+	// if err := message.Deserialize(rawEvent.Data); err != nil {
+	// 	logger.Err("HNDL", "Error Deserializing Chat Message")
+	// 	return nil, err
+	// }
+
+	// if err := message.SaveToDb(db); err != nil {
+	// 	logger.Err("HNDL", "Error saving to DB Chat Message")
+	// 	return nil, err
+	// }
+
+	// message.User = &User{ID: message.UserID}
+	// if err := message.User.GetInfo(db); err != nil {
+	// 	logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", message.UserID))
+	// 	return nil, err
+	// }
+
+	// message.Chat = &Chat{ID: message.ChatID}
+
+	// if _, err := message.Chat.GetInfo(db); err != nil {
+	// 	logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
+	// 	return nil, err
+	// }
+
+	// return message, nil
 
 }
 
-func handleAccountCreate(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
+func handleAccount(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
 	account := &Account{}
 
 	if err := account.Deserialize(rawEvent.Data); err != nil {
-		logger.Err("HNDL", "Error Deserializing User")
+		logger.Err("HNDL", "Error Deserializing Account")
 		return nil, err
 	}
 
@@ -137,5 +166,49 @@ func handleUserCreate(rawEvent *RawEvent, db *gorm.DB, account *Account) (*User,
 	}
 
 	logger.Info("HNDL", fmt.Sprintf("User Created: %d\n", user.ID))
+	return user, nil
+}
+
+func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
+	var user = &User{ID: rawEvent.UserID}
+	// var status = &Status{}
+
+	if err := user.GetInfo(db); err != nil {
+		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", user.ID))
+		return nil, err
+	}
+
+	switch rawEvent.Action {
+	case "change_status":
+		if err := user.Deserialize(rawEvent.Data); err != nil {
+			logger.Err("HNDL", "Error Deserializing User")
+			return nil, err
+		}
+		// user.ChangeStatus(db, user.StatusName)
+		if err := user.SaveToDb(db); err != nil {
+			logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", user.ID))
+			return nil, err
+		}
+	}
+	// user := &User{}
+
+	// if err := user.Deserialize(rawEvent.Data); err != nil {
+	// 	logger.Err("HNDL", "Error Deserializing User")
+	// 	return nil, err
+	// }
+
+	// if err := user.GetInfo(db); err != nil {
+	// 	logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", user.ID))
+	// 	return nil, err
+	// }
+
+	// user.ChangeStatus(db, user.StatusName)
+	// user.Status = rawEvent.Status
+
+	// if err := user.SaveToDb(db); err != nil {
+	// 	logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", user.ID))
+	// 	return nil, err
+	// }
+
 	return user, nil
 }
