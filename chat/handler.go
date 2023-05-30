@@ -170,23 +170,23 @@ func handleUserCreate(rawEvent *RawEvent, db *gorm.DB, account *Account) (*User,
 }
 
 func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
-	var user = &User{ID: rawEvent.UserID}
+	var newUser = &User{ID: rawEvent.UserID}
 	// var status = &Status{}
 
-	if err := user.GetInfo(db); err != nil {
-		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", user.ID))
+	if err := newUser.GetInfo(db); err != nil {
+		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", newUser.ID))
 		return nil, err
 	}
 
 	switch rawEvent.Action {
 	case "change_status":
-		if err := user.Deserialize(rawEvent.Data); err != nil {
+		if err := newUser.Deserialize(rawEvent.Data); err != nil {
 			logger.Err("HNDL", "Error Deserializing User")
 			return nil, err
 		}
-		// user.ChangeStatus(db, user.StatusName)
-		if err := user.SaveToDb(db); err != nil {
-			logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", user.ID))
+		newUser.Status = &Status{Name: newUser.StatusName}
+		if err := newUser.SaveToDb(db); err != nil {
+			logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", newUser.ID))
 			return nil, err
 		}
 	}
@@ -210,5 +210,5 @@ func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
 	// 	return nil, err
 	// }
 
-	return user, nil
+	return newUser, nil
 }

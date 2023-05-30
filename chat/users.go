@@ -59,7 +59,8 @@ func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
 }
 
 // func (user *User) ChangeStatus(db *gorm.DB, statusName string) error {
-// 	return db.Model(user).Update("status_name", statusName).Error
+
+// 	return db.Model(&user).Update("status").Error
 // }
 
 func (user *User) CheckValid() (*User, error) {
