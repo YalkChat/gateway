@@ -82,11 +82,6 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		return
 	}
 
-	// // user := &chat.User{ID: account.ID}
-	// if _, err := user.GetInfo(server.Db); err != nil {
-	// 	logger.Err("WEBSOCK", fmt.Sprintf("Can't get user info - %s", r.RemoteAddr))
-	// }
-
 	// Todo: Use profile instead of User ID?
 	client := server.RegisterClient(conn, user.ID)
 
@@ -123,27 +118,79 @@ var connectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		return
 	}
 
-	logger.Info("CLIENT", fmt.Sprintf("Full data sent to ID: %v", "test"))
+	logger.Info("CLIENT", fmt.Sprintf("Full data sent to ID: %d", client.ID))
+
+	user.ChangeStatus(server.Db, "online")
+	user.Status = &chat.Status{Name: "online"}
+
+	// TODO: Same as below for offline, so need to be removed the repetition
+	userOnlinePayload, err := user.Serialize()
+	if err != nil {
+		logger.Err("HTTP", fmt.Sprintf("Error serializing user online: %v", err))
+	}
+
+	var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
+
+	jsonRawEvent, err := json.Marshal(rawEvent)
+	if err != nil {
+		logger.Err("HTTP", fmt.Sprintf("Error serializing raw event: %v", err))
+	}
+	logger.Info("HTTP", fmt.Sprintf("%d disconnected after 10s", client.ID))
+	if err := server.HandleIncomingEvent(client.ID, jsonRawEvent); err != nil {
+		logger.Info("HTTP", "Error broadcasting disconnection event")
+	}
 
 	wg.Wait()
 
 	go func() {
-		channelsContext.NotifyChannel <- true
 		server.ClientsMu.Lock()
 		delete(server.Clients, client.ID)
 		server.ClientsMu.Unlock()
-		// onlineTick := time.NewTicker(time.Second * 10)
-		// <-onlineTick.C
+		onlineTick := time.NewTicker(time.Second * 10)
+		<-onlineTick.C
+		if server.Clients[client.ID] == nil {
+			if err := user.GetInfo(server.Db); err != nil {
+				logger.Err("CLIENT", "Error getting info upon closure")
+			}
+
+			if err := user.ChangeStatus(server.Db, "offline"); err != nil {
+				logger.Err("CLIENT", "Error changing status upon closure")
+			}
+
+			var userStatus = &chat.User{StatusName: "offline"}
+
+			userStatusPayload, err := userStatus.Serialize()
+			if err != nil {
+				logger.Err("HTTP", fmt.Sprintf("Error serializing user status: %v", err))
+			}
+
+			var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
+
+			jsonRawEvent, err := json.Marshal(rawEvent)
+			if err != nil {
+				logger.Err("HTTP", fmt.Sprintf("Error serializing raw event: %v", err))
+			}
+			logger.Info("HTTP", fmt.Sprintf("%d disconnected after 10s", client.ID))
+			if err := server.HandleIncomingEvent(client.ID, jsonRawEvent); err != nil {
+				logger.Info("HTTP", "Error broadcasting disconnection event")
+
+			}
+
+		}
 	}()
-	logger.Info("CORE", fmt.Sprintf("Closed client ID %s", "test"))
+
+	fmt.Println("Terminated WG")
+
 })
 
 func makeInitialPayload(db *gorm.DB, user *chat.User) ([]byte, error) {
 
 	var chats *[]chat.Chat
 	tx := db.Joins("left join chat_users on chat_users.chat_id=chats.id").
-		Where("chat_users.user_id = ?", user.ID). // TODO: Check for public chat
-		Preload("Messages").
+		Where("chat_users.user_id = ?", user.ID).
+		Preload("Messages", func(db *gorm.DB) *gorm.DB {
+			return db.Order("messages.timestamp ASC")
+		}).
 		Preload("Messages.User").
 		Preload("ChatType").
 		Find(&chats)
@@ -168,7 +215,7 @@ func makeInitialPayload(db *gorm.DB, user *chat.User) ([]byte, error) {
 	initialPayload := struct {
 		User     *chat.User      `json:"user"`
 		Chats    *[]chat.Chat    `json:"chats"`
-		Accounts *[]chat.Account `json:"accounts,omitempty"`
+		Accounts *[]chat.Account `json:"accounts"`
 		Users    *[]chat.User    `json:"users"`
 	}{user, chats, serverAccounts, users}
 
@@ -180,7 +227,6 @@ func makeInitialPayload(db *gorm.DB, user *chat.User) ([]byte, error) {
 	newRawEvent := &chat.RawEvent{Type: "initial", Data: jsonPayload}
 
 	jsonEvent, err := newRawEvent.Serialize()
-	fmt.Println(string(jsonEvent))
 	if err != nil {
 		return nil, err
 	}
