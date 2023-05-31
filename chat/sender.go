@@ -8,18 +8,23 @@ import (
 )
 
 func (server *Server) Sender(c *clients.Client, ctx *EventContext) {
-	defer ctx.WaitGroup.Done()
+	defer func() {
+		ctx.WaitGroup.Done()
+		// <-ctx.NotifyChannel
+	}()
 
-Run:
+	// Run:
 	for {
 		select {
 		case <-ctx.NotifyChannel:
 			log.Println("Sender - got shutdown signal")
-			break Run
+			// break Run
+			return
 		case payload := <-c.Msgs:
 			err := clients.ClientWriteWithTimeout(ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
 			if err != nil {
-				break Run
+				// break Run
+				return
 			}
 		}
 	}

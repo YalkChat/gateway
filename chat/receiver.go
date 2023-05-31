@@ -10,14 +10,12 @@ import (
 )
 
 func (server *Server) Receiver(clientID uint, ctx *EventContext) {
-	// TODO: var closingReason string
 	defer func() {
-		// Signalign that client is closing
 		ctx.WaitGroup.Done()
-		// ctx.NotifyChannel <- true // TODO: Verify why it was here
+		ctx.NotifyChannel <- true // TODO: Verify why it was heren
 	}()
 
-Run:
+	// Run:
 	for {
 		messageType, payload, err := ctx.Connection.Read(ctx.Request.Context())
 
@@ -30,11 +28,13 @@ Run:
 			if statusCode == websocket.StatusGoingAway {
 				log.Println("Graceful sender shutdown")
 				ctx.PingTicket.Stop()
-				break Run
+				return
+				// break Run
 
 			} else {
 				log.Println("Sender - Error in reading from websocket context, client closed? Check main.go")
-				break Run
+				// break Run
+				return
 			}
 		}
 
