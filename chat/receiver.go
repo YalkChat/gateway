@@ -17,9 +17,9 @@ func (server *Server) Receiver(clientID uint, ctx *EventContext) {
 
 	// Run:
 	for {
-		messageType, payload, err := ctx.Connection.Read(ctx.Request.Context())
+		messageType, jsonEventMessage, err := ctx.Connection.Read(ctx.Request.Context())
 
-		logger.Info("RCV", fmt.Sprintf("Received payload lenght: %d", len(payload)))
+		logger.Info("RCV", fmt.Sprintf("Received payload lenght: %d", len(jsonEventMessage)))
 
 		if err != nil && err != io.EOF {
 
@@ -39,8 +39,15 @@ func (server *Server) Receiver(clientID uint, ctx *EventContext) {
 		}
 
 		if messageType.String() == "MessageText" && err == nil {
-			logger.Info("RCV", fmt.Sprintf("Message received: %s", payload))
-			if err := server.HandleIncomingEvent(clientID, payload); err != nil {
+			logger.Info("RCV", fmt.Sprintf("Message received: %s", jsonEventMessage))
+
+			rawEvent := &RawEvent{UserID: clientID}
+
+			if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
+				logger.Err("HNDL", "Error unmarshaling RawEvent")
+				return
+			}
+			if err := server.HandleIncomingEvent(clientID, rawEvent); err != nil {
 				log.Printf("Sender - errors in broadcast: %v", err)
 				return
 			}

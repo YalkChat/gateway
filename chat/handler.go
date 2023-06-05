@@ -10,14 +10,7 @@ import (
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
-func (server *Server) HandleIncomingEvent(clientID uint, jsonEventMessage []byte) error {
-
-	rawEvent := &RawEvent{UserID: clientID}
-
-	if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
-		logger.Err("HNDL", "Error unmarshaling RawEvent")
-		return err
-	}
+func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) error {
 
 	switch rawEvent.Type {
 	case "message":
@@ -105,34 +98,6 @@ func handleMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 
 	}
 	return message, nil
-
-	// message := &Message{UserID: rawEvent.UserID}
-
-	// if err := message.Deserialize(rawEvent.Data); err != nil {
-	// 	logger.Err("HNDL", "Error Deserializing Chat Message")
-	// 	return nil, err
-	// }
-
-	// if err := message.SaveToDb(db); err != nil {
-	// 	logger.Err("HNDL", "Error saving to DB Chat Message")
-	// 	return nil, err
-	// }
-
-	// message.User = &User{ID: message.UserID}
-	// if err := message.User.GetInfo(db); err != nil {
-	// 	logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", message.UserID))
-	// 	return nil, err
-	// }
-
-	// message.Chat = &Chat{ID: message.ChatID}
-
-	// if _, err := message.Chat.GetInfo(db); err != nil {
-	// 	logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
-	// 	return nil, err
-	// }
-
-	// return message, nil
-
 }
 
 func handleAccount(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
@@ -188,37 +153,10 @@ func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
 
 		newUser.Status = &Status{Name: statusPayload.StatusName}
 
-		// if err := newUser.Deserialize(rawEvent.Data); err != nil {
-		// 	logger.Err("HNDL", "Error Deserializing User")
-		// 	return nil, err
-		// }
-
-		// newUser.Status = &Status{Name: newUser.StatusName}
 		if err := newUser.SaveToDb(db); err != nil {
 			logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", newUser.ID))
 			return nil, err
 		}
 	}
-
-	// user := &User{}
-
-	// if err := user.Deserialize(rawEvent.Data); err != nil {
-	// 	logger.Err("HNDL", "Error Deserializing User")
-	// 	return nil, err
-	// }
-
-	// if err := user.GetInfo(db); err != nil {
-	// 	logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", user.ID))
-	// 	return nil, err
-	// }
-
-	// user.ChangeStatus(db, user.StatusName)
-	// user.Status = rawEvent.Status
-
-	// if err := user.SaveToDb(db); err != nil {
-	// 	logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", user.ID))
-	// 	return nil, err
-	// }
-
 	return newUser, nil
 }
