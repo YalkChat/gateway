@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"errors"
 	"sync"
 	"time"
 	"yalk/chat/clients"
@@ -28,6 +29,7 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[uint]*clients.Client)
 	messageChannels := MakeEventChannels()
+	messageMap := make(map[uint]bool)
 
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,
@@ -36,6 +38,7 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 		Channels:             messageChannels,
 		Db:                   db,
 		SessionsManager:      sessionsManager,
+		MessageMap:           messageMap,
 	}
 
 	return chatServer
@@ -49,6 +52,7 @@ type Server struct {
 	Channels             *EventChannels
 	Db                   *gorm.DB
 	SessionsManager      *sessions.Manager
+	MessageMap           map[uint]bool
 }
 
 func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *clients.Client {
@@ -72,6 +76,16 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *clients.Cli
 	server.Clients[id] = client
 	server.ClientsMu.Unlock()
 	return client
+}
+
+func (server *Server) UnregisterClient(c *clients.Client) error {
+	if server.Clients[c.ID] == nil {
+		return errors.New("no_client")
+	}
+	server.ClientsMu.Lock()
+	delete(server.Clients, c.ID)
+	server.ClientsMu.Unlock()
+	return nil
 }
 
 type BinaryPayload struct {
