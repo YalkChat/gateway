@@ -11,7 +11,6 @@ func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 	router := cattp.New(chatServer)
 
 	router.HandleFunc("/ws", handlers.ConnectHandle)
-	router.HandleFunc("/ws", handlers.ConnectHandle)
 
 	router.HandleFunc("/auth", validateHandle)
 	router.HandleFunc("/auth/validate", validateHandle)
