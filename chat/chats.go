@@ -1,6 +1,8 @@
 package chat
 
 import (
+	"encoding/json"
+
 	"gorm.io/gorm"
 )
 
@@ -21,6 +23,18 @@ type Chat struct {
 	Messages []*Message `json:"messages"`
 }
 
+func (chat *Chat) Type() string {
+	return "chat"
+}
+
+func (chat *Chat) Serialize() ([]byte, error) {
+	return json.Marshal(chat)
+}
+
+func (chat *Chat) Deserialize(data []byte) error {
+	return json.Unmarshal(data, chat)
+}
+
 func (chat *Chat) GetInfo(db *gorm.DB) (*Chat, error) {
 
 	tx := db.Preload("Users").Preload("Messages").Preload("ChatType").Find(&chat)
@@ -29,4 +43,8 @@ func (chat *Chat) GetInfo(db *gorm.DB) (*Chat, error) {
 	}
 
 	return chat, nil
+}
+
+func (chat *Chat) Create(db *gorm.DB) error {
+	return db.Preload("Users").Preload("ChatType").Create(&chat).Error
 }

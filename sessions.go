@@ -2,13 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 	"yalk/cattp"
 	"yalk/chat"
-	"yalk/logger"
 	"yalk/sessions"
 
 	"github.com/golang-jwt/jwt"
@@ -21,7 +19,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	dbSession, err := context.SessionsManager.Validate(context.Db, r, "YLK")
 
 	if err != nil && err.Error() != "cookie_missing" {
-		logger.Err("SESS", "Validation failed")
+		// logger.Err("SESS", "Validation failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -41,7 +39,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	// payload, err := io.ReadAll(r.Body)
 	err = json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		logger.Err("SESS", fmt.Sprintf("Failed to decode login request: %v", err))
+		// logger.Err("SESS", fmt.Sprintf("Failed to decode login request: %v", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -83,21 +81,21 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	authToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := authToken.SignedString(jwtKey)
 	if err != nil {
-		logger.Err("SESS", fmt.Sprintf("Error signing token: %v", err))
+		// logger.Err("SESS", fmt.Sprintf("Error signing token: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session, err := context.SessionsManager.Create(context.Db, token, dbCredentials.ID, time.Time{})
 	if err != nil {
-		logger.Err("SESS", fmt.Sprintf("Error creating session: %v", err))
+		// logger.Err("SESS", fmt.Sprintf("Error creating session: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session.SetClientCookie(w) // TODO: Reimplement for JWT and WebSession
 	if err != nil {
-		logger.Err("SESS", fmt.Sprintf("Error setting client cookie: %v", err))
+		// logger.Err("SESS", fmt.Sprintf("Error setting client cookie: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -116,7 +114,7 @@ var validateHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter,
 		return
 	}
 
-	session, err := context.SessionsManager.Validate(context.Db, r, "YLK")
+	_, err := context.SessionsManager.Validate(context.Db, r, "YLK")
 	if err != nil {
 		// TODO: Extend session upon device validation
 		log.Println("Invalid session")
@@ -127,7 +125,7 @@ var validateHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter,
 	// session.SetClientCookie(w)
 	// TODO: Post response for WebSock?
 	w.Header().Add("Content-Type", "application/json")
-	log.Printf("[%d][ID %v] Validated Session\n", http.StatusOK, session.AccountID)
+	// logger.Info("SESS", fmt.Sprintf("[%d][ID %v] Validated Session", http.StatusOK, session.AccountID))
 	w.WriteHeader(http.StatusOK)
 })
 

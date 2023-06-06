@@ -3,7 +3,9 @@ package chat
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
+	"yalk/logger"
 
 	"gorm.io/gorm"
 )
@@ -58,10 +60,19 @@ func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
 	return chats, nil
 }
 
-// func (user *User) ChangeStatus(db *gorm.DB, statusName string) error {
+func (user *User) ChangeStatus(db *gorm.DB, statusName string) error {
+	if user.StatusName == statusName {
+		logger.Warn("USER", fmt.Sprintf("Requested a change to same status %s", statusName))
+		return nil
+	}
 
-// 	return db.Model(&user).Update("status").Error
-// }
+	if user.ID == 0 {
+		return errors.New("no_user_info")
+	}
+
+	user.Status = &Status{Name: statusName}
+	return db.Save(&user).Error
+}
 
 func (user *User) CheckValid() (*User, error) {
 	if user.ID == 0 {

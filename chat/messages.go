@@ -39,6 +39,6 @@ func (message *Message) SaveToDb(db *gorm.DB) error {
 		tx.Rollback()
 		return tx.Error
 	}
-	logger.Info("MSG", fmt.Sprintf("Rows affected: %d", tx.RowsAffected))
+	logger.Info("MESG", fmt.Sprintf("Rows affected: %d", tx.RowsAffected))
 	return nil
 }

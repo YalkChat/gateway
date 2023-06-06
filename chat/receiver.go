@@ -10,18 +10,16 @@ import (
 )
 
 func (server *Server) Receiver(clientID uint, ctx *EventContext) {
-	// TODO: var closingReason string
 	defer func() {
-		// Signalign that client is closing
 		ctx.WaitGroup.Done()
-		// ctx.NotifyChannel <- true // TODO: Verify why it was here
+		ctx.NotifyChannel <- true // TODO: Verify why it was heren
 	}()
 
-Run:
+	// Run:
 	for {
-		messageType, payload, err := ctx.Connection.Read(ctx.Request.Context())
+		messageType, jsonEventMessage, err := ctx.Connection.Read(ctx.Request.Context())
 
-		logger.Info("RCV", fmt.Sprintf("Received payload lenght: %d", len(payload)))
+		logger.Info("RCV", fmt.Sprintf("Received payload lenght: %d", len(jsonEventMessage)))
 
 		if err != nil && err != io.EOF {
 
@@ -30,17 +28,26 @@ Run:
 			if statusCode == websocket.StatusGoingAway {
 				log.Println("Graceful sender shutdown")
 				ctx.PingTicket.Stop()
-				break Run
+				return
+				// break Run
 
 			} else {
 				log.Println("Sender - Error in reading from websocket context, client closed? Check main.go")
-				break Run
+				// break Run
+				return
 			}
 		}
 
 		if messageType.String() == "MessageText" && err == nil {
-			logger.Info("RCV", fmt.Sprintf("Message received: %s", payload))
-			if err := server.HandleIncomingEvent(clientID, payload); err != nil {
+			logger.Info("RCV", fmt.Sprintf("Message received: %s", jsonEventMessage))
+
+			rawEvent := &RawEvent{UserID: clientID}
+
+			if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
+				logger.Err("HNDL", "Error unmarshaling RawEvent")
+				return
+			}
+			if err := server.HandleIncomingEvent(clientID, rawEvent); err != nil {
 				log.Printf("Sender - errors in broadcast: %v", err)
 				return
 			}

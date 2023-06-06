@@ -11,35 +11,35 @@ func (server *Server) Router() {
 	for {
 		select {
 		case message := <-server.Channels.Messages:
-			logger.Info("ROUTER", "Router: Broadcast message received")
+			logger.Info("ROUT", "Router: Broadcast message received")
 
 			serializedData, err := message.Serialize()
 			if err != nil {
-				logger.Err("ROUTER", "Error serializing")
+				logger.Err("ROUT", "Error serializing")
 			}
 
 			newRawEvent := RawEvent{UserID: message.UserID, Type: message.Type(), Data: serializedData}
 
 			jsonEvent, err := json.Marshal(newRawEvent)
 			if err != nil {
-				logger.Err("ROUTER", "Error serializing RawEvent")
+				logger.Err("ROUT", "Error serializing RawEvent")
 			}
 
 			server.SendToChat(message, jsonEvent)
 
 		case rawEvent := <-server.Channels.Accounts:
-			logger.Info("ROUTER", "Router: Account event received")
+			logger.Info("ROUT", "Router: Account event received")
 			jsonEvent, err := json.Marshal(rawEvent)
 			if err != nil {
-				logger.Err("ROUTER", "Error serializing RawEvent")
+				logger.Err("ROUT", "Error serializing RawEvent")
 			}
 			server.SendBack(rawEvent.UserID, jsonEvent)
 
 		case rawEvent := <-server.Channels.Users:
-			logger.Info("ROUTER", "Router: User event received")
+			logger.Info("ROUT", "Router: User event received")
 			jsonEvent, err := json.Marshal(rawEvent)
 			if err != nil {
-				logger.Err("ROUTER", "Error serializing RawEvent")
+				logger.Err("ROUT", "Error serializing RawEvent")
 			}
 			server.SendAll(jsonEvent)
 		}

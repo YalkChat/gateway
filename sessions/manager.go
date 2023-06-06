@@ -92,14 +92,14 @@ func (sm *Manager) Validate(db *gorm.DB, r *http.Request, cookieName string) (*S
 		return nil, tx.Error
 	}
 
-	log.Printf("Found session %s", session.Token)
+	// logger.Info("SESS", fmt.Sprintf("Found session %s", session.Token))
 
 	if session.isExpired() {
 		sm.Delete(db, session.Token)
 
 		sm.activeSessions[session.AccountID] = nil
 
-		log.Println("Session expired, removed")
+		// logger.Info("SESS", fmt.Sprintf("Session for UserID %d expired, removed", session.AccountID))
 		return nil, errors.New("expired")
 	}
 
