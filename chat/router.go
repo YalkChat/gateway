@@ -49,8 +49,23 @@ func (server *Server) Router() {
 // Echoing to client is default behavior for error checking.
 
 // TODO: Error checking
+// func (server *Server) SendToChat(message *Message, payload []byte) {
+// 	for _, user := range message.Chat.Users {
+// 		if client, ok := server.Clients[user.ID]; ok {
+// 			client.Msgs <- payload
+// 		}
+// 	}
+// }
+
 func (server *Server) SendToChat(message *Message, payload []byte) {
-	for _, user := range message.Chat.Users {
+	// TODO: Move to server method
+	chat := &Chat{ID: message.ChatID}
+	user, err := chat.GetUsers(server.Db)
+	if err != nil {
+		logger.Err("ROUT", "Error getting chat users")
+		return
+	}
+	for _, user := range user {
 		if client, ok := server.Clients[user.ID]; ok {
 			client.Msgs <- payload
 		}

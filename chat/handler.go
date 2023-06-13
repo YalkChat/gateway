@@ -80,17 +80,17 @@ func handleMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 
 		}
 
-		message = &Message{UserID: rawEvent.UserID, User: user}
+		message = &Message{UserID: rawEvent.UserID}
 		if err := message.Deserialize(rawEvent.Data); err != nil {
 			logger.Err("HNDL", "Error Deserializing Chat Message")
 			return nil, err
 		}
 
-		chat = &Chat{ID: message.ChatID}
-		if _, err := chat.GetInfo(db); err != nil {
-			logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
-			return nil, err
-		}
+		// chat = &Chat{ID: message.ChatID}
+		// if _, err := chat.GetInfo(db); err != nil {
+		// 	logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
+		// 	return nil, err
+		// }
 
 		message.Chat = chat
 

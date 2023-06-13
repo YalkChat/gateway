@@ -45,6 +45,15 @@ func (chat *Chat) GetInfo(db *gorm.DB) (*Chat, error) {
 	return chat, nil
 }
 
+// TODO: Move to Server method
+func (chat *Chat) GetUsers(db *gorm.DB) ([]*User, error) {
+	tx := db.Preload("Users").Find(&chat)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return chat.Users, nil
+}
+
 func (chat *Chat) Create(db *gorm.DB) error {
 	return db.Preload("Users").Preload("ChatType").Create(&chat).Error
 }

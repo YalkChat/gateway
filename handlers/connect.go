@@ -106,20 +106,18 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 
 	// Broadcast user online event to all connected clients, but wait for initial payload to be sent first
 	if initialPayloadSent {
-		select {
-		case <-notify:
-			// TODO: Same as below for offline, so need to be removed the repetition
-			userOnlinePayload, err := user.Serialize()
-			if err != nil {
-				logger.Err("HTTP", fmt.Sprintf("Error serializing user online: %v", err))
-			}
-			var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
-			jsonRawEvent, err := json.Marshal(rawEvent)
-			if err != nil {
-				logger.Err("HTTP", fmt.Sprintf("Error serializing raw event: %v", err))
-			}
-			server.SendAll(jsonRawEvent)
+		// <-notify
+		// TODO: Same as below for offline, so need to be removed the repetition
+		userOnlinePayload, err := user.Serialize()
+		if err != nil {
+			logger.Err("HTTP", fmt.Sprintf("Error serializing user online: %v", err))
 		}
+		var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
+		jsonRawEvent, err := json.Marshal(rawEvent)
+		if err != nil {
+			logger.Err("HTTP", fmt.Sprintf("Error serializing raw event: %v", err))
+		}
+		server.SendAll(jsonRawEvent)
 	}
 
 	// if err := server.HandleIncomingEvent(client.ID, rawEvent); err != nil {
@@ -128,36 +126,36 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 
 	wg.Wait()
 
-	// go func() {
-	server.UnregisterClient(client)
-	// onlineTick := time.NewTicker(time.Second * 10)
-	// <-onlineTick.C
-	// if server.Clients[client.ID] == nil {
-	// 	if err := user.GetInfo(server.Db); err != nil {
-	// 		logger.Err("CLNT", "Error getting info upon closure")
-	// 	}
+	go func() {
+		server.UnregisterClient(client)
+		onlineTick := time.NewTicker(time.Second * 10)
+		<-onlineTick.C
+		if server.Clients[client.ID] == nil {
+			if err := user.GetInfo(server.Db); err != nil {
+				logger.Err("CLNT", "Error getting info upon closure")
+			}
 
-	// 	if err := user.ChangeStatus(server.Db, "offline"); err != nil {
-	// 		logger.Err("CLNT", "Error changing status upon closure")
-	// 	}
+			if err := user.ChangeStatus(server.Db, "offline"); err != nil {
+				logger.Err("CLNT", "Error changing status upon closure")
+			}
 
-	// 	var userStatus = &chat.User{StatusName: "offline"}
+			var userStatus = &chat.User{StatusName: "offline"}
 
-	// 	userStatusPayload, err := userStatus.Serialize()
-	// 	if err != nil {
-	// 		logger.Err("HTTP", fmt.Sprintf("Error serializing user status: %v", err))
-	// 	}
+			userStatusPayload, err := userStatus.Serialize()
+			if err != nil {
+				logger.Err("HTTP", fmt.Sprintf("Error serializing user status: %v", err))
+			}
 
-	// 	var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
+			var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
 
-	// 	logger.Info("HTTP", fmt.Sprintf("%d disconnected after 10s", client.ID))
-	// 	if err := server.HandleIncomingEvent(client.ID, rawEvent); err != nil {
-	// 		logger.Info("HTTP", "Error broadcasting disconnection event")
+			logger.Info("HTTP", fmt.Sprintf("%d disconnected after 10s", client.ID))
+			if err := server.HandleIncomingEvent(client.ID, rawEvent); err != nil {
+				logger.Info("HTTP", "Error broadcasting disconnection event")
 
-	// 	}
+			}
 
-	// }
-	// }()
+		}
+	}()
 
 	fmt.Println("Terminated WG")
 
