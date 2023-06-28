@@ -20,7 +20,7 @@ func createAdmin(db *gorm.DB) (*chat.User, error) {
 	}
 	logger.Info("CORE", fmt.Sprintf("Created admin credentials: %v", adminAccount.Username))
 
-	adminUser := &chat.User{Account: adminAccount, DisplayedName: "Admin", AvatarUrl: "/default.png"}
+	adminUser := &chat.User{Account: adminAccount, DisplayedName: "Admin", AvatarUrl: "/default.png", StatusName: "offline"}
 	err = adminUser.Create(db)
 	if err != nil {
 		logger.Err("CORE", fmt.Sprintf("FATAL - Can't create admin profile, error: %v", err.Error()))
@@ -45,7 +45,7 @@ func createBotUser(db *gorm.DB) error {
 		return nil
 	}
 	logger.Info("CORE", fmt.Sprintf("Created bot credentials: %v", botAccount.Username))
-	serverBot := &chat.User{DisplayedName: "Bot", AvatarUrl: "/bot.png", Account: botAccount}
+	serverBot := &chat.User{DisplayedName: "Bot", AvatarUrl: "/bot.png", Account: botAccount, StatusName: "bot"}
 	err = serverBot.Create(db)
 	if err != nil {
 		return err
