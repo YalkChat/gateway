@@ -1,7 +1,8 @@
-package chat
+package main
 
 import (
 	"fmt"
+	"yalk/chat"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -30,7 +31,7 @@ func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
 }
 
 func CreateDbTables(db *gorm.DB) error {
-	if err := db.AutoMigrate(&Account{}, &User{}, &Chat{}, &Message{}, &ServerSettings{}, &Status{}); err != nil {
+	if err := db.AutoMigrate(&chat.Account{}, &chat.User{}, &chat.Chat{}, &chat.Message{}, &chat.ServerSettings{}, &chat.Status{}); err != nil {
 		return err
 	}
 	return nil

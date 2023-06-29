@@ -46,7 +46,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	// ? Separate function
-	dbConfig := &chat.PgConf{
+	dbConfig := &PgConf{
 		IP:       os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		User:     os.Getenv("DB_USER"),
@@ -55,13 +55,13 @@ func main() {
 		SslMode:  os.Getenv("DB_SSLMODE"),
 	}
 
-	db, err := chat.OpenDbConnection(dbConfig)
+	db, err := OpenDbConnection(dbConfig)
 	if err != nil {
 		logger.Err("CORE", fmt.Sprintf("Error opening db connection: %v\n", err))
 		return
 	}
 
-	if err := chat.CreateDbTables(db); err != nil {
+	if err := CreateDbTables(db); err != nil {
 		logger.Warn("DB", fmt.Sprintf("Failed to AutoMigrate DB tables: %v", err))
 	}
 
