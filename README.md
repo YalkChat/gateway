@@ -1,9 +1,7 @@
 ## To-Do
 - [ ] Accept tokens in RawEvent payload (Identify)
 - [ ] Integrating heartbeat for status detection
-- [ ] Get User Add functions to working state
 - [ ] Include user automatically in General chat
-- [ ] Create initial landing page (With Chat List or Dashboard)
 
 ## Known bugs
 - [ ] After login redirect doesn't work
