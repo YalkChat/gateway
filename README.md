@@ -1,5 +1,11 @@
 # What is this?
-It's a simple chat application backend
+It's a simple chat application backend, it's meant to provide a connection gateway to interact with in order to communicate with other clients on the network.
+As of now, it's meant to be self-deployed on your premises or in the cloud 
+
+# This looks like Discord!
+Yeah of course I'm literally copying and recreating from scratch what they do, a succesful product it's always an example to follow and their documentation is simply phenomenal.
+No, I don't want to copy Discord, I am just learning from their approach
+
 
 # How do I run this?
 * Get a fresh Postgres instance
@@ -53,3 +59,15 @@ yalk-backend/
 ├── .env                  # Environment variables
 └── ...                   # Other files (README, .gitignore, etc.)
 ```
+
+# Disclaimer
+This is by no means close to completion and has an incredible amount of security flaws and bad programming practices, **do not use this in production!** (it doesn't even work for most parts, requires a lot of manual steps which will be all addressed overtime)
+
+Massive thanks to the entirety of the Open Source communities of the world. Freedom of Information is what fueled my learning journey and I will never be enough thankful to all of you who decided one day to write an article, make a Medium post, ask a question on StackOverflow, etc. that I have stumbled upon and that I've learnt so much or solved a problem. Seriously, thank you.
+
+As for the rest take this code and do whatever you want, maybe mention me if you use it and feel free to do whatever you want with it but it's always a work of the Open Source communities. Also, feel free to open any PR or comment, I am glad to hear anyone's opinion.
+
+# Why am I doing this?
+It's my learning journey into DevOps and in building a complete product from ground up, sticking to the least amount of dependencies possible to face those challenges that enables you to properly learn what is the right thing to do and to dive as deep as possible in GoLang.
+This was something I always dreamed to do and only recently gained the skills and experience to actually attempt to create this, even more important I've learnt how to learn and to overcome challenges I could've never attempted to solve before.
+Building this entire application by myself has taught and keep teaching me new things crossing the boundaries of the entire Tech spectrum. Most importantly: I'm loving every part of this journey and having incredible fun.
