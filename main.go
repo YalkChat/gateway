@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"yalk/initialize"
 
 	"github.com/joho/godotenv"
 )
@@ -56,7 +57,7 @@ func main() {
 	}
 	fmt.Printf("DB connection initialized in %s\n", time.Since(start))
 
-	if err := initializeApp(db); err != nil {
+	if err := initialize.InitializeApp(db); err != nil {
 		fmt.Printf("failed to inizialize app: %v", err)
 		return
 	}

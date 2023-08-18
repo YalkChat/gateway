@@ -12,10 +12,10 @@ func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 
 	router.HandleFunc("/ws", handlers.ConnectHandle)
 
-	router.HandleFunc("/auth", validateHandle)
-	router.HandleFunc("/auth/validate", validateHandle)
-	router.HandleFunc("/auth/signin", signinHandle)
-	router.HandleFunc("/auth/signout", signoutHandle)
+	router.HandleFunc("/auth", handlers.ValidateHandle)
+	router.HandleFunc("/auth/validate", handlers.ValidateHandle)
+	router.HandleFunc("/auth/signin", handlers.SigninHandle)
+	router.HandleFunc("/auth/signout", handlers.SignoutHandle)
 	// router.HandleFunc("/auth/signup", signupHandle)
 
 	err := router.Listen(&conf)
