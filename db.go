@@ -8,17 +8,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type PgConf struct {
-	IP       string
-	Port     string
-	User     string
-	Password string
-	DB       string
-	SslMode  string
+func initializeDb(config *Config) (*gorm.DB, error) {
+
+	db, err := OpenDbConnection(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to Open DB Connection")
+	}
+
+	if err := CreateDbTables(db); err != nil {
+		return nil, fmt.Errorf("failed to AutoMigrate DB tables")
+	}
+
+	return db, nil
 }
 
-func OpenDbConnection(conf *PgConf) (*gorm.DB, error) {
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", conf.IP, conf.Port, conf.User, conf.Password, conf.DB, conf.SslMode)
+func OpenDbConnection(config *Config) (*gorm.DB, error) {
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName, config.DbSslMode)
 
 	db := postgres.Open(psqlInfo)
 
