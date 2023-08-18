@@ -16,103 +16,51 @@ package main
 // ** - 'chat_leave' -- Chat left by another user
 
 import (
-	"time"
-	"yalk/cattp"
-	"yalk/chat"
-	"yalk/logger"
-	"yalk/sessions"
-
 	"fmt"
 	"log"
-	"os"
-	"sync"
+	"time"
 
 	"github.com/joho/godotenv"
 )
 
 func init() {
+	// * Clear console is kept only for debug reasons
+	// * Won't be in the release version
 	log.Print("\033[H\033[2J") // Clear console
-	var version string = "pre-alpha"
-	logger.Info("CORE", "Booting..")
-	logger.Info("CORE", fmt.Sprintf("Chat Server version: %s", version)) // make it os.env
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic(err)
-	}
-
+	var version string = "alpha-0.2"
+	fmt.Printf("version: %s\n", version) // make it os.env
 }
 
 func main() {
-	var wg sync.WaitGroup
-
-	// ? Separate function
-	dbConfig := &PgConf{
-		IP:       os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
-		DB:       os.Getenv("DB_NAME"),
-		SslMode:  os.Getenv("DB_SSLMODE"),
-	}
-
-	db, err := OpenDbConnection(dbConfig)
+	err := godotenv.Load(".env")
 	if err != nil {
-		logger.Err("CORE", fmt.Sprintf("Error opening db connection: %v\n", err))
+		fmt.Printf("failed to load .env: %v", err)
+		panic(err)
+	}
+	fmt.Println("loaded env variables")
+
+	config, err := loadConfig()
+	if err != nil {
+		fmt.Printf("failed to load config: %v", err)
 		return
 	}
+	fmt.Println("Config loaded")
 
-	if err := CreateDbTables(db); err != nil {
-		logger.Warn("DB", fmt.Sprintf("Failed to AutoMigrate DB tables: %v", err))
+	// ! Just testing if measuring time of execution of individual functions is useful,
+	// ! might not be at all and be removed
+	start := time.Now()
+	db, err := initializeDb(config)
+	if err != nil {
+		fmt.Printf("failed to inizialize db: %v", err)
+		return
 	}
+	fmt.Printf("DB connection initialized in %s\n", time.Since(start))
 
-	if isInitialized := checkIsInitialized(db); !isInitialized {
-
-		if err := createBotUser(db); err != nil {
-			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create initial DB user, error: %v", err.Error()))
-		}
-		logger.Info("CORE", "Created Bot user")
-
-		adminUser, err := createAdmin(db)
-		if err != nil {
-			return
-		}
-		logger.Info("CORE", "Admin creation succesful")
-
-		chatType := &chat.ChatType{Type: "channel"}
-		tx := db.Create(chatType)
-		if tx.Error != nil {
-			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create chat type, error: %v", tx.Error))
-		}
-		logger.Info("CORE", "Channel type creation succesful")
-
-		mainChat := &chat.Chat{Name: "Main", ChatType: chatType, CreatedBy: adminUser, Users: []*chat.User{adminUser}}
-
-		tx = db.Create(mainChat)
-		if tx.Error != nil {
-			logger.Err("CORE", fmt.Sprintf("FATAL - Can't create main chat, error: %v", tx.Error))
-		}
-		logger.Info("CORE", "Main chat creation succesful")
-
-		serverSettings := &chat.ServerSettings{IsInitialized: true}
-		serverSettings.Create(db)
-		logger.Info("CORE", "Created initial DB settings")
+	if err := initializeApp(db); err != nil {
+		fmt.Printf("failed to inizialize app: %v", err)
+		return
 	}
+	fmt.Println("app initialized")
 
-	netConf := cattp.Config{
-		Host: os.Getenv("HTTP_HOST"),
-		Port: os.Getenv("HTTP_PORT_PLAIN"),
-		URL:  os.Getenv("HTTP_URL"),
-	}
-	sessionLenght := time.Hour * 720
-	sessionsManager := sessions.New(db, sessionLenght)
-
-	chatServer := chat.NewServer(16, db, sessionsManager)
-
-	wg.Add(1)
-	go chatServer.Router()
-
-	wg.Add(1)
-	go startHttpServer(netConf, chatServer)
-
-	wg.Wait()
+	runServer(config, db)
 }
