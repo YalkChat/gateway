@@ -10,19 +10,19 @@ import (
 
 func initializeDb(config *Config) (*gorm.DB, error) {
 
-	db, err := OpenDbConnection(config)
+	db, err := openDbConnection(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to Open DB Connection")
 	}
 
-	if err := CreateDbTables(db); err != nil {
+	if err := createDbTables(db); err != nil {
 		return nil, fmt.Errorf("failed to AutoMigrate DB tables")
 	}
 
 	return db, nil
 }
 
-func OpenDbConnection(config *Config) (*gorm.DB, error) {
+func openDbConnection(config *Config) (*gorm.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName, config.DbSslMode)
 
@@ -36,7 +36,7 @@ func OpenDbConnection(config *Config) (*gorm.DB, error) {
 	return gorm, nil
 }
 
-func CreateDbTables(db *gorm.DB) error {
+func createDbTables(db *gorm.DB) error {
 	if err := db.AutoMigrate(&chat.Account{}, &chat.User{}, &chat.Chat{}, &chat.Message{}, &chat.ServerSettings{}, &chat.Status{}); err != nil {
 		return err
 	}
