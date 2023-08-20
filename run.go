@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"yalk/cattp"
 	"yalk/chat"
 	"yalk/sessions"
 
@@ -13,11 +12,6 @@ import (
 
 func runServer(config *Config, db *gorm.DB) {
 	var wg sync.WaitGroup
-
-	netConf := cattp.Config{
-		Host: config.HttpHost,
-		Port: config.HttpPort,
-		URL:  config.HttpUrl}
 
 	sessionLenght := time.Hour * 720
 	sessionsManager := sessions.New(db, sessionLenght)
@@ -33,7 +27,7 @@ func runServer(config *Config, db *gorm.DB) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		startHttpServer(netConf, chatServer)
+		startHttpServer(config, chatServer)
 	}()
 
 	fmt.Println("server started")

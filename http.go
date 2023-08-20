@@ -7,7 +7,7 @@ import (
 	"yalk/handlers"
 )
 
-func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
+func startHttpServer(config *Config, chatServer *chat.Server) error {
 	router := cattp.New(chatServer)
 
 	router.HandleFunc("/ws", handlers.ConnectHandle)
@@ -18,7 +18,12 @@ func startHttpServer(conf cattp.Config, chatServer *chat.Server) error {
 	router.HandleFunc("/auth/signout", handlers.SignoutHandle)
 	// router.HandleFunc("/auth/signup", signupHandle)
 
-	err := router.Listen(&conf)
+	netConf := cattp.Config{
+		Host: config.HttpHost,
+		Port: config.HttpPort,
+		URL:  config.HttpUrl}
+
+	err := router.Listen(&netConf)
 	if err != nil {
 		return err
 	}
