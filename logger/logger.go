@@ -32,5 +32,4 @@ func Warn(component string, message string) {
 func Err(component string, message string) {
 	color := Red
 	fmt.Printf("%s[%s]%s %s\n", color, component, Reset, message)
-
 }
