@@ -10,12 +10,10 @@ import (
 
 func InitializeApp(db *gorm.DB) error {
 
-	// Check if already initialized
 	if isInitialized := checkIsInitialized(db); isInitialized {
 		return nil
 	}
 
-	// Creating bot account
 	botAccount, err := createBotAccount(db)
 	if err != nil {
 		fmt.Printf("Can't create bot account, error: %v", err)
@@ -23,7 +21,6 @@ func InitializeApp(db *gorm.DB) error {
 	}
 	logger.Info("CORE", fmt.Sprintf("Created bot account: %v", botAccount.Username))
 
-	// Creating bot user
 	botUser, err := createBotUser(db, botAccount)
 	if err != nil {
 		fmt.Printf("Can't create bot user, error: %v", err)
@@ -31,7 +28,6 @@ func InitializeApp(db *gorm.DB) error {
 	}
 	log.Printf("Created bot account: %v", botUser.DisplayedName)
 
-	// Creating initial admin account
 	adminAccount, err := createAdminAccount(db)
 	if err != nil {
 		fmt.Printf("Can't create admin credentials: %v", err.Error())
@@ -39,7 +35,6 @@ func InitializeApp(db *gorm.DB) error {
 	}
 	log.Printf("Created admin credentials: %v", adminAccount.Username)
 
-	// Creating initial admin user
 	adminUser, err := createAdminUser(db, adminAccount)
 	if err != nil {
 		fmt.Printf("Can't create admin profile, error: %v", err.Error())
