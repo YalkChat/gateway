@@ -17,7 +17,10 @@ package main
 
 import (
 	"fmt"
+	"yalk/config"
+	"yalk/database"
 	"yalk/initialize"
+	"yalk/server"
 
 	"github.com/joho/godotenv"
 )
@@ -38,14 +41,14 @@ func main() {
 	}
 	fmt.Println("loaded env variables")
 
-	config, err := loadConfig()
+	config, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("failed to load config: %v", err)
 		return
 	}
 	fmt.Println("Config loaded")
 
-	db, err := initializeDb(config)
+	db, err := database.InitializeDb(config)
 	if err != nil {
 		fmt.Printf("failed to inizialize db: %v", err)
 		return
@@ -58,5 +61,5 @@ func main() {
 	}
 	fmt.Println("app initialized")
 
-	runServer(config, db)
+	server.RunServer(config, db)
 }

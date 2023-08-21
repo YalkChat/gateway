@@ -1,16 +1,17 @@
-package main
+package server
 
 import (
 	"fmt"
 	"sync"
 	"time"
 	"yalk/chat"
+	"yalk/config"
 	"yalk/sessions"
 
 	"gorm.io/gorm"
 )
 
-func runServer(config *Config, db *gorm.DB) {
+func RunServer(config *config.Config, db *gorm.DB) {
 	var wg sync.WaitGroup
 
 	sessionLenght := time.Hour * 720
@@ -27,7 +28,7 @@ func runServer(config *Config, db *gorm.DB) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		startHttpServer(config, chatServer)
+		StartHttpServer(config, chatServer)
 	}()
 
 	fmt.Println("server started")

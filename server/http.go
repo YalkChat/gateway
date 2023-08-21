@@ -1,13 +1,14 @@
-package main
+package server
 
 import (
 	"log"
 	"yalk/cattp"
 	"yalk/chat"
+	"yalk/config"
 	"yalk/handlers"
 )
 
-func startHttpServer(config *Config, chatServer *chat.Server) error {
+func StartHttpServer(config *config.Config, chatServer *chat.Server) error {
 	router := cattp.New(chatServer)
 
 	router.HandleFunc("/ws", handlers.ConnectHandle)

@@ -1,14 +1,15 @@
-package main
+package database
 
 import (
 	"fmt"
 	"yalk/chat"
+	"yalk/config" // ? I'm not entirely sure I should do this thing.
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func initializeDb(config *Config) (*gorm.DB, error) {
+func InitializeDb(config *config.Config) (*gorm.DB, error) {
 
 	db, err := openDbConnection(config)
 	if err != nil {
@@ -22,7 +23,7 @@ func initializeDb(config *Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func openDbConnection(config *Config) (*gorm.DB, error) {
+func openDbConnection(config *config.Config) (*gorm.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName, config.DbSslMode)
 
