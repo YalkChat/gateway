@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"testing"
+	"yalk/config"
 )
 
 func TestLoadConfig(t *testing.T) {
@@ -10,7 +11,7 @@ func TestLoadConfig(t *testing.T) {
 	os.Setenv("DB_HOST", "test_host")
 	// ..set other environment variables ..
 
-	config, err := loadConfig()
+	config, err := config.LoadConfig()
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}

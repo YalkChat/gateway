@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"testing"
+	"yalk/config"
+	"yalk/database"
 )
 
 func TestOpenDbConnection(t *testing.T) {
 	// Use a test configuration or mock environment variables
-	config := &Config{
+	config := &config.Config{
 		DbHost:     "192.168.188.34",
 		DbPort:     "5432",
 		DbUser:     "postgres",
@@ -16,7 +18,7 @@ func TestOpenDbConnection(t *testing.T) {
 		DbSslMode:  "disable",
 	}
 
-	db, err := openDbConnection(config)
+	db, err := database.OpenDbConnection(config)
 	if err != nil {
 		t.Fatalf("Failed to open DB connection: %v", err)
 	}
