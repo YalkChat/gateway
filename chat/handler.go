@@ -3,13 +3,16 @@ package chat
 import (
 	"fmt"
 	"log"
+	"yalk/chat/events"
+	"yalk/chat/handlers"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
-func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) error {
+func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *events.RawEvent) error {
 	log.Printf("Handling incoming event for ID %d", clientID)
 	switch rawEvent.Type {
 	case "message":
@@ -24,7 +27,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) err
 
 	// ? Non forwarded events - server only
 	case "account":
-		newAccount, err := handleAccount(rawEvent, server.Db)
+		newAccount, err := handlers.HandleAccount(rawEvent, server.Db)
 		if err != nil {
 			return err
 		}
@@ -65,27 +68,27 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) err
 	return nil
 }
 
-func handleMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
-	var user *User
-	var message *Message
-	var chat *Chat
+func handleMessage(rawEvent *events.RawEvent, db *gorm.DB) (*models.Message, error) {
+	var user *models.User
+	var message *models.Message
+	var chat *models.Chat
 
 	switch rawEvent.Action {
 	case "send":
-		user = &User{ID: rawEvent.UserID}
+		user = &models.User{ID: rawEvent.UserID}
 		if err := user.GetInfo(db); err != nil {
 			log.Printf("Error getting user info ID: %d\n", rawEvent.UserID)
 			return nil, err
 
 		}
 
-		message = &Message{UserID: rawEvent.UserID}
+		message = &models.Message{UserID: rawEvent.UserID}
 		if err := message.Deserialize(rawEvent.Data); err != nil {
 			log.Printf("Error Deserializing Chat Message")
 			return nil, err
 		}
 
-		// chat = &Chat{ID: message.ChatID}
+		// chat = &models.Chat{ID: message.ChatID}
 		// if _, err := chat.GetInfo(db); err != nil {
 		// 	log.Printf( fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
 		// 	return nil, err
@@ -102,42 +105,25 @@ func handleMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 	return message, nil
 }
 
-func handleAccount(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
-	account := &Account{}
-
-	if err := account.Deserialize(rawEvent.Data); err != nil {
-		log.Printf("Error Deserializing Account")
-		return nil, err
-	}
-
-	if err := account.Create(db); err != nil {
-		log.Printf("Error Creating Account: %d\n", account.ID)
-		return nil, err
-	}
-
-	log.Printf("Account Created: %d\n", account.ID)
-	return account, nil
-}
-
-// func handleUserCreate(rawEvent *RawEvent, db *gorm.DB, account *Account) (*User, error) {
-// 	user := &User{Account: account}
+// func handleUserCreate(rawEvent *events.RawEvent, db *gorm.DB, account *Account) (*models.User, error) {
+// 	user := &models.User{Account: account}
 
 // 	if err := user.Deserialize(rawEvent.Data); err != nil {
-// 		log.Printf( "Error Deserializing User")
+// 		log.Printf( "Error Deserializing models.User")
 // 		return nil, err
 // 	}
 
 // 	if err := user.Create(db); err != nil {
-// 		log.Printf( fmt.Sprintf("Error Creating User: %d\n", user.ID))
+// 		log.Printf( fmt.Sprintf("Error Creating models.User: %d\n", user.ID))
 // 		return nil, err
 // 	}
 
-// 	log.Printf("User Created: %d\n", user.ID))
+// 	log.Printf("models.User Created: %d\n", user.ID))
 // 	return user, nil
 // }
 
-func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
-	var newUser = &User{ID: rawEvent.UserID}
+func handleUser(rawEvent *events.RawEvent, db *gorm.DB) (*models.User, error) {
+	var newUser = &models.User{ID: rawEvent.UserID}
 	// var status = &Status{}
 	if err := newUser.GetInfo(db); err != nil {
 		log.Printf("Error getting user info ID: %d\n", newUser.ID)
@@ -147,16 +133,16 @@ func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
 	case "change_status":
 
 		// TODO: Change to status event type
-		statusPayload := &User{}
+		statusPayload := &models.User{}
 		if err := statusPayload.Deserialize(rawEvent.Data); err != nil {
-			log.Printf("Error Deserializing User")
+			log.Printf("Error Deserializing models.User")
 			return nil, err
 		}
 
-		newUser.Status = &Status{Name: statusPayload.StatusName}
+		newUser.Status = &models.Status{Name: statusPayload.StatusName}
 
 		if err := newUser.SaveToDb(db); err != nil {
-			log.Printf(fmt.Sprintf("Error saving to DB User: %d\n", newUser.ID))
+			log.Printf(fmt.Sprintf("Error saving to DB models.User: %d\n", newUser.ID))
 			return nil, err
 		}
 	}

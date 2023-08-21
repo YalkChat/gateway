@@ -1,15 +1,15 @@
 package initialize
 
 import (
-	"yalk/chat"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
-func createAdminAccount(db *gorm.DB) (*chat.Account, error) {
+func createAdminAccount(db *gorm.DB) (*models.Account, error) {
 	// ! Hash for default admin's "admin" password in BCrypt, it will not be this and
 	// ! not be set this way.
-	adminAccount := &chat.Account{
+	adminAccount := &models.Account{
 		Email:    "admin@example.com",
 		Username: "admin",
 		Password: "$2a$14$QuxLu/0REKoTuZGcwZwX2eLsNKFrook.QMh/Esd8d4FocaE2sKHca",
@@ -21,8 +21,8 @@ func createAdminAccount(db *gorm.DB) (*chat.Account, error) {
 	return adminAccount, nil
 }
 
-func createAdminUser(db *gorm.DB, adminAccount *chat.Account) (*chat.User, error) {
-	adminUser := &chat.User{
+func createAdminUser(db *gorm.DB, adminAccount *models.Account) (*models.User, error) {
+	adminUser := &models.User{
 		Account:       adminAccount,
 		DisplayedName: "Admin",
 		AvatarUrl:     "/default.png",

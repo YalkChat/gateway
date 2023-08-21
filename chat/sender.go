@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"yalk/chat/clients"
+	"yalk/chat/events"
 )
 
-func (server *Server) Sender(c *clients.Client, ctx *EventContext) {
+func (server *Server) Sender(c *clients.Client, ctx *events.EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
 		// <-ctx.NotifyChannel

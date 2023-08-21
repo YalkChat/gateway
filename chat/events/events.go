@@ -1,10 +1,11 @@
-package chat
+package events
 
 import (
 	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
+	"yalk/chat/models"
 
 	"nhooyr.io/websocket"
 )
@@ -34,7 +35,7 @@ func (event *RawEvent) Deserialize(jsonEvent []byte) error {
 // TODO: Return &ServerMessageChannels
 func MakeEventChannels() *EventChannels {
 	return &EventChannels{
-		Messages: make(chan *Message, 1),
+		Messages: make(chan *models.Message, 1),
 		Accounts: make(chan *RawEvent, 1),
 		Users:    make(chan *RawEvent, 1),
 		Notify:   make(chan *RawEvent, 1),
@@ -45,7 +46,7 @@ func MakeEventChannels() *EventChannels {
 }
 
 type EventChannels struct {
-	Messages chan *Message
+	Messages chan *models.Message // TODO Continue to test implementation of types as payload data
 	Accounts chan *RawEvent
 	Users    chan *RawEvent
 	Notify   chan *RawEvent

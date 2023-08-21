@@ -3,11 +3,12 @@ package chat
 import (
 	"io"
 	"log"
+	"yalk/chat/events"
 
 	"nhooyr.io/websocket"
 )
 
-func (server *Server) Receiver(clientID uint, ctx *EventContext) {
+func (server *Server) Receiver(clientID uint, ctx *events.EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
 		ctx.NotifyChannel <- true // TODO: Verify why it was heren
@@ -39,7 +40,7 @@ func (server *Server) Receiver(clientID uint, ctx *EventContext) {
 		if messageType.String() == "MessageText" && err == nil {
 			log.Printf("Message received: %s", jsonEventMessage)
 
-			rawEvent := &RawEvent{UserID: clientID}
+			rawEvent := &events.RawEvent{UserID: clientID}
 
 			if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
 				log.Printf("Error unmarshaling RawEvent")
