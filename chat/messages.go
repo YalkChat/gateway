@@ -2,10 +2,8 @@ package chat
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"time"
-
-	"yalk/logger"
 
 	"gorm.io/gorm"
 )
@@ -39,6 +37,6 @@ func (message *Message) SaveToDb(db *gorm.DB) error {
 		tx.Rollback()
 		return tx.Error
 	}
-	logger.Info("MESG", fmt.Sprintf("Rows affected: %d", tx.RowsAffected))
+	log.Printf("Rows affected: %d", tx.RowsAffected)
 	return nil
 }

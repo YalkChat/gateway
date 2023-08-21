@@ -2,8 +2,7 @@ package chat
 
 import (
 	"fmt"
-
-	"yalk/logger"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +10,7 @@ import (
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
 func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) error {
-	logger.Info("HNDL", fmt.Sprintf("Handling incoming event for ID %d", clientID))
+	log.Printf("Handling incoming event for ID %d", clientID)
 	switch rawEvent.Type {
 	case "message":
 		newMessage, err := handleMessage(rawEvent, server.Db)
@@ -36,7 +35,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) err
 		// }
 		serializedData, err := newAccount.Serialize()
 		if err != nil {
-			logger.Err("ROUT", "Error serializing")
+			log.Printf("Error serializing")
 		}
 
 		rawEvent.Data = serializedData
@@ -50,7 +49,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) err
 		}
 		serializedData, err := updateUser.Serialize()
 		if err != nil {
-			logger.Err("ROUT", "Error serializing")
+			log.Printf("Error serializing")
 		}
 
 		rawEvent.Data = serializedData
@@ -60,7 +59,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *RawEvent) err
 		fmt.Println("ok intiial")
 
 	default:
-		logger.Warn("HNDL", "Payload Handler received an invalid event type")
+		log.Printf("Payload Handler received an invalid event type")
 		return fmt.Errorf("invalid_request")
 	}
 	return nil
@@ -75,27 +74,27 @@ func handleMessage(rawEvent *RawEvent, db *gorm.DB) (*Message, error) {
 	case "send":
 		user = &User{ID: rawEvent.UserID}
 		if err := user.GetInfo(db); err != nil {
-			logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", rawEvent.UserID))
+			log.Printf("Error getting user info ID: %d\n", rawEvent.UserID)
 			return nil, err
 
 		}
 
 		message = &Message{UserID: rawEvent.UserID}
 		if err := message.Deserialize(rawEvent.Data); err != nil {
-			logger.Err("HNDL", "Error Deserializing Chat Message")
+			log.Printf("Error Deserializing Chat Message")
 			return nil, err
 		}
 
 		// chat = &Chat{ID: message.ChatID}
 		// if _, err := chat.GetInfo(db); err != nil {
-		// 	logger.Err("HNDL", fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
+		// 	log.Printf( fmt.Sprintf("Error getting message chat ID: %d\n", message.UserID))
 		// 	return nil, err
 		// }
 
 		message.Chat = chat
 
 		if err := message.SaveToDb(db); err != nil {
-			logger.Err("HNDL", "Error saving to DB Chat Message")
+			log.Printf("Error saving to DB Chat Message")
 			return nil, err
 		}
 
@@ -107,16 +106,16 @@ func handleAccount(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
 	account := &Account{}
 
 	if err := account.Deserialize(rawEvent.Data); err != nil {
-		logger.Err("HNDL", "Error Deserializing Account")
+		log.Printf("Error Deserializing Account")
 		return nil, err
 	}
 
 	if err := account.Create(db); err != nil {
-		logger.Err("HNDL", fmt.Sprintf("Error Creating Account: %d\n", account.ID))
+		log.Printf("Error Creating Account: %d\n", account.ID)
 		return nil, err
 	}
 
-	logger.Info("HNDL", fmt.Sprintf("Account Created: %d\n", account.ID))
+	log.Printf("Account Created: %d\n", account.ID)
 	return account, nil
 }
 
@@ -124,16 +123,16 @@ func handleAccount(rawEvent *RawEvent, db *gorm.DB) (*Account, error) {
 // 	user := &User{Account: account}
 
 // 	if err := user.Deserialize(rawEvent.Data); err != nil {
-// 		logger.Err("HNDL", "Error Deserializing User")
+// 		log.Printf( "Error Deserializing User")
 // 		return nil, err
 // 	}
 
 // 	if err := user.Create(db); err != nil {
-// 		logger.Err("HNDL", fmt.Sprintf("Error Creating User: %d\n", user.ID))
+// 		log.Printf( fmt.Sprintf("Error Creating User: %d\n", user.ID))
 // 		return nil, err
 // 	}
 
-// 	logger.Info("HNDL", fmt.Sprintf("User Created: %d\n", user.ID))
+// 	log.Printf("User Created: %d\n", user.ID))
 // 	return user, nil
 // }
 
@@ -141,7 +140,7 @@ func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
 	var newUser = &User{ID: rawEvent.UserID}
 	// var status = &Status{}
 	if err := newUser.GetInfo(db); err != nil {
-		logger.Err("HNDL", fmt.Sprintf("Error getting user info ID: %d\n", newUser.ID))
+		log.Printf("Error getting user info ID: %d\n", newUser.ID)
 		return nil, err
 	}
 	switch rawEvent.Action {
@@ -150,14 +149,14 @@ func handleUser(rawEvent *RawEvent, db *gorm.DB) (*User, error) {
 		// TODO: Change to status event type
 		statusPayload := &User{}
 		if err := statusPayload.Deserialize(rawEvent.Data); err != nil {
-			logger.Err("HNDL", "Error Deserializing User")
+			log.Printf("Error Deserializing User")
 			return nil, err
 		}
 
 		newUser.Status = &Status{Name: statusPayload.StatusName}
 
 		if err := newUser.SaveToDb(db); err != nil {
-			logger.Err("HNDL", fmt.Sprintf("Error saving to DB User: %d\n", newUser.ID))
+			log.Printf(fmt.Sprintf("Error saving to DB User: %d\n", newUser.ID))
 			return nil, err
 		}
 	}

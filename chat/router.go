@@ -2,7 +2,7 @@ package chat
 
 import (
 	"encoding/json"
-	"yalk/logger"
+	"log"
 )
 
 // func (server *Server) SendToAdmins(message *Message, payload []byte) {}
@@ -11,35 +11,35 @@ func (server *Server) Router() {
 	for {
 		select {
 		case message := <-server.Channels.Messages:
-			logger.Info("ROUT", "Router: Broadcast message received")
+			log.Printf("Router: Broadcast message received")
 
 			serializedData, err := message.Serialize()
 			if err != nil {
-				logger.Err("ROUT", "Error serializing")
+				log.Printf("Error serializing")
 			}
 
 			newRawEvent := RawEvent{UserID: message.UserID, Type: message.Type(), Data: serializedData}
 
 			jsonEvent, err := json.Marshal(newRawEvent)
 			if err != nil {
-				logger.Err("ROUT", "Error serializing RawEvent")
+				log.Printf("Error serializing RawEvent")
 			}
 
 			server.SendToChat(message, jsonEvent)
 
 		case rawEvent := <-server.Channels.Accounts:
-			logger.Info("ROUT", "Router: Account event received")
+			log.Printf("Router: Account event received")
 			jsonEvent, err := json.Marshal(rawEvent)
 			if err != nil {
-				logger.Err("ROUT", "Error serializing RawEvent")
+				log.Printf("Error serializing RawEvent")
 			}
 			server.SendBack(rawEvent.UserID, jsonEvent)
 
 		case rawEvent := <-server.Channels.Users:
-			logger.Info("ROUT", "Router: User event received")
+			log.Printf("Router: User event received")
 			jsonEvent, err := json.Marshal(rawEvent)
 			if err != nil {
-				logger.Err("ROUT", "Error serializing RawEvent")
+				log.Printf("Error serializing RawEvent")
 			}
 			server.SendAll(jsonEvent)
 		}
@@ -62,7 +62,7 @@ func (server *Server) SendToChat(message *Message, payload []byte) {
 	chat := &Chat{ID: message.ChatID}
 	user, err := chat.GetUsers(server.Db)
 	if err != nil {
-		logger.Err("ROUT", "Error getting chat users")
+		log.Printf("Error getting chat users")
 		return
 	}
 	for _, user := range user {

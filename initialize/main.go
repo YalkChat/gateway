@@ -3,7 +3,6 @@ package initialize
 import (
 	"fmt"
 	"log"
-	"yalk/logger"
 
 	"gorm.io/gorm"
 )
@@ -19,7 +18,7 @@ func InitializeApp(db *gorm.DB) error {
 		fmt.Printf("Can't create bot account, error: %v", err)
 		return err
 	}
-	logger.Info("CORE", fmt.Sprintf("Created bot account: %v", botAccount.Username))
+	log.Printf("Created bot account: %v", botAccount.Username)
 
 	botUser, err := createBotUser(db, botAccount)
 	if err != nil {
