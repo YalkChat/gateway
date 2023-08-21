@@ -5,9 +5,6 @@ import (
 	"log"
 	"yalk/chat/events"
 	"yalk/chat/handlers"
-	"yalk/chat/models"
-
-	"gorm.io/gorm"
 )
 
 // * Handle incoming user payload and process it eventually
@@ -46,7 +43,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *events.RawEve
 		server.Channels.Accounts <- rawEvent
 
 	case "user":
-		updateUser, err := handleUser(rawEvent, server.Db)
+		updateUser, err := handlers.HandleUser(rawEvent, server.Db)
 		if err != nil {
 			return err
 		}
@@ -66,48 +63,4 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *events.RawEve
 		return fmt.Errorf("invalid_request")
 	}
 	return nil
-}
-
-// func handleUserCreate(rawEvent *events.RawEvent, db *gorm.DB, account *Account) (*models.User, error) {
-// 	user := &models.User{Account: account}
-
-// 	if err := user.Deserialize(rawEvent.Data); err != nil {
-// 		log.Printf( "Error Deserializing models.User")
-// 		return nil, err
-// 	}
-
-// 	if err := user.Create(db); err != nil {
-// 		log.Printf( fmt.Sprintf("Error Creating models.User: %d\n", user.ID))
-// 		return nil, err
-// 	}
-
-// 	log.Printf("models.User Created: %d\n", user.ID))
-// 	return user, nil
-// }
-
-func handleUser(rawEvent *events.RawEvent, db *gorm.DB) (*models.User, error) {
-	var newUser = &models.User{ID: rawEvent.UserID}
-	// var status = &Status{}
-	if err := newUser.GetInfo(db); err != nil {
-		log.Printf("Error getting user info ID: %d\n", newUser.ID)
-		return nil, err
-	}
-	switch rawEvent.Action {
-	case "change_status":
-
-		// TODO: Change to status event type
-		statusPayload := &models.User{}
-		if err := statusPayload.Deserialize(rawEvent.Data); err != nil {
-			log.Printf("Error Deserializing models.User")
-			return nil, err
-		}
-
-		newUser.Status = &models.Status{Name: statusPayload.StatusName}
-
-		if err := newUser.SaveToDb(db); err != nil {
-			log.Printf(fmt.Sprintf("Error saving to DB models.User: %d\n", newUser.ID))
-			return nil, err
-		}
-	}
-	return newUser, nil
 }
