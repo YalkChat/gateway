@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 	"yalk/chat"
-	"yalk/config" // ? I'm not entirely sure I should do this thing.
+	"yalk/config" // XXX: I'm not entirely sure I should do this thing.
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,7 +11,7 @@ import (
 
 func InitializeDb(config *config.Config) (*gorm.DB, error) {
 
-	db, err := openDbConnection(config)
+	db, err := OpenDbConnection(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to Open DB Connection")
 	}
@@ -23,7 +23,8 @@ func InitializeDb(config *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func openDbConnection(config *config.Config) (*gorm.DB, error) {
+// HACK: This should be a private method
+func OpenDbConnection(config *config.Config) (*gorm.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName, config.DbSslMode)
 
