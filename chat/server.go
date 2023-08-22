@@ -50,7 +50,6 @@ type Server struct {
 	Clients              map[uint]*clients.Client
 	ClientsMu            sync.Mutex
 	ClientsMessageBuffer uint
-	Channels             *chatmodels.EventChannels
 	Db                   *gorm.DB
 	SessionsManager      *sessions.Manager
 	MessageMap           map[uint]bool
