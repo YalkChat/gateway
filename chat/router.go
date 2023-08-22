@@ -3,8 +3,8 @@ package chat
 import (
 	"encoding/json"
 	"log"
-	"yalk/chat/events"
-	"yalk/chat/models"
+	"yalk/chat/chatmodels"
+	"yalk/database/dbmodels"
 )
 
 // func (server *Server) SendToAdmins(message *Message, payload []byte) {}
@@ -20,7 +20,7 @@ func (server *Server) Router() {
 				log.Printf("Error serializing")
 			}
 
-			newRawEvent := events.RawEvent{UserID: message.UserID, Type: message.Type(), Data: serializedData}
+			newRawEvent := chatmodels.RawEvent{UserID: message.UserID, Type: message.Type(), Data: serializedData}
 
 			jsonEvent, err := json.Marshal(newRawEvent)
 			if err != nil {
@@ -59,9 +59,9 @@ func (server *Server) Router() {
 // 	}
 // }
 
-func (server *Server) SendToChat(message *models.Message, payload []byte) {
+func (server *Server) SendToChat(message *dbmodels.Message, payload []byte) {
 	// TODO: Move to server method
-	chat := &models.Chat{ID: message.ChatID}
+	chat := &dbmodels.Chat{ID: message.ChatID}
 	user, err := chat.GetUsers(server.Db)
 	if err != nil {
 		log.Printf("Error getting chat users")

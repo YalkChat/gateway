@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"log"
-	"yalk/chat/events"
-	"yalk/chat/models"
+	"yalk/chat/chatmodels"
+	"yalk/database/dbmodels"
 
 	"gorm.io/gorm"
 )
 
-func HandleUser(rawEvent *events.RawEvent, db *gorm.DB) (*models.User, error) {
-	var newUser = &models.User{ID: rawEvent.UserID}
+func HandleUser(rawEvent *chatmodels.RawEvent, db *gorm.DB) (*dbmodels.User, error) {
+	var newUser = &dbmodels.User{ID: rawEvent.UserID}
 	// var status = &Status{}
 	if err := newUser.GetInfo(db); err != nil {
 		log.Printf("Error getting user info ID: %d\n", newUser.ID)
@@ -19,13 +19,13 @@ func HandleUser(rawEvent *events.RawEvent, db *gorm.DB) (*models.User, error) {
 	case "change_status":
 
 		// TODO: Change to status event type
-		statusPayload := &models.User{}
+		statusPayload := &dbmodels.User{}
 		if err := statusPayload.Deserialize(rawEvent.Data); err != nil {
 			log.Printf("Error Deserializing models.User")
 			return nil, err
 		}
 
-		newUser.Status = &models.Status{Name: statusPayload.StatusName}
+		newUser.Status = &dbmodels.Status{Name: statusPayload.StatusName}
 
 		if err := newUser.SaveToDb(db); err != nil {
 			log.Printf("Error saving to DB models.User: %d\n", newUser.ID)
@@ -37,8 +37,8 @@ func HandleUser(rawEvent *events.RawEvent, db *gorm.DB) (*models.User, error) {
 
 // TODO: Figure out where to keep models related functions and handlers (like in this case)
 // XXX: This function was commented out when moving it for some reason
-func handleUserCreate(rawEvent *events.RawEvent, db *gorm.DB, account *models.Account) (*models.User, error) {
-	user := &models.User{Account: account}
+func handleUserCreate(rawEvent *chatmodels.RawEvent, db *gorm.DB, account *dbmodels.Account) (*dbmodels.User, error) {
+	user := &dbmodels.User{Account: account}
 
 	if err := user.Deserialize(rawEvent.Data); err != nil {
 		log.Printf("Error Deserializing User")

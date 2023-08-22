@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"yalk/chat/models"
 	"yalk/config" // XXX: I'm not entirely sure I should do this thing.
+	"yalk/database/dbmodels"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -39,7 +39,7 @@ func OpenDbConnection(config *config.Config) (*gorm.DB, error) {
 }
 
 func createDbTables(db *gorm.DB) error {
-	if err := db.AutoMigrate(&models.Account{}, &models.User{}, &models.Chat{}, &models.Message{}, &models.ServerSettings{}, &models.Status{}); err != nil {
+	if err := db.AutoMigrate(&dbmodels.Account{}, &dbmodels.User{}, &dbmodels.Chat{}, &dbmodels.Message{}, &dbmodels.ServerSettings{}, &dbmodels.Status{}); err != nil {
 		return err
 	}
 	return nil

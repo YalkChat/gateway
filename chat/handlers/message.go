@@ -2,27 +2,27 @@ package handlers
 
 import (
 	"log"
-	"yalk/chat/events"
-	"yalk/chat/models"
+	"yalk/chat/chatmodels"
+	"yalk/database/dbmodels"
 
 	"gorm.io/gorm"
 )
 
-func HandleMessage(rawEvent *events.RawEvent, db *gorm.DB) (*models.Message, error) {
-	var user *models.User
-	var message *models.Message
-	var chat *models.Chat
+func HandleMessage(rawEvent *chatmodels.RawEvent, db *gorm.DB) (*dbmodels.Message, error) {
+	var user *dbmodels.User
+	var message *dbmodels.Message
+	var chat *dbmodels.Chat
 
 	switch rawEvent.Action {
 	case "send":
-		user = &models.User{ID: rawEvent.UserID}
+		user = &dbmodels.User{ID: rawEvent.UserID}
 		if err := user.GetInfo(db); err != nil {
 			log.Printf("Error getting user info ID: %d\n", rawEvent.UserID)
 			return nil, err
 
 		}
 
-		message = &models.Message{UserID: rawEvent.UserID}
+		message = &dbmodels.Message{UserID: rawEvent.UserID}
 		if err := message.Deserialize(rawEvent.Data); err != nil {
 			log.Printf("Error Deserializing Chat Message")
 			return nil, err

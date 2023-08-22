@@ -3,13 +3,13 @@ package chat
 import (
 	"fmt"
 	"log"
-	"yalk/chat/events"
+	"yalk/chat/chatmodels"
 	"yalk/chat/handlers"
 )
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
-func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *events.RawEvent) error {
+func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *chatmodels.RawEvent) error {
 	log.Printf("Handling incoming event for ID %d", clientID)
 	switch rawEvent.Type {
 	case "message":

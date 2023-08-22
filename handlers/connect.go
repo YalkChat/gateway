@@ -9,9 +9,9 @@ import (
 	"time"
 	"yalk/cattp"
 	"yalk/chat"
+	"yalk/chat/chatmodels"
 	"yalk/chat/clients"
-	"yalk/chat/events"
-	"yalk/chat/models"
+	"yalk/database/dbmodels"
 
 	"nhooyr.io/websocket"
 )
@@ -43,7 +43,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	}
 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
-	account := &models.Account{}
+	account := &dbmodels.Account{}
 	account.ID = session.AccountID
 
 	if err = account.GetInfo(server.Db); err != nil {
@@ -53,7 +53,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		return
 	}
 
-	var user *models.User
+	var user *dbmodels.User
 	tx := server.Db.Preload("Account").Preload("Chats").Preload("Chats.ChatType").Find(&user, "account_id =?", account.ID)
 	if tx.Error != nil {
 		log.Printf("Can't get user info - %s", r.RemoteAddr)
@@ -73,7 +73,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	channelsContext := &events.EventContext{
+	channelsContext := &chatmodels.EventContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,
@@ -90,7 +90,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	var initialPayloadSent bool // Add a flag to tracak wheether the initial payload has been sent
 
 	// Send initial payload to new client
-	initalPayload, err := makeInitialPayload(server.Db, user)
+	initalPayload, err := MakeInitialPayload(server.Db, user)
 	if err != nil {
 		log.Print("Error marshalling payload")
 		return
@@ -103,7 +103,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	initialPayloadSent = true
 
 	user.ChangeStatus(server.Db, "online")
-	user.Status = &models.Status{Name: "online"}
+	user.Status = &dbmodels.Status{Name: "online"}
 
 	// Broadcast user online event to all connected clients, but wait for initial payload to be sent first
 	if initialPayloadSent {
@@ -113,7 +113,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		if err != nil {
 			log.Printf("Error serializing user online: %v", err)
 		}
-		var rawEvent = &events.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
+		var rawEvent = &chatmodels.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
 		jsonRawEvent, err := json.Marshal(rawEvent)
 		if err != nil {
 			log.Printf("Error serializing raw event: %v", err)
@@ -140,14 +140,14 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 				log.Printf("Error changing status upon closure")
 			}
 
-			var userStatus = &models.User{StatusName: "offline"}
+			var userStatus = &dbmodels.User{StatusName: "offline"}
 
 			userStatusPayload, err := userStatus.Serialize()
 			if err != nil {
 				log.Printf("Error serializing user status: %v", err)
 			}
 
-			var rawEvent = &events.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
+			var rawEvent = &chatmodels.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
 
 			log.Printf("%d disconnected after 10s", client.ID)
 			if err := server.HandleIncomingEvent(client.ID, rawEvent); err != nil {

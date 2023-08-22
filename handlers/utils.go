@@ -2,15 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
-	"yalk/chat/events"
-	"yalk/chat/models"
+	"yalk/chat/chatmodels"
+	"yalk/database/dbmodels"
 
 	"gorm.io/gorm"
 )
 
-func makeInitialPayload(db *gorm.DB, user *models.User) ([]byte, error) {
+func MakeInitialPayload(db *gorm.DB, user *dbmodels.User) ([]byte, error) {
 
-	var chats *[]models.Chat
+	var chats *[]dbmodels.Chat
 	tx := db.Joins("left join chat_users on chat_users.chat_id=chats.id").
 		Where("chat_users.user_id = ?", user.ID).
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
@@ -23,7 +23,7 @@ func makeInitialPayload(db *gorm.DB, user *models.User) ([]byte, error) {
 		return nil, tx.Error
 	}
 
-	var serverAccounts *[]models.Account
+	var serverAccounts *[]dbmodels.Account
 	if user.IsAdmin {
 		tx = db.Find(&serverAccounts)
 		if tx.Error != nil {
@@ -31,17 +31,17 @@ func makeInitialPayload(db *gorm.DB, user *models.User) ([]byte, error) {
 		}
 	}
 
-	var users *[]models.User
+	var users *[]dbmodels.User
 	tx = db.Find(&users)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 
 	initialPayload := struct {
-		User     *models.User      `json:"user"`
-		Chats    *[]models.Chat    `json:"chats"`
-		Accounts *[]models.Account `json:"accounts"`
-		Users    *[]models.User    `json:"users"`
+		User     *dbmodels.User      `json:"user"`
+		Chats    *[]dbmodels.Chat    `json:"chats"`
+		Accounts *[]dbmodels.Account `json:"accounts"`
+		Users    *[]dbmodels.User    `json:"users"`
 	}{user, chats, serverAccounts, users}
 
 	jsonPayload, err := json.Marshal(&initialPayload)
@@ -49,7 +49,7 @@ func makeInitialPayload(db *gorm.DB, user *models.User) ([]byte, error) {
 		return nil, err
 	}
 
-	newRawEvent := &events.RawEvent{Type: "initial", Data: jsonPayload}
+	newRawEvent := &chatmodels.RawEvent{Type: "initial", Data: jsonPayload}
 
 	jsonEvent, err := newRawEvent.Serialize()
 	if err != nil {
