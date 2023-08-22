@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"yalk/chat/chatmodels"
@@ -13,47 +14,59 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *chatmodels.Ra
 	log.Printf("Handling incoming event for ID %d", clientID)
 	switch rawEvent.Type {
 	case "message":
+		// TODO: Change name of function, or refactor function
 		newMessage, err := handlers.HandleMessage(rawEvent, server.Db)
 		if err != nil {
 			return err
 		}
-		server.Channels.Messages <- newMessage
-
-	case "user_login":
-		server.Channels.Notify <- rawEvent
-
-	// ? Non forwarded events - server only
-	case "account":
-		newAccount, err := handlers.HandleAccount(rawEvent, server.Db)
-		if err != nil {
-			return err
-		}
-		// // TODO: To move to initial profile setup
-		// newUser, err := handleUserCreate(rawEvent, server.Db, newAccount)
-		// if err != nil {
-		// 	return err
-		// }
-		serializedData, err := newAccount.Serialize()
+		serializedData, err := newMessage.Serialize()
 		if err != nil {
 			log.Printf("Error serializing")
 		}
 
-		rawEvent.Data = serializedData
+		newRawEvent := chatmodels.RawEvent{UserID: newMessage.UserID, Type: newMessage.Type(), Data: serializedData}
 
-		server.Channels.Accounts <- rawEvent
-
-	case "user":
-		updateUser, err := handlers.HandleUser(rawEvent, server.Db)
+		jsonEvent, err := json.Marshal(newRawEvent)
 		if err != nil {
-			return err
+			log.Printf("Error serializing RawEvent")
 		}
-		serializedData, err := updateUser.Serialize()
-		if err != nil {
-			log.Printf("Error serializing")
-		}
+		server.SendToChat(newMessage, jsonEvent)
 
-		rawEvent.Data = serializedData
-		server.Channels.Users <- rawEvent
+	// case "user_login":
+	// 	server.Channels.Notify <- rawEvent
+
+	// // ? Non forwarded events - server only
+	// case "account":
+	// 	newAccount, err := handlers.HandleAccount(rawEvent, server.Db)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	// // TODO: To move to initial profile setup
+	// 	// newUser, err := handleUserCreate(rawEvent, server.Db, newAccount)
+	// 	// if err != nil {
+	// 	// 	return err
+	// 	// }
+	// 	serializedData, err := newAccount.Serialize()
+	// 	if err != nil {
+	// 		log.Printf("Error serializing")
+	// 	}
+
+	// 	rawEvent.Data = serializedData
+
+	// 	server.Channels.Accounts <- rawEvent
+
+	// case "user":
+	// 	updateUser, err := handlers.HandleUser(rawEvent, server.Db)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	serializedData, err := updateUser.Serialize()
+	// 	if err != nil {
+	// 		log.Printf("Error serializing")
+	// 	}
+
+	// 	rawEvent.Data = serializedData
+	// 	server.Channels.Users <- rawEvent
 
 	case "initial":
 		fmt.Println("ok intiial")
