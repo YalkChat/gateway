@@ -8,15 +8,15 @@ import (
 	"sync"
 	"time"
 	"yalk/cattp"
-	"yalk/chat"
 	"yalk/chat/chatmodels"
 	"yalk/chat/clients"
+	"yalk/chat/server"
 	"yalk/database/dbmodels"
 
 	"nhooyr.io/websocket"
 )
 
-var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
+var ConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
 	log.Printf("Requested WebSocket - %s", r.RemoteAddr)
 
 	// TODO: Custom config for parameters on admin site
