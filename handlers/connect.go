@@ -9,7 +9,6 @@ import (
 	"time"
 	"yalk/cattp"
 	"yalk/chat/chatmodels"
-	"yalk/chat/clients"
 	"yalk/chat/server"
 	"yalk/database/dbmodels"
 
@@ -95,8 +94,8 @@ var ConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter
 		log.Print("Error marshalling payload")
 		return
 	}
-
-	if clients.ClientWriteWithTimeout(client.ID, r.Context(), time.Second*5, conn, initalPayload); err != nil {
+	// TODO: Method on server Type
+	if chatmodels.ClientWriteWithTimeout(client.ID, r.Context(), time.Second*5, conn, initalPayload); err != nil {
 		log.Print("Timeout Initial Payload")
 		return
 	}
