@@ -29,14 +29,12 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[uint]*clients.Client)
-	messageChannels := chatmodels.MakeEventChannels() // TODO Move this to server package
 	messageMap := make(map[uint]bool)
 
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,
 		Clients:              clientsMap,
 		ClientsMessageBuffer: bufferLenght,
-		Channels:             messageChannels,
 		Db:                   db,
 		SessionsManager:      sessionsManager,
 		MessageMap:           messageMap,
