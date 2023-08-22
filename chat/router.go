@@ -1,9 +1,7 @@
 package chat
 
 import (
-	"encoding/json"
 	"log"
-	"yalk/chat/chatmodels"
 	"yalk/database/dbmodels"
 )
 
@@ -11,40 +9,24 @@ import (
 
 func (server *Server) Router() {
 	for {
-		select {
-		case message := <-server.Channels.Messages:
-			log.Printf("Router: Broadcast message received")
+		// select {
 
-			serializedData, err := message.Serialize()
-			if err != nil {
-				log.Printf("Error serializing")
-			}
+		// case rawEvent := <-server.Channels.Accounts:
+		// 	log.Printf("Router: Account event received")
+		// 	jsonEvent, err := json.Marshal(rawEvent)
+		// 	if err != nil {
+		// 		log.Printf("Error serializing RawEvent")
+		// 	}
+		// 	server.SendBack(rawEvent.UserID, jsonEvent)
 
-			newRawEvent := chatmodels.RawEvent{UserID: message.UserID, Type: message.Type(), Data: serializedData}
-
-			jsonEvent, err := json.Marshal(newRawEvent)
-			if err != nil {
-				log.Printf("Error serializing RawEvent")
-			}
-
-			server.SendToChat(message, jsonEvent)
-
-		case rawEvent := <-server.Channels.Accounts:
-			log.Printf("Router: Account event received")
-			jsonEvent, err := json.Marshal(rawEvent)
-			if err != nil {
-				log.Printf("Error serializing RawEvent")
-			}
-			server.SendBack(rawEvent.UserID, jsonEvent)
-
-		case rawEvent := <-server.Channels.Users:
-			log.Printf("Router: User event received")
-			jsonEvent, err := json.Marshal(rawEvent)
-			if err != nil {
-				log.Printf("Error serializing RawEvent")
-			}
-			server.SendAll(jsonEvent)
-		}
+		// case rawEvent := <-server.Channels.Users:
+		// 	log.Printf("Router: User event received")
+		// 	jsonEvent, err := json.Marshal(rawEvent)
+		// 	if err != nil {
+		// 		log.Printf("Error serializing RawEvent")
+		// 	}
+		// 	server.SendAll(jsonEvent)
+		// }
 	}
 }
 
