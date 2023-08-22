@@ -1,10 +1,10 @@
-package server
+package appserver
 
 import (
 	"fmt"
 	"sync"
 	"time"
-	"yalk/chat"
+	"yalk/chat/server"
 	"yalk/config"
 	"yalk/sessions"
 
@@ -17,7 +17,7 @@ func RunServer(config *config.Config, db *gorm.DB) {
 	sessionLenght := time.Hour * 720
 	sessionsManager := sessions.New(db, sessionLenght)
 
-	chatServer := chat.NewServer(16, db, sessionsManager)
+	chatServer := server.NewServer(16, db, sessionsManager)
 
 	wg.Add(1)
 	go func() {
