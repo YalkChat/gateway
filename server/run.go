@@ -19,11 +19,11 @@ func RunServer(config *config.Config, db *gorm.DB) {
 
 	chatServer := chat.NewServer(16, db, sessionsManager)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		chatServer.Router()
-	}()
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	chatServer.Router()
+	// }()
 
 	wg.Add(1)
 	go func() {
