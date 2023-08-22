@@ -68,6 +68,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *chatmodels.Ra
 	// 	rawEvent.Data = serializedData
 	// 	server.Channels.Users <- rawEvent
 
+	// TODO: The goddamn password is sent with the initial payload
 	case "initial":
 		fmt.Println("ok intiial")
 
