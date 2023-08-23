@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"yalk/chat/chatmodels"
 	"yalk/chat/handlers"
+	"yalk/chat/models"
 )
 
 // * Handle incoming user payload and process it eventually
 // * forwarding in the correct routine channels for other users to receive.
-func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *chatmodels.RawEvent) error {
+func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *models.RawEvent) error {
 	log.Printf("Handling incoming event for ID %d", clientID)
 	switch rawEvent.Type {
 	case "message":
@@ -24,7 +24,7 @@ func (server *Server) HandleIncomingEvent(clientID uint, rawEvent *chatmodels.Ra
 			log.Printf("Error serializing")
 		}
 
-		newRawEvent := chatmodels.RawEvent{UserID: newMessage.UserID, Type: newMessage.Type(), Data: serializedData}
+		newRawEvent := models.RawEvent{UserID: newMessage.UserID, Type: newMessage.Type(), Data: serializedData}
 
 		jsonEvent, err := json.Marshal(newRawEvent)
 		if err != nil {

@@ -2,7 +2,7 @@ package server
 
 import (
 	"log"
-	"yalk/database/dbmodels"
+	"yalk/chat/models"
 )
 
 // func (server *Server) SendToAdmins(message *Message, payload []byte) {}
@@ -41,9 +41,13 @@ func (server *Server) Router() {
 // 	}
 // }
 
-func (server *Server) SendToChat(message *dbmodels.Message, payload []byte) {
+type MessageSender interface {
+	Send(message *models.Message)
+}
+
+func (server *Server) SendToChat(message *models.Message, payload []byte) {
 	// TODO: Move to server method
-	chat := &dbmodels.Chat{ID: message.ChatID}
+	chat := &models.Chat{ID: message.ChatID}
 	user, err := chat.GetUsers(server.Db)
 	if err != nil {
 		log.Printf("Error getting chat users")

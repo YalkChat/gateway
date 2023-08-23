@@ -3,7 +3,7 @@ package server
 import (
 	"sync"
 	"time"
-	"yalk/chat/chatmodels"
+	"yalk/chat/models"
 
 	"yalk/sessions"
 
@@ -14,10 +14,10 @@ import (
 
 type ChatServer interface {
 	RegisterClient(*websocket.Conn, string)
-	SendMessage(*chatmodels.RawEvent)
-	SendMessageToAll(*chatmodels.RawEvent)
-	Sender(*chatmodels.Client, *chatmodels.EventContext)
-	Receiver(*chatmodels.EventContext)
+	SendMessage(*models.RawEvent)
+	SendMessageToAll(*models.RawEvent)
+	Sender(*models.Client, *models.EventContext)
+	Receiver(*models.EventContext)
 	HandlePayload([]byte)
 }
 
@@ -27,7 +27,7 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 	// sessionsManager := sessions.New(sessionLen)
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
-	clientsMap := make(map[uint]*chatmodels.Client)
+	clientsMap := make(map[uint]*models.Client)
 	messageMap := make(map[uint]bool)
 
 	chatServer := &Server{
@@ -44,7 +44,7 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 
 type Server struct {
 	SendLimiter          *rate.Limiter
-	Clients              map[uint]*chatmodels.Client
+	Clients              map[uint]*models.Client
 	ClientsMu            sync.Mutex
 	ClientsMessageBuffer uint
 	Db                   *gorm.DB
