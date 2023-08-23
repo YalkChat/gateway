@@ -17,10 +17,10 @@ package main
 
 import (
 	"fmt"
+	"yalk/appserver"
 	"yalk/config"
 	"yalk/database"
 	"yalk/initialize"
-	"yalk/server"
 
 	"github.com/joho/godotenv"
 )
@@ -61,5 +61,5 @@ func main() {
 	}
 	fmt.Println("app initialized")
 
-	server.RunServer(config, db)
+	appserver.RunServer(config, db)
 }

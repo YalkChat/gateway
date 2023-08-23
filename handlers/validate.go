@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 	"yalk/cattp"
-	"yalk/chat"
+	"yalk/chat/server"
 )
 
-var ValidateHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
+var ValidateHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, context *server.Server) {
 	defer r.Body.Close()
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)

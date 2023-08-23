@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 	"yalk/cattp"
-	"yalk/chat"
+	"yalk/chat/server"
 	"yalk/database/dbmodels"
 	"yalk/sessions"
 
@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var SigninHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
+var SigninHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, context *server.Server) {
 	defer r.Body.Close()
 
 	dbSession, err := context.SessionsManager.Validate(context.Db, r, "YLK")

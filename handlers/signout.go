@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 	"yalk/cattp"
-	"yalk/chat"
+	"yalk/chat/server"
 )
 
-var SignoutHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
+var SignoutHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, context *server.Server) {
 	defer r.Body.Close()
 
 	cookie, err := r.Cookie("YLK")
