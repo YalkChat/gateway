@@ -1,4 +1,4 @@
-package chat
+package dbmodels
 
 import (
 	"encoding/json"

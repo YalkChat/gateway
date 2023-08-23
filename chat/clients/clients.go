@@ -2,9 +2,8 @@ package clients
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"time"
-	"yalk/logger"
 
 	"nhooyr.io/websocket"
 )
@@ -16,7 +15,7 @@ type Client struct {
 }
 
 func ClientWriteWithTimeout(id uint, ctx context.Context, timeout time.Duration, c *websocket.Conn, msg []byte) error {
-	logger.Info("CLNT", fmt.Sprintf("Sending with Timeout to %d", id))
+	log.Printf("Sending with Timeout to %d", id)
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 

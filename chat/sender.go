@@ -1,15 +1,14 @@
 package chat
 
 import (
-	"fmt"
 	"log"
 	"time"
 
+	"yalk/chat/chatmodels"
 	"yalk/chat/clients"
-	"yalk/logger"
 )
 
-func (server *Server) Sender(c *clients.Client, ctx *EventContext) {
+func (server *Server) Sender(c *clients.Client, ctx *chatmodels.EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
 		// <-ctx.NotifyChannel
@@ -23,7 +22,7 @@ func (server *Server) Sender(c *clients.Client, ctx *EventContext) {
 			// break Run
 			return
 		case payload := <-c.Msgs:
-			logger.Info("SEND", fmt.Sprintf("Sending payload to %d", c.ID))
+			log.Printf("Sending payload to %d", c.ID)
 			err := clients.ClientWriteWithTimeout(c.ID, ctx.Request.Context(), time.Second*5, ctx.Connection, payload)
 			if err != nil {
 				// break Run

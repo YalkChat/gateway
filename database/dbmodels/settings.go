@@ -1,4 +1,4 @@
-package chat
+package dbmodels
 
 import "gorm.io/gorm"
 

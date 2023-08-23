@@ -17,8 +17,10 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"time"
+	"yalk/config"
+	"yalk/database"
+	"yalk/initialize"
+	"yalk/server"
 
 	"github.com/joho/godotenv"
 )
@@ -26,7 +28,7 @@ import (
 func init() {
 	// * Clear console is kept only for debug reasons
 	// * Won't be in the release version
-	log.Print("\033[H\033[2J") // Clear console
+	// log.Print("\033[H\033[2J") // Clear console
 	var version string = "alpha-0.2"
 	fmt.Printf("version: %s\n", version) // make it os.env
 }
@@ -39,28 +41,25 @@ func main() {
 	}
 	fmt.Println("loaded env variables")
 
-	config, err := loadConfig()
+	config, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("failed to load config: %v", err)
 		return
 	}
 	fmt.Println("Config loaded")
 
-	// ! Just testing if measuring time of execution of individual functions is useful,
-	// ! might not be at all and be removed
-	start := time.Now()
-	db, err := initializeDb(config)
+	db, err := database.InitializeDb(config)
 	if err != nil {
 		fmt.Printf("failed to inizialize db: %v", err)
 		return
 	}
-	fmt.Printf("DB connection initialized in %s\n", time.Since(start))
+	fmt.Println("DB connection initialized")
 
-	if err := initializeApp(db); err != nil {
+	if err := initialize.InitializeApp(db); err != nil {
 		fmt.Printf("failed to inizialize app: %v", err)
 		return
 	}
 	fmt.Println("app initialized")
 
-	runServer(config, db)
+	server.RunServer(config, db)
 }

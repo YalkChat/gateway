@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -18,7 +18,7 @@ type Config struct {
 	HttpUrl    string
 }
 
-func loadConfig() (*Config, error) {
+func LoadConfig() (*Config, error) {
 
 	config := Config{
 		DbHost:     os.Getenv("DB_HOST"),

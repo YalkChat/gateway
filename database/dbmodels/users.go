@@ -1,11 +1,10 @@
-package chat
+package dbmodels
 
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"log"
 	"time"
-	"yalk/logger"
 
 	"gorm.io/gorm"
 )
@@ -62,7 +61,7 @@ func (user *User) GetJoinedChats(db *gorm.DB) ([]*Chat, error) {
 
 func (user *User) ChangeStatus(db *gorm.DB, statusName string) error {
 	if user.StatusName == statusName {
-		logger.Warn("USER", fmt.Sprintf("Requested a change to same status %s", statusName))
+		log.Printf("Requested a change to same status %s", statusName)
 		return nil
 	}
 

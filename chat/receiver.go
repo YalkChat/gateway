@@ -1,15 +1,14 @@
 package chat
 
 import (
-	"fmt"
 	"io"
 	"log"
-	"yalk/logger"
+	"yalk/chat/chatmodels"
 
 	"nhooyr.io/websocket"
 )
 
-func (server *Server) Receiver(clientID uint, ctx *EventContext) {
+func (server *Server) Receiver(clientID uint, ctx *chatmodels.EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
 		ctx.NotifyChannel <- true // TODO: Verify why it was heren
@@ -19,7 +18,7 @@ func (server *Server) Receiver(clientID uint, ctx *EventContext) {
 	for {
 		messageType, jsonEventMessage, err := ctx.Connection.Read(ctx.Request.Context())
 
-		logger.Info("RCV", fmt.Sprintf("Received payload lenght: %d", len(jsonEventMessage)))
+		log.Printf("Received payload lenght: %d", len(jsonEventMessage))
 
 		if err != nil && err != io.EOF {
 
@@ -39,12 +38,12 @@ func (server *Server) Receiver(clientID uint, ctx *EventContext) {
 		}
 
 		if messageType.String() == "MessageText" && err == nil {
-			logger.Info("RCV", fmt.Sprintf("Message received: %s", jsonEventMessage))
+			log.Printf("Message received: %s", jsonEventMessage)
 
-			rawEvent := &RawEvent{UserID: clientID}
+			rawEvent := &chatmodels.RawEvent{UserID: clientID}
 
 			if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
-				logger.Err("HNDL", "Error unmarshaling RawEvent")
+				log.Printf("Error unmarshaling RawEvent")
 				return
 			}
 			if err := server.HandleIncomingEvent(clientID, rawEvent); err != nil {

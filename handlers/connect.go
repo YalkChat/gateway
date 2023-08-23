@@ -9,14 +9,15 @@ import (
 	"time"
 	"yalk/cattp"
 	"yalk/chat"
+	"yalk/chat/chatmodels"
 	"yalk/chat/clients"
-	"yalk/logger"
+	"yalk/database/dbmodels"
 
 	"nhooyr.io/websocket"
 )
 
 var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, server *chat.Server) {
-	logger.Info("WSCK", fmt.Sprintf("Requested WebSocket - %s", r.RemoteAddr))
+	log.Printf("Requested WebSocket - %s", r.RemoteAddr)
 
 	// TODO: Custom config for parameters on admin site
 
@@ -35,27 +36,27 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 
 	conn, err := upgradeHttpRequest(w, r)
 	if err != nil {
-		logger.Err("WSCK", fmt.Sprintf("Can't start accepting - %s", r.RemoteAddr))
+		log.Printf("Can't start accepting - %s", r.RemoteAddr)
 		w.WriteHeader(http.StatusInternalServerError)
 		r.Body.Close()
 		return
 	}
 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
-	account := &chat.Account{}
+	account := &dbmodels.Account{}
 	account.ID = session.AccountID
 
 	if err = account.GetInfo(server.Db); err != nil {
-		logger.Err("WSCK", fmt.Sprintf("Can't get account info - %s", r.RemoteAddr))
+		log.Printf("Can't get account info - %s", r.RemoteAddr)
 		w.WriteHeader(http.StatusInternalServerError)
 		r.Body.Close()
 		return
 	}
 
-	var user *chat.User
+	var user *dbmodels.User
 	tx := server.Db.Preload("Account").Preload("Chats").Preload("Chats.ChatType").Find(&user, "account_id =?", account.ID)
 	if tx.Error != nil {
-		logger.Err("WSCK", fmt.Sprintf("Can't get user info - %s", r.RemoteAddr))
+		log.Printf("Can't get user info - %s", r.RemoteAddr)
 		w.WriteHeader(http.StatusInternalServerError)
 		r.Body.Close()
 		return
@@ -63,7 +64,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// Todo: Use profile instead of User ID?
 	client := server.RegisterClient(conn, user.ID)
 
-	logger.Info("CLNT", fmt.Sprintf("Full data sent to ID: %d", client.ID))
+	log.Printf("Full data sent to ID: %d", client.ID)
 
 	notify := make(chan bool)
 	var wg sync.WaitGroup
@@ -72,7 +73,7 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	// methods on the connection.
 	var ticker = time.NewTicker(time.Second * time.Duration(100000))
 
-	channelsContext := &chat.EventContext{
+	channelsContext := &chatmodels.EventContext{
 		NotifyChannel: notify,
 		PingTicket:    ticker,
 		WaitGroup:     &wg,
@@ -89,20 +90,20 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 	var initialPayloadSent bool // Add a flag to tracak wheether the initial payload has been sent
 
 	// Send initial payload to new client
-	initalPayload, err := makeInitialPayload(server.Db, user)
+	initalPayload, err := MakeInitialPayload(server.Db, user)
 	if err != nil {
-		logger.Err("CORE", "Error marshalling payload")
+		log.Print("Error marshalling payload")
 		return
 	}
 
 	if clients.ClientWriteWithTimeout(client.ID, r.Context(), time.Second*5, conn, initalPayload); err != nil {
-		logger.Info("CLNT", "Timeout Initial Payload")
+		log.Print("Timeout Initial Payload")
 		return
 	}
 	initialPayloadSent = true
 
 	user.ChangeStatus(server.Db, "online")
-	user.Status = &chat.Status{Name: "online"}
+	user.Status = &dbmodels.Status{Name: "online"}
 
 	// Broadcast user online event to all connected clients, but wait for initial payload to be sent first
 	if initialPayloadSent {
@@ -110,12 +111,12 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		// TODO: Same as below for offline, so need to be removed the repetition
 		userOnlinePayload, err := user.Serialize()
 		if err != nil {
-			logger.Err("HTTP", fmt.Sprintf("Error serializing user online: %v", err))
+			log.Printf("Error serializing user online: %v", err)
 		}
-		var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
+		var rawEvent = &chatmodels.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userOnlinePayload}
 		jsonRawEvent, err := json.Marshal(rawEvent)
 		if err != nil {
-			logger.Err("HTTP", fmt.Sprintf("Error serializing raw event: %v", err))
+			log.Printf("Error serializing raw event: %v", err)
 		}
 		server.SendAll(jsonRawEvent)
 	}
@@ -132,25 +133,25 @@ var ConnectHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, 
 		<-onlineTick.C
 		if server.Clients[client.ID] == nil {
 			if err := user.GetInfo(server.Db); err != nil {
-				logger.Err("CLNT", "Error getting info upon closure")
+				log.Printf("Error getting info upon closure")
 			}
 
 			if err := user.ChangeStatus(server.Db, "offline"); err != nil {
-				logger.Err("CLNT", "Error changing status upon closure")
+				log.Printf("Error changing status upon closure")
 			}
 
-			var userStatus = &chat.User{StatusName: "offline"}
+			var userStatus = &dbmodels.User{StatusName: "offline"}
 
 			userStatusPayload, err := userStatus.Serialize()
 			if err != nil {
-				logger.Err("HTTP", fmt.Sprintf("Error serializing user status: %v", err))
+				log.Printf("Error serializing user status: %v", err)
 			}
 
-			var rawEvent = &chat.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
+			var rawEvent = &chatmodels.RawEvent{Type: "user", Action: "change_status", UserID: client.ID, Data: userStatusPayload}
 
-			logger.Info("HTTP", fmt.Sprintf("%d disconnected after 10s", client.ID))
+			log.Printf("%d disconnected after 10s", client.ID)
 			if err := server.HandleIncomingEvent(client.ID, rawEvent); err != nil {
-				logger.Info("HTTP", "Error broadcasting disconnection event")
+				log.Printf("Error broadcasting disconnection event")
 
 			}
 

@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -7,13 +7,14 @@ import (
 	"time"
 	"yalk/cattp"
 	"yalk/chat"
+	"yalk/database/dbmodels"
 	"yalk/sessions"
 
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
+var SigninHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
 	defer r.Body.Close()
 
 	dbSession, err := context.SessionsManager.Validate(context.Db, r, "YLK")
@@ -35,7 +36,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var login *chat.Account
+	var login *dbmodels.Account
 	// payload, err := io.ReadAll(r.Body)
 	err = json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
@@ -44,7 +45,7 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 		return
 	}
 
-	dbCredentials := &chat.Account{}
+	dbCredentials := &dbmodels.Account{}
 
 	if tx := context.Db.First(&dbCredentials, "email = ?", login.Email); tx.Error != nil {
 		log.Println("Can't get credentials from DB, wrong Email/Username")
@@ -105,49 +106,4 @@ var signinHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r
 	// http.Redirect(w, r, "/chat", http.StatusFound)
 	w.WriteHeader(http.StatusOK)
 
-})
-
-var validateHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
-	defer r.Body.Close()
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	_, err := context.SessionsManager.Validate(context.Db, r, "YLK")
-	if err != nil {
-		// TODO: Extend session upon device validation
-		log.Println("Invalid session")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	// session.SetClientCookie(w)
-	// TODO: Post response for WebSock?
-	w.Header().Add("Content-Type", "application/json")
-	// logger.Info("SESS", fmt.Sprintf("[%d][ID %v] Validated Session", http.StatusOK, session.AccountID))
-	w.WriteHeader(http.StatusOK)
-})
-
-var signoutHandle = cattp.HandlerFunc[*chat.Server](func(w http.ResponseWriter, r *http.Request, context *chat.Server) {
-	defer r.Body.Close()
-
-	cookie, err := r.Cookie("YLK")
-	if err != nil {
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:   "YLK",
-		Value:  "",
-		Path:   "/",
-		MaxAge: -1,
-	})
-
-	err = context.SessionsManager.Delete(context.Db, cookie.Value) // TODO: Even just a property on the SessionManager is ok
-	if err != nil {
-		log.Println("Error deleting session", err)
-	}
-	log.Println("Signed out")
-	w.WriteHeader(http.StatusOK)
 })
