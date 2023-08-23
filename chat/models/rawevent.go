@@ -1,4 +1,4 @@
-package chatmodels
+package models
 
 import "encoding/json"
 

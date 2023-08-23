@@ -1,8 +1,4 @@
-package chatmodels
-
-import (
-	"yalk/database/dbmodels"
-)
+package models
 
 type Event interface {
 	Type() string
@@ -14,7 +10,7 @@ type Event interface {
 // TODO: Return &ServerMessageChannels
 func MakeEventChannels() *EventChannels {
 	return &EventChannels{
-		Messages: make(chan *dbmodels.Message, 1),
+		Messages: make(chan *Message, 1),
 		Accounts: make(chan *RawEvent, 1),
 		Users:    make(chan *RawEvent, 1),
 		Notify:   make(chan *RawEvent, 1),
