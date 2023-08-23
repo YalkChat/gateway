@@ -1,13 +1,13 @@
 package initialize
 
 import (
-	"yalk/database/dbmodels"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
 func checkIsInitialized(db *gorm.DB) bool {
-	var serverSettings *dbmodels.ServerSettings
+	var serverSettings *models.ServerSettings
 	tx := db.Select("is_initialized").First(&serverSettings, "is_initialized = true")
 	return tx.Error == nil
 }

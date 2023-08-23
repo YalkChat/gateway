@@ -1,18 +1,18 @@
 package initialize
 
 import (
-	"yalk/database/dbmodels"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
 // TODO: ChatType here has something wrong, I'm not sure why but it's wrong.
-func createMainChannel(db *gorm.DB, adminUser *dbmodels.User, chatType *dbmodels.ChatType) (*dbmodels.Chat, error) {
-	mainChat := &dbmodels.Chat{
+func createMainChannel(db *gorm.DB, adminUser *models.User, chatType *models.ChatType) (*models.Chat, error) {
+	mainChat := &models.Chat{
 		Name:      "Main",
 		ChatType:  chatType,
 		CreatedBy: adminUser,
-		Users:     []*dbmodels.User{adminUser}}
+		Users:     []*models.User{adminUser}}
 
 	tx := db.Create(mainChat)
 	if tx.Error != nil {
