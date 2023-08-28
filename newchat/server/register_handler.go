@@ -3,8 +3,8 @@ package server
 import "yalk/newchat/event"
 
 // Register an event handler
-func (s *serverImpl) RegisterEventHandler(eventType string, handler event.Event) {
+func (s *serverImpl) RegisterEventHandler(eventType string, handler event.Handler) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.eventHandlers[eventType] = handler
+	s.handlers[eventType] = handler
 }

@@ -15,20 +15,20 @@ import (
 )
 
 type serverImpl struct {
-	clients       map[string]client.Client
-	mu            sync.Mutex
-	eventHandlers map[string]event.Event
-	db            *gorm.DB
+	clients  map[string]client.Client
+	mu       sync.Mutex
+	handlers map[string]event.Handler
+	db       *gorm.DB
 }
 
 func NewServer(db *gorm.DB) Server {
 	s := &serverImpl{
-		clients:       make(map[string]client.Client),
-		eventHandlers: make(map[string]event.Event),
-		db:            db,
+		clients:  make(map[string]client.Client),
+		handlers: make(map[string]event.Handler),
+		db:       db,
 	}
 
-	s.RegisterEventHandler("ChatMessage", handlers.NewMessageEvent{})
+	s.RegisterEventHandler("ChatMessage", handlers.NewMessageHandler{})
 	return s
 }
 
@@ -54,18 +54,18 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 }
 
 // TODO: Revisit for specialized event handling
-func (s *serverImpl) HandleEvent(event event.Event) error {
+func (s *serverImpl) HandleEvent(e event.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// Look up the event handler for the given event type
-	handler, exists := s.eventHandlers[event.Type()]
+	handler, exists := s.handlers[e.Type()]
 	if !exists {
-		return fmt.Errorf("no handler registered for event type %s", event.Type())
+		return fmt.Errorf("no handler registered for event type %s", e.Type())
 	}
 
 	// Pass the event to the appropriate handler
-	return handler.HandleEvent(s.db, event)
+	return handler.HandleEvent(s.db, e)
 }
 
 func (s *serverImpl) SendToChat(message *message.Message, chatID string) error {

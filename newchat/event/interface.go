@@ -8,7 +8,6 @@ import (
 
 type Event interface {
 	Type() string
-	HandleEvent(*gorm.DB, Event) error
 	Data() json.RawMessage
 	ClientID() string
 	// Other methods as needed
@@ -18,6 +17,6 @@ type Event interface {
 
 // Handler defines the methods that any event handler must implement
 // TODO: I must chose whether I want to keep the DB here, or use something else
-// type Handler interface {
-// 	HandleEvent(*gorm.DB, Event) error
-// }
+type Handler interface {
+	HandleEvent(db *gorm.DB, e Event) error
+}

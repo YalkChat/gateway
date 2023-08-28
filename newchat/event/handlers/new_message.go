@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"yalk/database"
 	"yalk/database/models"
@@ -9,26 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type NewMessageEvent struct {
-	clientID  string
-	data      json.RawMessage
-	eventType string
-}
+type NewMessageHandler struct{}
 
-// TODO: This must go in the RawPayload
-func (e NewMessageEvent) Type() string {
-	return e.eventType
-}
-
-func (e NewMessageEvent) Data() json.RawMessage {
-	return e.data
-}
-
-func (e NewMessageEvent) ClientID() string {
-	return e.clientID
-}
-
-func (e NewMessageEvent) HandleEvent(db *gorm.DB, event NewMessageEvent) error {
+func (e NewMessageHandler) HandleEvent(db *gorm.DB, event NewMessageHandler) error {
 	// Step 1: Validation
 	// TODO: Evaluate if the logic of authentication and validation can be a Higher order function, or plug-n-play, whatever it's called
 	// TODO: Evaluate if event to handle should be in struct properties or as function argument
@@ -52,7 +34,7 @@ func (e NewMessageEvent) HandleEvent(db *gorm.DB, event NewMessageEvent) error {
 	return nil
 }
 
-func validateMessageCreate(eventData NewMessageEvent) error {
+func validateMessageCreate(eventData NewMessageHandler) error {
 	// Validate the message content, ChatID, SenderID, etc.
 	// Return an error if validation fails
 	return nil
