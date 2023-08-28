@@ -2,7 +2,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
@@ -11,7 +10,6 @@ import (
 	"yalk/newchat/client"
 	"yalk/newchat/event"
 	"yalk/newchat/event/handlers"
-	"yalk/newchat/event/types"
 	"yalk/newchat/eventbus"
 	"yalk/newchat/message"
 
@@ -186,23 +184,8 @@ func (s *serverImpl) HandleEvent(event event.Event) error {
 		return fmt.Errorf("no handler registered for event type %s", event.Type())
 	}
 
-	// Based on the event type, unmarshal into the appropriate struct
-	switch event.Type() {
-	case "MessageCreate":
-		var msgData types.MessageCreateEvent
-
-		if err := json.Unmarshal(event.Data(), &msgData); err != nil {
-			return err
-		}
-		// Now msgData is a fully populated MessageCreateEventData struct
-		// Pass it to the handler
-		return handler.HandleEvent(msgData)
-	// Add case for other event types
-	default:
-		return fmt.Errorf("unknown event type %s", event.Type())
-
-	}
-
+	// Pass the event to the appropriate handler
+	return handler.HandleEvent(event)
 }
 
 func (s *serverImpl) BroadcastEvent(event event.Event) error {

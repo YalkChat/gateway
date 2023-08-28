@@ -8,3 +8,10 @@ type Event interface {
 	ClientID() string
 	// Other methods as needed
 }
+
+// Define a new interface for chat events
+type ChatEvent interface {
+	Type() string
+	Data() json.RawMessage
+	ChatID() string
+}
