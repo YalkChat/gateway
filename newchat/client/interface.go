@@ -1,21 +1,17 @@
 package client
 
 import (
-	"yalk/newchat/event"
-	"yalk/newchat/message"
+	"context"
+
+	"nhooyr.io/websocket"
 )
 
 type Client interface {
 	// ID returns the unique identifier for the client
 	ID() string
 
-	// SendMessage sends a message to the client
-	SendMessage(message *message.Message) error
-
-	// SendEvent sends an event to the client
-	SendEvent(event event.Event) error
-
-	ReadEvent() (event.Event, error)
+	SendMessage(ctx context.Context, messageType websocket.MessageType, p []byte) error
+	ReadMessage(ctx context.Context) (messageType websocket.MessageType, p []byte, err error)
 
 	// Other methods as needed, such as receiving messages, handling events, etc.
 }
