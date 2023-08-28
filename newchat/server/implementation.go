@@ -26,16 +26,15 @@ type serverImpl struct {
 	db            *gorm.DB
 }
 
-func NewServer(db *gorm.DB) Server {
+func NewServer(db *gorm.DB, eb eventbus.EventBus) Server {
 	s := &serverImpl{
 		clients:       make(map[string]client.Client),
 		eventHandlers: make(map[string]event.Handler),
-		eventBus:      eventbus.NewEventBus(),
+		eventBus:      eb,
 		db:            db,
 	}
 
 	s.eventBus.Subscribe("MessageCreate", handlers.HandleMessageCreate(db))
-	// s.RegisterEventHandler("MessageCreate", &handlers.MessageCreateHandler{})
 	return s
 }
 

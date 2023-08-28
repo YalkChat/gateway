@@ -43,3 +43,10 @@ func (eb *eventBusImpl) Publish(eventType string, event event.Event) error {
 
 	return nil
 }
+
+// New method to clear all handlers for a specific event type
+func (eb *eventBusImpl) ClearHandlers(eventType string) {
+	eb.mu.Lock()
+	defer eb.mu.Unlock()
+	delete(eb.subscribers, eventType)
+}
