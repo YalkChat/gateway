@@ -9,17 +9,16 @@ import (
 
 	"golang.org/x/time/rate"
 	"gorm.io/gorm"
-	"nhooyr.io/websocket"
 )
 
-type ChatServer interface {
-	RegisterClient(*websocket.Conn, string)
-	SendMessage(*models.RawEvent)
-	SendMessageToAll(*models.RawEvent)
-	Sender(*models.Client, *models.EventContext)
-	Receiver(*models.EventContext)
-	HandlePayload([]byte)
-}
+// type ChatServer interface {
+// 	RegisterClient(*websocket.Conn, string)
+// 	SendMessage(*models.RawEvent)
+// 	SendMessageToAll(*models.RawEvent)
+// 	Sender(*models.Client, *models.EventContext)
+// 	Receiver(*models.EventContext)
+// 	HandlePayload([]byte)
+// }
 
 // TODO: db
 func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager) *Server {

@@ -7,15 +7,15 @@ type Event interface {
 	SaveToDb() error
 }
 
-// TODO: Return &ServerMessageChannels
-func MakeEventChannels() *EventChannels {
-	return &EventChannels{
-		Messages: make(chan *Message, 1),
-		Accounts: make(chan *RawEvent, 1),
-		Users:    make(chan *RawEvent, 1),
-		Notify:   make(chan *RawEvent, 1),
-		Cmd:      make(chan *RawEvent),
-		Login:    make(chan *RawEvent),
-		Logout:   make(chan *RawEvent),
-	}
-}
+// // TODO: Return &ServerMessageChannels
+// func MakeEventChannels() *EventChannels {
+// 	return &EventChannels{
+// 		Messages: make(chan *Message, 1),
+// 		Accounts: make(chan *RawEvent, 1),
+// 		Users:    make(chan *RawEvent, 1),
+// 		Notify:   make(chan *RawEvent, 1),
+// 		Cmd:      make(chan *RawEvent),
+// 		Login:    make(chan *RawEvent),
+// 		Logout:   make(chan *RawEvent),
+// 	}
+// }
