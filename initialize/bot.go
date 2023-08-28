@@ -1,13 +1,13 @@
 package initialize
 
 import (
-	"yalk/database/dbmodels"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
-func createBotAccount(db *gorm.DB) (*dbmodels.Account, error) {
-	botAccount := &dbmodels.Account{
+func createBotAccount(db *gorm.DB) (*models.Account, error) {
+	botAccount := &models.Account{
 		Email:    "invalid@example.com",
 		Username: "bot",
 		Password: "none",
@@ -19,8 +19,8 @@ func createBotAccount(db *gorm.DB) (*dbmodels.Account, error) {
 	return botAccount, nil
 }
 
-func createBotUser(db *gorm.DB, botAccount *dbmodels.Account) (*dbmodels.User, error) {
-	botUser := &dbmodels.User{
+func createBotUser(db *gorm.DB, botAccount *models.Account) (*models.User, error) {
+	botUser := &models.User{
 		DisplayedName: "Bot",
 		AvatarUrl:     "/bot.png",
 		Account:       botAccount,

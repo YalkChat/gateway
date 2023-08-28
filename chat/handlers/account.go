@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"log"
-	"yalk/chat/chatmodels"
-	"yalk/database/dbmodels"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
-func HandleAccount(rawEvent *chatmodels.RawEvent, db *gorm.DB) (*dbmodels.Account, error) {
-	account := &dbmodels.Account{}
+func HandleAccount(rawEvent *models.RawEvent, db *gorm.DB) (*models.Account, error) {
+	account := &models.Account{}
 
 	if err := account.Deserialize(rawEvent.Data); err != nil {
 		log.Printf("Error Deserializing Account")

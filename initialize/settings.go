@@ -1,13 +1,13 @@
 package initialize
 
 import (
-	"yalk/database/dbmodels"
+	"yalk/chat/models"
 
 	"gorm.io/gorm"
 )
 
 func saveInitialSettings(db *gorm.DB) error {
-	serverSettings := &dbmodels.ServerSettings{IsInitialized: true}
+	serverSettings := &models.ServerSettings{IsInitialized: true}
 	err := serverSettings.Create(db)
 	if err != nil {
 		return err

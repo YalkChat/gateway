@@ -1,12 +1,12 @@
 package server
 
 import (
-	"yalk/chat/clients"
+	"yalk/chat/models"
 
 	"nhooyr.io/websocket"
 )
 
-func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *clients.Client {
+func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *models.Client {
 
 	// if client, ok := server.Clients[id]; ok {
 	// 	logger.Info("SRV", fmt.Sprintf("Client already registerd: %d", id))
@@ -15,7 +15,7 @@ func (server *Server) RegisterClient(conn *websocket.Conn, id uint) *clients.Cli
 
 	messageChan := make(chan []byte, server.ClientsMessageBuffer)
 
-	client := &clients.Client{
+	client := &models.Client{
 		ID:   id,
 		Msgs: messageChan,
 		CloseSlow: func() {

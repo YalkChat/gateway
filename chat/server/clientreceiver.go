@@ -3,12 +3,12 @@ package server
 import (
 	"io"
 	"log"
-	"yalk/chat/chatmodels"
+	"yalk/chat/models"
 
 	"nhooyr.io/websocket"
 )
 
-func (server *Server) Receiver(clientID uint, ctx *chatmodels.EventContext) {
+func (server *Server) Receiver(clientID uint, ctx *models.EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
 		ctx.NotifyChannel <- true // TODO: Verify why it was heren
@@ -40,7 +40,7 @@ func (server *Server) Receiver(clientID uint, ctx *chatmodels.EventContext) {
 		if messageType.String() == "MessageText" && err == nil {
 			log.Printf("Message received: %s", jsonEventMessage)
 
-			rawEvent := &chatmodels.RawEvent{UserID: clientID}
+			rawEvent := &models.RawEvent{UserID: clientID}
 
 			if err := rawEvent.Deserialize(jsonEventMessage); err != nil {
 				log.Printf("Error unmarshaling RawEvent")

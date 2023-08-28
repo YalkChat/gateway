@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 	"yalk/cattp"
+	"yalk/chat/models"
 	"yalk/chat/server"
-	"yalk/database/dbmodels"
 	"yalk/sessions"
 
 	"github.com/golang-jwt/jwt"
@@ -36,7 +36,7 @@ var SigninHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter,
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var login *dbmodels.Account
+	var login *models.Account
 	// payload, err := io.ReadAll(r.Body)
 	err = json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
@@ -45,7 +45,7 @@ var SigninHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter,
 		return
 	}
 
-	dbCredentials := &dbmodels.Account{}
+	dbCredentials := &models.Account{}
 
 	if tx := context.Db.First(&dbCredentials, "email = ?", login.Email); tx.Error != nil {
 		log.Println("Can't get credentials from DB, wrong Email/Username")

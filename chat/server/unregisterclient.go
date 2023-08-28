@@ -2,10 +2,10 @@ package server
 
 import (
 	"errors"
-	"yalk/chat/clients"
+	"yalk/chat/models"
 )
 
-func (server *Server) UnregisterClient(c *clients.Client) error {
+func (server *Server) UnregisterClient(c *models.Client) error {
 	if server.Clients[c.ID] == nil {
 		return errors.New("no_client")
 	}
