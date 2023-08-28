@@ -1,6 +1,10 @@
 package event
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"gorm.io/gorm"
+)
 
 type eventImpl struct {
 	eventType string
@@ -25,4 +29,8 @@ func (e *eventImpl) Data() json.RawMessage {
 
 func (e *eventImpl) ClientID() string {
 	return e.clientID
+}
+
+func (e *eventImpl) HandleEvent(db *gorm.DB, event Event) error {
+	return nil
 }

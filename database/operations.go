@@ -21,7 +21,7 @@ func RegisterClient(db *gorm.DB, client *models.Client) error {
 	return db.Create(client).Error
 }
 
-func GetClients(db *gorm.DB, chatID string) ([]models.Client, error) {
+func GetClients(db *gorm.DB, chatID string) ([]string, error) {
 	var chat models.Chat
 	result := db.Preload("Users").First(&chat, "id = ?", chatID)
 	if result.Error != nil {

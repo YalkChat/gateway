@@ -1,0 +1,11 @@
+package handlers
+
+// import (
+// 	"encoding/json"
+// )
+
+// type NewMessageHandler struct {
+// 	clientID  string
+// 	data      json.RawMessage
+// 	eventType string
+// }
