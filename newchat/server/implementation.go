@@ -33,6 +33,8 @@ func NewServer(db *gorm.DB, eb eventbus.EventBus) Server {
 	}
 
 	s.eventBus.Subscribe("MessageCreate", handlers.HandleMessageCreate(db))
+	s.eventBus.Subscribe("ChatMessage", handlers.HandleChatMessageEvent(db))
+	s.eventBus.Subscribe("UserStatus", handlers.HandleUserStatusEvent(db))
 	return s
 }
 
@@ -119,61 +121,7 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 	return clientsInChat, nil
 }
 
-// Helper function to get clients IDs from the database by chatID
-
-// func (s *serverImpl) HandleIncomingMessage(message message.Message) error {
-// 	// Process the message, e.g., save to database, validate, etc.
-// 	// This could be a call to another component responsible for messages processing
-
-// 	for {
-// 		for _, c := range s.clients {
-// 			message, err := c.ReadMessage()
-// 			if err != nil {
-// 				// handle error
-// 				continue
-// 			}
-
-// 			// Dispatch the message to the appropriate event handler
-// 			if handler, exists := s.eventHandler[message.Type()]; exists {
-// 				handler.HandleEvent(message)
-// 			}
-// 		}
-// 	}
-// 	// Broadcast the message to other clients in the same chat
-// 	if err := s.BroadcastMessage(message); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
-// Placeholder for the message processing logic
-func processMessage(message message.Message) error {
-	// TODO: Implement the logic for processing the incoming message
-	// This could involve saving the message to a database, validation, etc.
-	return nil
-}
-
-func (s *serverImpl) BroadcastMessage(message message.Message) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	// Fetch the list of clienst in the same chat room as the message sender
-	chatID := message.ChatID()
-	clientsInChat, err := s.getClientsByChatID(chatID)
-	if err != nil {
-		return err
-	}
-
-	// Send the message to each client
-	for _, client := range clientsInChat {
-		if err := client.SendMessage(&message); err != nil {
-			// Log error but continue sending to other clients
-			log.Printf("Error sending message to client %s: %v", client.ID(), err)
-		}
-	}
-	return nil
-}
-
+// TODO: Revisit for specialized event handling
 func (s *serverImpl) HandleEvent(event event.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -188,52 +136,11 @@ func (s *serverImpl) HandleEvent(event event.Event) error {
 	return handler.HandleEvent(event)
 }
 
-func (s *serverImpl) BroadcastEvent(event event.Event) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	// Determine the clients interested in this event
-	// ...
-
-	// Sedn the event to each interested client
-
-	for _, client := range clients {
-		if err := client.SendEvent(event, event.ClientID()); err != nil {
-			// Handle error, e.g., log, remove client, etc.
-		}
-	}
-	return nil
-}
-
 // Register an event handler
 func (s *serverImpl) RegisterEventHandler(eventType string, handler handlers.Event) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.eventHandlers[eventType] = handler
-}
-
-func (s *serverImpl) ListenForClientEvents(c client.Client) {
-	for {
-		// Read a message from the WebSocket connection
-		// This is a simplified example; we'll use a more complex message format
-
-		var incomingMessage event.Event
-		err := c.ReadMessage(&incomingMessage) // Assume ReadMessage is a method on your Client interface
-		if err != nil {
-			log.Printf("Error reading message from client %s: %v", c.ID(), err)
-		}
-
-		// Dispatch the message to the appropriate handler
-		if handler, exists := s.eventHandlers[incomingMessage.Type()]; exists {
-			err := handler.HandleEvent(incomingMessage)
-			if err != nil {
-				log.Printf("Error handling event: %v", err)
-			}
-		} else {
-			log.Printf("No handler found for event type %s", incomingMessage.Type())
-		}
-
-	}
 }
 
 func (s *serverImpl) StartReceiver(client client.Client, eventChannel chan event.Event, quit chan struct{}) {

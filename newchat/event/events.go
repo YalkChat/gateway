@@ -26,3 +26,11 @@ func (e *MessageEvent) ChatID() string        { /* ... */ }
 // Similarly, you can define other specific event types like MessageDeletedEvent, UserOnlineEvent, etc.
 
 // Add more specific event types as needed
+
+type ChatMessageEvent struct {
+	// Fields specific to chat messages
+}
+
+type UserStatusEvent struct {
+	// Fields specific to user statuses
+}
