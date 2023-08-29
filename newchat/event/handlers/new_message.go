@@ -7,13 +7,11 @@ import (
 	"yalk/database/models"
 	"yalk/newchat/event"
 	"yalk/newchat/event/types"
-
-	"gorm.io/gorm"
 )
 
 type NewMessageHandler struct{}
 
-func (h NewMessageHandler) HandleEvent(db *gorm.DB, e event.Event) error {
+func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, e event.Event) error {
 
 	// Step 1: Convert e to NewMessageEvent type
 	newMessageEvent, ok := e.(types.NewMessageEvent)
@@ -29,16 +27,21 @@ func (h NewMessageHandler) HandleEvent(db *gorm.DB, e event.Event) error {
 	}
 
 	// Step 2: Make Database type
-	if err := database.AddMessage(db, &models.Message{}); err != nil {
+	if err := database.AddMessage(ctx.DB, &models.Message{}); err != nil {
 		return err
 	}
 	// Step 2: Database Operation
-	if err := database.AddMessage(db, &models.Message{}); err != nil {
+	if err := database.AddMessage(ctx.DB, &models.Message{}); err != nil {
 		log.Printf("Database operation failed: %v", err)
 		return err
 	}
 
-	log.Printf("Handling MessageCreate event: %v", h)
+	// TODO: Change this placeholder
+	if err := ctx.SendToChat("1", newMessageEvent); err != nil {
+
+	}
+
+	log.Printf("Handling MessageCreate event: %s", "placeholder")
 	return nil
 }
 

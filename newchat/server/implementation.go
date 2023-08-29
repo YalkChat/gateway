@@ -44,7 +44,7 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 	}
 
 	for _, client := range clients {
-		if client, exists := s.clients[client.ID]; exists {
+		if client, exists := s.clients[client]; exists {
 			clientsInChat = append(clientsInChat, client)
 
 		}
@@ -64,8 +64,10 @@ func (s *serverImpl) HandleEvent(e event.Event) error {
 		return fmt.Errorf("no handler registered for event type %s", e.Type())
 	}
 
+	ctx := &event.HandlerContext{DB: s.db, SendToChat: s.SendToChat}
+
 	// Pass the event to the appropriate handler
-	return handler.HandleEvent(s.db, e)
+	return handler.HandleEvent(ctx, e)
 }
 
 func (s *serverImpl) SendToChat(message *message.Message, chatID string) error {
@@ -144,19 +146,19 @@ func (s *serverImpl) SendToChat(message *message.Message, chatID string) error {
 // 	return nil
 // }
 
-// func (s *serverImpl) BroadcastEvent(event event.Event) error {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
+func (s *serverImpl) BroadcastEvent(event event.Event) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-// 	// Determine the clients interested in this event
-// 	// ...
+	// Determine the clients interested in this event
+	// ...
 
-// 	// Sedn the event to each interested client
+	// Sedn the event to each interested client
 
-// 	for _, client := range clients {
-// 		if err := client.SendEvent(event, event.ClientID()); err != nil {
-// 			// Handle error, e.g., log, remove client, etc.
-// 		}
-// 	}
-// 	return nil
-// }
+	for _, client := range clients {
+		if err := client.SendEvent(event, event.ClientID()); err != nil {
+			// Handle error, e.g., log, remove client, etc.
+		}
+	}
+	return nil
+}
