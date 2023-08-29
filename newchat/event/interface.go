@@ -16,7 +16,7 @@ type Event interface {
 
 type HandlerContext struct {
 	DB         *gorm.DB
-	SendToChat func(string, models.Message) error
+	SendToChat func(models.Message) error
 }
 
 // Handler defines the methods that any event handler must implement

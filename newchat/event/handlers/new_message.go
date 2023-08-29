@@ -41,7 +41,7 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *ser
 	}
 
 	// TODO: Change this placeholder
-	if err := ctx.SendToChat("1", newMessage); err != nil {
+	if err := ctx.SendToChat(newMessage); err != nil {
 
 	}
 

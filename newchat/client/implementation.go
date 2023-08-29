@@ -26,12 +26,12 @@ func (c *clientImpl) ID() string {
 	return c.id
 }
 
-func (c *clientImpl) SendMessage(ctx context.Context, messageType websocket.MessageType, p []byte) error {
+func (c *clientImpl) SendMessage(messageType websocket.MessageType, p []byte) error {
 	log.Printf("Sending message to client %s", c.id)
 	return c.conn.Write(c.ctx, messageType, p)
 }
 
-func (c *clientImpl) ReadMessage(ctx context.Context) (messageType websocket.MessageType, p []byte, err error) {
+func (c *clientImpl) ReadMessage() (messageType websocket.MessageType, p []byte, err error) {
 	log.Printf("Reading message from client %s", c.id)
 	return c.conn.Read(c.ctx)
 }

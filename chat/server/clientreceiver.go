@@ -11,7 +11,7 @@ import (
 func (server *Server) Receiver(clientID uint, ctx *models.EventContext) {
 	defer func() {
 		ctx.WaitGroup.Done()
-		ctx.NotifyChannel <- true // TODO: Verify why it was heren
+		ctx.NotifyChannel <- true
 	}()
 
 	// Run:

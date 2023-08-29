@@ -9,7 +9,6 @@ import (
 	"yalk/newchat/client"
 	"yalk/newchat/event"
 	"yalk/newchat/event/handlers"
-	"yalk/newchat/message"
 	"yalk/newchat/models"
 
 	"gorm.io/gorm"
@@ -73,12 +72,12 @@ func (s *serverImpl) HandleEvent(baseEvent *models.BaseEvent) error {
 	return handler.HandleEvent(ctx, baseEvent)
 }
 
-func (s *serverImpl) SendToChat(message *message.Message, chatID string) error {
+func (s *serverImpl) SendToChat(message models.Message) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	// Find the clients associated with the chatID
-	clients, err := s.getClientsByChatID(chatID)
+	clients, err := s.getClientsByChatID(message.ChatID)
 	if err != nil {
 		return err
 	}
