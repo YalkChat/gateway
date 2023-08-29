@@ -2,6 +2,7 @@ package event
 
 import (
 	"encoding/json"
+	"yalk/newchat/models"
 
 	"gorm.io/gorm"
 )
@@ -15,11 +16,11 @@ type Event interface {
 
 type HandlerContext struct {
 	DB         *gorm.DB
-	SendToChat func(string, Event) error
+	SendToChat func(string, models.Message) error
 }
 
 // Handler defines the methods that any event handler must implement
 // TODO: I must chose whether I want to keep the DB here, or use something else
 type Handler interface {
-	HandleEvent(*HandlerContext, Event) error
+	HandleEvent(*HandlerContext, *models.BaseEvent) error
 }

@@ -3,13 +3,13 @@ package server
 import (
 	"yalk/newchat/client"
 	"yalk/newchat/event"
-	"yalk/newchat/message"
+	"yalk/newchat/models"
 )
 
 type Server interface {
 	RegisterClient(client client.Client) error
 	UnregisterClient(client client.Client) error
-	SendToChat(message *message.Message, chatID string) error
+	SendToChat(message *models.Message, chatID string) error
 	HandleEvent(event event.Event) error
 }
 
