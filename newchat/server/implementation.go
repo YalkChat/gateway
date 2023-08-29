@@ -3,13 +3,14 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"sync"
-
 	"yalk/database"
 	"yalk/newchat/client"
 	"yalk/newchat/event"
 	"yalk/newchat/event/handlers"
 	"yalk/newchat/message"
+	"yalk/newchat/models"
 
 	"gorm.io/gorm"
 )
@@ -54,20 +55,22 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 }
 
 // TODO: Revisit for specialized event handling
-func (s *serverImpl) HandleEvent(e event.Event) error {
+func (s *serverImpl) HandleEvent(baseEvent *models.BaseEvent) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	eventType := baseEvent.Type
+
 	// Look up the event handler for the given event type
-	handler, exists := s.handlers[e.Type()]
+	handler, exists := s.handlers[eventType]
 	if !exists {
-		return fmt.Errorf("no handler registered for event type %s", e.Type())
+		return fmt.Errorf("no handler registered for event type %s", eventType)
 	}
 
 	ctx := &event.HandlerContext{DB: s.db, SendToChat: s.SendToChat}
 
 	// Pass the event to the appropriate handler
-	return handler.HandleEvent(ctx, e)
+	return handler.HandleEvent(ctx, baseEvent)
 }
 
 func (s *serverImpl) SendToChat(message *message.Message, chatID string) error {
@@ -125,26 +128,26 @@ func (s *serverImpl) SendToChat(message *message.Message, chatID string) error {
 // 	}
 // }
 
-// func (s *serverImpl) BroadcastMessage(message message.Message) error {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
+func (s *serverImpl) BroadcastMessage(message models.Message) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-// 	// Fetch the list of clienst in the same chat room as the message sender
-// 	chatID := message.ChatID()
-// 	clientsInChat, err := s.getClientsByChatID(chatID)
-// 	if err != nil {
-// 		return err
-// 	}
+	// Fetch the list of clienst in the same chat room as the message sender
+	chatID := message.ChatID
+	clientsInChat, err := s.getClientsByChatID(chatID)
+	if err != nil {
+		return err
+	}
 
-// 	// Send the message to each client
-// 	for _, client := range clientsInChat {
-// 		if err := client.SendMessage(&message); err != nil {
-// 			// Log error but continue sending to other clients
-// 			log.Printf("Error sending message to client %s: %v", client.ID(), err)
-// 		}
-// 	}
-// 	return nil
-// }
+	// Send the message to each client
+	for _, client := range clientsInChat {
+		if err := client.SendMessage(message); err != nil {
+			// Log error but continue sending to other clients
+			log.Printf("Error sending message to client %s: %v", client.ID(), err)
+		}
+	}
+	return nil
+}
 
 func (s *serverImpl) BroadcastEvent(event event.Event) error {
 	s.mu.Lock()
