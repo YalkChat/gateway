@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"yalk/database"
 	"yalk/database/models"
@@ -15,7 +16,10 @@ type NewMessageHandler struct{}
 func (h NewMessageHandler) HandleEvent(db *gorm.DB, e event.Event) error {
 
 	// Step 1: Convert e to NewMessageEvent type
-	newMessageEvent := e.(types.NewMessageEvent)
+	newMessageEvent, ok := e.(types.NewMessageEvent)
+	if !ok {
+		return fmt.Errorf("invalid event type:", e.Type())
+	}
 
 	// TODO: Evaluate if the logic of authentication and validation can be a Higher order function, or plug-n-play, whatever it's called
 	// TODO: Evaluate if event to handle should be in struct properties or as function argument
