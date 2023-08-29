@@ -11,6 +11,7 @@ import (
 type clientImpl struct {
 	id   string
 	conn connection.Connection
+	ctx  context.Context
 }
 
 func NewClient(id string, conn connection.Connection) Client {
@@ -27,12 +28,12 @@ func (c *clientImpl) ID() string {
 
 func (c *clientImpl) SendMessage(ctx context.Context, messageType websocket.MessageType, p []byte) error {
 	log.Printf("Sending message to client %s", c.id)
-	return c.conn.Write(ctx, messageType, p)
+	return c.conn.Write(c.ctx, messageType, p)
 }
 
 func (c *clientImpl) ReadMessage(ctx context.Context) (messageType websocket.MessageType, p []byte, err error) {
 	log.Printf("Reading message from client %s", c.id)
-	return c.conn.Read(ctx)
+	return c.conn.Read(c.ctx)
 }
 
 // Other methods as needed, such as receiving messages, handling events, etc.
