@@ -10,6 +10,5 @@ type Client interface {
 
 	SendMessage(messageType websocket.MessageType, p []byte) error
 	ReadMessage() (messageType websocket.MessageType, p []byte, err error)
-
 	// Other methods as needed, such as receiving messages, handling events, etc.
 }

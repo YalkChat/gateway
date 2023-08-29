@@ -3,18 +3,17 @@ package client
 import (
 	"context"
 	"log"
-	"yalk/newchat/connection"
 
 	"nhooyr.io/websocket"
 )
 
 type clientImpl struct {
 	id   string
-	conn connection.Connection
+	conn *websocket.Conn
 	ctx  context.Context
 }
 
-func NewClient(id string, conn connection.Connection) Client {
+func NewClient(id string, conn *websocket.Conn) Client {
 	return &clientImpl{
 		id:   id,
 		conn: conn,
