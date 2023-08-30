@@ -6,6 +6,7 @@ import (
 	"time"
 	"yalk/chat/server"
 	"yalk/config"
+	newserver "yalk/newchat/server"
 	"yalk/sessions"
 
 	"gorm.io/gorm"
@@ -18,7 +19,8 @@ func RunServer(config *config.Config, db *gorm.DB) {
 	sessionsManager := sessions.New(db, sessionLenght)
 
 	chatServer := server.NewServer(16, db, sessionsManager)
-
+	newChatServer := newserver.NewServer(db)
+	fmt.Print(newChatServer)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

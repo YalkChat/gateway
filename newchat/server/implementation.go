@@ -92,7 +92,7 @@ func (s *serverImpl) SendToChat(message models.Message) error {
 
 	// Send the message to all clients in the chat
 	for _, client := range clients {
-		if err := client.SendMessage(websocket.MessageText, messageBytes); err != nil {
+		if err := client.SendMessageWithTimeout(websocket.MessageText, messageBytes); err != nil {
 			return err
 		}
 	}
