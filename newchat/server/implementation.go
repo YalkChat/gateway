@@ -3,7 +3,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"yalk/database"
 	"yalk/newchat/client"
@@ -12,6 +11,7 @@ import (
 	"yalk/newchat/models"
 
 	"gorm.io/gorm"
+	"nhooyr.io/websocket"
 )
 
 type serverImpl struct {
@@ -53,11 +53,12 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 	return clientsInChat, nil
 }
 
-// TODO: Revisit for specialized event handling
-func (s *serverImpl) HandleEvent(baseEvent *models.BaseEvent) error {
+// TODO: Revisit for specialized event handling, and make type with UserID metadata
+func (s *serverImpl) HandleEvent(eventWithMetadata *models.BaseEventWithMetadata) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	baseEvent := eventWithMetadata.Event
 	eventType := baseEvent.Type
 
 	// Look up the event handler for the given event type
@@ -84,7 +85,7 @@ func (s *serverImpl) SendToChat(message models.Message) error {
 
 	// Send the message to all clients in the chat
 	for _, client := range clients {
-		if err := client.SendMessage(message); err != nil {
+		if err := client.SendMessage(websocket.MessageText, message); err != nil {
 			// Handle or log the error if needed
 		}
 	}
@@ -127,40 +128,40 @@ func (s *serverImpl) SendToChat(message models.Message) error {
 // 	}
 // }
 
-func (s *serverImpl) BroadcastMessage(message models.Message) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+// func (s *serverImpl) BroadcastMessage(message models.Message) error {
+// 	s.mu.Lock()
+// 	defer s.mu.Unlock()
 
-	// Fetch the list of clienst in the same chat room as the message sender
-	chatID := message.ChatID
-	clientsInChat, err := s.getClientsByChatID(chatID)
-	if err != nil {
-		return err
-	}
+// 	// Fetch the list of clienst in the same chat room as the message sender
+// 	chatID := message.ChatID
+// 	clientsInChat, err := s.getClientsByChatID(chatID)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	// Send the message to each client
-	for _, client := range clientsInChat {
-		if err := client.SendMessage(message); err != nil {
-			// Log error but continue sending to other clients
-			log.Printf("Error sending message to client %s: %v", client.ID(), err)
-		}
-	}
-	return nil
-}
+// 	// Send the message to each client
+// 	for _, client := range clientsInChat {
+// 		if err := client.SendMessage(websocket.MessageText, message); err != nil {
+// 			// Log error but continue sending to other clients
+// 			log.Printf("Error sending message to client %s: %v", client.ID(), err)
+// 		}
+// 	}
+// 	return nil
+// }
 
-func (s *serverImpl) BroadcastEvent(event event.Event) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+// func (s *serverImpl) BroadcastEvent(event event.Event) error {
+// 	s.mu.Lock()
+// 	defer s.mu.Unlock()
 
-	// Determine the clients interested in this event
-	// ...
+// 	// Determine the clients interested in this event
+// 	// ...
 
-	// Sedn the event to each interested client
+// 	// Sedn the event to each interested client
 
-	for _, client := range clients {
-		if err := client.SendEvent(event, event.ClientID()); err != nil {
-			// Handle error, e.g., log, remove client, etc.
-		}
-	}
-	return nil
-}
+// 	for _, client := range clients {
+// 		if err := client.SendEvent(event, event.ClientID()); err != nil {
+// 			// Handle error, e.g., log, remove client, etc.
+// 		}
+// 	}
+// 	return nil
+// }
