@@ -74,7 +74,7 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *models.BaseEventWithMetadata
 	return handler.HandleEvent(ctx, baseEvent)
 }
 
-func (s *serverImpl) SendToChat(message models.Message) error {
+func (s *serverImpl) SendToChat(message *models.Message) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
