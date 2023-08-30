@@ -29,8 +29,8 @@ func GetClients(db *gorm.DB, chatID string) ([]string, error) {
 	}
 
 	var clientIDs []string
-	for _, user := range chat.Users {
-		clientIDs = append(clientIDs, user.ID())
+	for _, client := range chat.Clients {
+		clientIDs = append(clientIDs, client.ID)
 	}
 
 	return clientIDs, nil

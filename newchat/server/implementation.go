@@ -2,6 +2,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"yalk/database"
@@ -77,6 +78,12 @@ func (s *serverImpl) SendToChat(message models.Message) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// Serialize the message back to JSON bytes
+	messageBytes, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
 	// Find the clients associated with the chatID
 	clients, err := s.getClientsByChatID(message.ChatID)
 	if err != nil {
@@ -85,8 +92,8 @@ func (s *serverImpl) SendToChat(message models.Message) error {
 
 	// Send the message to all clients in the chat
 	for _, client := range clients {
-		if err := client.SendMessage(websocket.MessageText, message); err != nil {
-			// Handle or log the error if needed
+		if err := client.SendMessage(websocket.MessageText, messageBytes); err != nil {
+			return err
 		}
 	}
 	return nil
