@@ -20,7 +20,6 @@ func (s *serverImpl) RegisterClient(client client.Client) error {
 	quit := make(chan struct{})
 
 	// Start the receiver and sender Go routines for this client
-	// TODO: The websocket connection goes here instead of someChannel
 	go s.StartReceiver(client, quit)
 	// go s.StartSender(client, quit)
 
