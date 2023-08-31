@@ -2,9 +2,8 @@ package event
 
 import (
 	"encoding/json"
+	"yalk/database"
 	"yalk/newchat/models"
-
-	"gorm.io/gorm"
 )
 
 type Event interface {
@@ -21,6 +20,6 @@ type Handler interface {
 }
 
 type HandlerContext struct {
-	DB         *gorm.DB
+	DB         database.DatabaseOperations
 	SendToChat func(*models.Message) error
 }
