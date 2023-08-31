@@ -21,6 +21,14 @@ func (db *DatabaseImpl) SaveMessage(message *models.Message) error {
 
 }
 
+func (db *DatabaseImpl) GetMessage(messageID string) (*models.Message, error) {
+	var message *models.Message
+	if err := db.conn.Where("id = ?", messageID).First(&message).Error; err != nil {
+		return nil, err
+	}
+	return message, nil
+}
+
 func (db *DatabaseImpl) GetUsers(chatID string) ([]string, error) {
 	var chat models.Chat
 	result := db.conn.Preload("Users").First(&chat, "id = ?", chatID)
@@ -34,4 +42,12 @@ func (db *DatabaseImpl) GetUsers(chatID string) ([]string, error) {
 	}
 
 	return clientIDs, nil
+}
+
+// TODO: Decide what this function should reeturn
+func (db *DatabaseImpl) NewUser(newUser *models.User) (*models.User, error) {
+	if err := db.conn.Create(newUser).Error; err != nil {
+		return nil, err
+	}
+	return newUser, nil
 }
