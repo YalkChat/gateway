@@ -62,15 +62,24 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *models.BaseEventWithMetadata
 	eventType := baseEvent.Type
 
 	// Look up the event handler for the given event type
-	handler, exists := s.handlers[eventType]
-	if !exists {
-		return fmt.Errorf("no handler registered for event type %s", eventType)
+	handler, err := s.getHandler(eventType)
+	if err != nil {
+		return err
 	}
-
 	ctx := &event.HandlerContext{DB: s.db, SendToChat: s.SendToChat}
 
 	// Pass the event to the appropriate handler
 	return handler.HandleEvent(ctx, baseEvent)
+}
+
+// TODO: not exported methods (which I guess are helper functions?) might go in one single utils.go file?
+
+func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
+	handler, exists := s.handlers[eventType]
+	if !exists {
+		return nil, fmt.Errorf("no handler registered for event type %s", eventType)
+	}
+	return handler, nil
 }
 
 func (s *serverImpl) SendToChat(message *models.Message) error {
