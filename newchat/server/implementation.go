@@ -11,7 +11,6 @@ import (
 	"yalk/newchat/event/handlers"
 	"yalk/newchat/models"
 
-	"gorm.io/gorm"
 	"nhooyr.io/websocket"
 )
 
@@ -19,10 +18,10 @@ type serverImpl struct {
 	clients  map[string]client.Client
 	mu       sync.Mutex
 	handlers map[string]event.Handler
-	db       *gorm.DB
+	db       database.DatabaseOperations
 }
 
-func NewServer(db *gorm.DB) Server {
+func NewServer(db database.DatabaseOperations) Server {
 	s := &serverImpl{
 		clients:  make(map[string]client.Client),
 		handlers: make(map[string]event.Handler),
@@ -39,7 +38,7 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 
 	var clientsInChat []client.Client
 
-	clients, err := database.GetClients(s.db, chatID)
+	clients, err := s.db.GetUsers(chatID)
 	if err != nil {
 		return nil, err
 	}

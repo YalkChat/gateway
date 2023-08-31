@@ -7,10 +7,7 @@ import (
 	"yalk/database"
 	dbmodels "yalk/database/models"
 	"yalk/newchat/event"
-
 	servermodels "yalk/newchat/models"
-
-	"gorm.io/gorm"
 )
 
 type NewMessageHandler struct{}
@@ -34,7 +31,8 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *ser
 
 	// Step 3: Database Operation
 	if err := saveToDatabase(newMessage, ctx.DB); err != nil {
-
+		log.Printf("Error sending message to chat: %v", err)
+		return err
 	}
 
 	// Step 4: Send to other clients
@@ -47,14 +45,14 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *ser
 	return nil
 }
 
-func saveToDatabase(newMessage *servermodels.Message, db *gorm.DB) error {
-	dbmessage := &dbmodels.Message{
+func saveToDatabase(newMessage *servermodels.Message, db database.DatabaseOperations) error {
+	dbMessage := &dbmodels.Message{
 		ChatID:   newMessage.ChatID,
 		ClientID: newMessage.ClientID,
 		Content:  newMessage.Content,
 	}
 
-	if err := database.AddMessage(db, dbmessage); err != nil {
+	if err := db.SaveMessage(dbMessage); err != nil {
 		log.Printf("Database operation failed: %v", err)
 		return err
 	}
