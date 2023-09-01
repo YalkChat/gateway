@@ -37,6 +37,14 @@ func NewServer(db database.DatabaseOperations) Server {
 	return s
 }
 
+func (s *serverImpl) GetClientByID(id string) (client.Client, error) {
+	client, ok := s.clients[id]
+	if !ok {
+		return nil, fmt.Errorf("client %s not registered", id)
+	}
+	return client, nil
+}
+
 func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
