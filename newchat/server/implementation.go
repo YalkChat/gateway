@@ -1,4 +1,9 @@
-// chat/server/implementation.go
+// TODO: Consider the methods to send messages and notificatins: How should they be and what is the default structure to keep?
+// TODO: We can have a structure like this with specific types on args and these names (SendToChat, SendNotification)..
+// ..or more generic like SendToClient, SendToMany, Broadcast, and so on or even just use SendClient accepting an array of clients along..
+// ..with the others above.
+// TODO: Maybe not exported methods (which I guess are helper functions?) might go in one single utils.go file?
+
 package server
 
 import (
@@ -72,8 +77,6 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *models.BaseEventWithMetadata
 	return handler.HandleEvent(ctx, baseEvent)
 }
 
-// TODO: not exported methods (which I guess are helper functions?) might go in one single utils.go file?
-
 func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
 	handler, exists := s.handlers[eventType]
 	if !exists {
@@ -112,64 +115,9 @@ func (s *serverImpl) SendToChat(message *models.Message) error {
 // 	return nil
 // }
 
-// // Placeholder for the message processing logic
-// func processMessage(message message.Message) error {
-// 	// TODO: Implement the logic for processing the incoming message
-// 	// This could involve saving the message to a database, validation, etc.
-// 	return nil
-// }
-
-// func (s *serverImpl) ListenForClientEvents(c client.Client) {
-// 	for {
-// 		// Read a message from the WebSocket connection
-// 		// This is a simplified example; we'll use a more complex message format
-
-// 		var incomingMessage event.Event
-// 		err := c.ReadMessage(&incomingMessage) // Assume ReadMessage is a method on your Client interface
-// 		if err != nil {
-// 			log.Printf("Error reading message from client %s: %v", c.ID(), err)
-// 		}
-
-// 		// Dispatch the message to the appropriate handler
-// 		if handler, exists := s.eventHandlers[incomingMessage.Type()]; exists {
-// 			err := handler.HandleEvent(incomingMessage)
-// 			if err != nil {
-// 				log.Printf("Error handling event: %v", err)
-// 			}
-// 		} else {
-// 			log.Printf("No handler found for event type %s", incomingMessage.Type())
-// 		}
-
-// 	}
-// }
-
-// func (s *serverImpl) BroadcastMessage(message models.Message) error {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
-
-// 	// Fetch the list of clienst in the same chat room as the message sender
-// 	chatID := message.ChatID
-// 	clientsInChat, err := s.getClientsByChatID(chatID)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Send the message to each client
-// 	for _, client := range clientsInChat {
-// 		if err := client.SendMessage(websocket.MessageText, message); err != nil {
-// 			// Log error but continue sending to other clients
-// 			log.Printf("Error sending message to client %s: %v", client.ID(), err)
-// 		}
-// 	}
-// 	return nil
-// }
-
 // func (s *serverImpl) BroadcastEvent(event event.Event) error {
 // 	s.mu.Lock()
 // 	defer s.mu.Unlock()
-
-// 	// Determine the clients interested in this event
-// 	// ...
 
 // 	// Sedn the event to each interested client
 
