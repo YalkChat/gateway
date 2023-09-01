@@ -31,7 +31,7 @@ func (e *eventImpl) ClientID() string {
 	return e.clientID
 }
 
-// TODO: Check if this should be the actual code?
+// TODO: Check if ther should be actual code in here?
 func (e *eventImpl) HandleEvent(db *gorm.DB, event Event) error {
 	return nil
 }
