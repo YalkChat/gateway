@@ -110,21 +110,53 @@ func (s *serverImpl) SendToChat(message *models.Message) error {
 	return nil
 }
 
-// 	// Notify other components or clients as needed
+func (s *serverImpl) BroadcastMessage(message *models.Message) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-// 	return nil
-// }
+	// TODO: with the observations on top of this file evaluated if
+	// .. the serialization back to Json could happen in an helper function
+	// .. called by the handlers before sending the message, or any better way
 
-// func (s *serverImpl) BroadcastEvent(event event.Event) error {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
+	// Serialize the message back to JSON bytes
+	messageBytes, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
 
-// 	// Sedn the event to each interested client
+	// Create a new BaseEvent
+	// TODO: Check where to get the client ID from, if the message is good or anything better
+	// TODO: Check also where to get eventType from
+	baseEvent, err := newBaseEvent("1", messageBytes, message.ClientID, "NewMessage")
+	if err != nil {
+		return fmt.Errorf("error broadcasting message: %v", err)
+	}
 
-// 	for _, client := range clients {
-// 		if err := client.SendEvent(event, event.ClientID()); err != nil {
-// 			// Handle error, e.g., log, remove client, etc.
-// 		}
-// 	}
-// 	return nil
-// }
+	baseEventJSON, err := json.Marshal(baseEvent)
+	if err != nil {
+		return fmt.Errorf("failed to serialize base event: %v", err)
+	}
+
+	for _, client := range s.clients {
+		if err := client.SendMessageWithTimeout(websocket.MessageText, baseEventJSON); err != nil {
+			// Handle the error based on your application's needs
+			fmt.Printf("failed to send message to client %s: %v\n", client.ID(), err)
+		}
+	}
+	return nil
+}
+
+// TODO: Implement error checking if args are empty
+func newBaseEvent(opcode string, data json.RawMessage, clientID string, eventType string) (*models.BaseEvent, error) {
+	baseEvent := &models.BaseEvent{
+		Opcode:   opcode,
+		Data:     data,
+		ClientID: clientID,
+		Type:     eventType,
+	}
+	// There must be a better way to do this error check
+	if opcode == "" {
+		return nil, fmt.Errorf("opcode empty")
+	}
+	return baseEvent, nil
+}
