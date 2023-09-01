@@ -27,7 +27,6 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 
 	sendLimiter := rate.NewLimiter(rate.Every(time.Millisecond*100), 8)
 	clientsMap := make(map[uint]*models.Client)
-	messageMap := make(map[uint]bool)
 
 	chatServer := &Server{
 		SendLimiter:          sendLimiter,
@@ -35,7 +34,6 @@ func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager
 		ClientsMessageBuffer: bufferLenght,
 		Db:                   db,
 		SessionsManager:      sessionsManager,
-		MessageMap:           messageMap,
 	}
 
 	return chatServer
@@ -48,7 +46,6 @@ type Server struct {
 	ClientsMessageBuffer uint
 	Db                   *gorm.DB
 	SessionsManager      *sessions.Manager
-	MessageMap           map[uint]bool
 }
 
 type BinaryPayload struct {
