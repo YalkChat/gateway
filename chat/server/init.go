@@ -21,7 +21,7 @@ import (
 // }
 
 // TODO: db
-func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.Manager) *Server {
+func NewServer(bufferLenght uint, db *gorm.DB, sessionsManager *sessions.SessionManager) *Server {
 	// sessionLen := time.Hour * 720
 	// sessionsManager := sessions.New(sessionLen)
 
@@ -45,7 +45,7 @@ type Server struct {
 	ClientsMu            sync.Mutex
 	ClientsMessageBuffer uint
 	Db                   *gorm.DB
-	SessionsManager      *sessions.Manager
+	SessionsManager      *sessions.SessionManager
 }
 
 type BinaryPayload struct {
