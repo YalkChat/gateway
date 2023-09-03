@@ -11,6 +11,7 @@ import (
 
 func TestRegisterClient(t *testing.T) {
 	// Initialize a new server
+	// TODO: Should the Database contain an actual connection?
 	srv := server.NewServer(&database.DatabaseImpl{})
 
 	// Create a mock client

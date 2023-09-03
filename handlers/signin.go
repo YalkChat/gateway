@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 	"time"
-	"yalk/cattp"
 	"yalk/chat/models"
 	"yalk/chat/server"
 	"yalk/sessions"
+
+	"github.com/AleRosmo/cattp"
 
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"

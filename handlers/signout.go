@@ -3,8 +3,9 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"yalk/cattp"
 	"yalk/chat/server"
+
+	"github.com/AleRosmo/cattp"
 )
 
 var SignoutHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, context *server.Server) {

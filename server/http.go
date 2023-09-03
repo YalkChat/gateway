@@ -2,10 +2,11 @@ package server
 
 import (
 	"log"
-	"yalk/cattp"
 	"yalk/chat/server"
 	"yalk/config"
 	"yalk/handlers"
+
+	"github.com/AleRosmo/cattp"
 )
 
 func StartHttpServer(config *config.Config, chatServer *server.Server) error {

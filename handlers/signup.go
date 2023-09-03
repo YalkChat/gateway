@@ -3,7 +3,9 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"yalk/cattp"
+
+	"github.com/AleRosmo/cattp"
+
 	"yalk/chat/server"
 )
 
