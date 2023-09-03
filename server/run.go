@@ -17,7 +17,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	var wg sync.WaitGroup
 
 	sessionLenght := time.Hour * 720
-	sessionsManager := sessions.New(conn, sessionLenght)
+	sessionsManager := sessions.NewSessionManager(conn, sessionLenght)
 
 	chatServer := server.NewServer(16, conn, sessionsManager)
 	db := database.NewDatabase(conn)

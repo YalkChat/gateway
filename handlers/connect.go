@@ -11,7 +11,6 @@ import (
 	"yalk/chat/server"
 
 	"github.com/AleRosmo/cattp"
-
 	"nhooyr.io/websocket"
 )
 
