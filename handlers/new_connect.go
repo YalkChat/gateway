@@ -29,8 +29,16 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 	return nil
 }
 
-func NewConnectionHandler(w http.ResponseWriter, r *http.Request, srv *server.Server) {
-	session, err := validateSession(r, srv) // TODO: Separate in other config
+func NewConnectionHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+	srv *server.Server,
+	sessionManager sessions.SessionManager,
+) {
+	db := srv.Db
+	cookieName := "YLK"
+
+	session, err := sessionManager.Validate(db, r, cookieName) // TODO: Separate in other config
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
@@ -41,5 +49,5 @@ func NewConnectionHandler(w http.ResponseWriter, r *http.Request, srv *server.Se
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 
-	clientID := srv.RegisterClient(conn, clientID)
+	clientID := srv.RegisterClient(conn, session.AccountID)
 }
