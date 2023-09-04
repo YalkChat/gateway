@@ -67,6 +67,8 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 }
 
 // TODO: Revisit for specialized event handling, and make type with UserID metadata
+// TODO: Maybe this could be an interface for all the base event types and have a HandleEvent method?
+// ..Is it useful being only the initial payload? Even for the sake of decoupling, if it makes sense I'll doit.
 func (s *serverImpl) HandleEvent(eventWithMetadata *models.BaseEventWithMetadata) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
