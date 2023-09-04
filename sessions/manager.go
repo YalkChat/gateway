@@ -14,28 +14,28 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-type Token = string
+type token = string
 type SessionLenght = time.Time
 
-func NewSessionManager(db SessionDatabase) *SessionManager {
-	// db.AutoMigrate(&Session{})
-	return &SessionManager{db: db}
-	// return &SessionManager{
-	// 	defaultLenght:  dl,
-	// 	activeSessions: make([]*Session, 0),
-	// }
-}
-
+// func NewSessionManager(db SessionDatabase) *SessionManager {
+// 	// db.AutoMigrate(&Session{})
+// 	return &SessionManager{db: db}
+// 	// return &SessionManager{
+// 	// 	defaultLenght:  dl,
+// 	// 	activeSessions: make([]*Session, 0),
+// 	// }
 // }
 
-type SessionManager struct {
-	defaultLenght  time.Duration
-	activeSessions []*Session
-}
+// // }
 
-// !!!!!!! JUST USE REDIS INSTEAD!!!!!!!
-// TODO: Some decent in error checking would be nice
-func (sm *SessionManager) Create(db *gorm.DB, token Token, id uint, lenght SessionLenght) (*Session, error) {
+// type SessionManager struct {
+// 	defaultLenght  time.Duration
+// 	activeSessions []*Session
+// }
+
+// TODO: Redis will be used for this at some point in development.
+// TODO: Some decent in error checking would be nice.
+func (sm *sessionManagerImpl) Create(db *gorm.DB, token Token, id uint, lenght SessionLenght) (*Session, error) {
 	var _lenght time.Time = time.Now().Add(sm.defaultLenght)
 
 	if !lenght.IsZero() {
@@ -58,7 +58,7 @@ func (sm *SessionManager) Create(db *gorm.DB, token Token, id uint, lenght Sessi
 	return session, nil
 }
 
-func (sm *SessionManager) Validate(db *gorm.DB, r *http.Request, cookieName string) (*Session, error) {
+func (sm *sessionManagerImpl) Validate(db *gorm.DB, r *http.Request, cookieName string) (*Session, error) {
 	// TODO: This requires redis?
 	// TODO: Further cookie properties check
 	// ? If loading from DB data, this is 'redundant'
@@ -101,7 +101,7 @@ func (sm *SessionManager) Validate(db *gorm.DB, r *http.Request, cookieName stri
 	return session, nil
 }
 
-func (sm *SessionManager) Delete(db *gorm.DB, token Token) error {
+func (sm *sessionManagerImpl) Delete(db *gorm.DB, token Token) error {
 	var session *Session
 	if tx := db.Delete(&session, token); tx.Error != nil {
 		return tx.Error
