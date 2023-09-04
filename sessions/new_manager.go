@@ -14,8 +14,8 @@ type sessionManagerImpl struct {
 	db             SessionDatabase
 }
 
-func NewSessionManager(db SessionDatabase) SessionManager {
-	return &sessionManagerImpl{db: db}
+func NewSessionManager(db SessionDatabase, lenght time.Duration) SessionManager {
+	return &sessionManagerImpl{db: db, defaultLenght: lenght}
 }
 
 // TODO: Redis will be used for this at some point in development.
