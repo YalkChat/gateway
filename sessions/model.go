@@ -10,14 +10,14 @@ type Session struct {
 	AccountID uint
 	Token     string `gorm:"primaryKey"`
 	Created   time.Time
-	Expiry    time.Time
+	ExpiresAt time.Time
 }
 
 func (s *Session) SetClientCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
 		Name:    "YLK", // TODO: Put SessionManager name
 		Value:   s.Token,
-		Expires: s.Expiry,
+		Expires: s.ExpiresAt,
 		// SameSite: http.SameSiteNoneMode,
 		// Secure:   true, //! SET AGAIN WHEN USING HTTPS
 		// HttpOnly: true,
@@ -26,5 +26,5 @@ func (s *Session) SetClientCookie(w http.ResponseWriter) {
 }
 
 func (s *Session) isExpired() bool {
-	return s.Expiry.Before(time.Now())
+	return s.ExpiresAt.Before(time.Now())
 }
