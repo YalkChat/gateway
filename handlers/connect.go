@@ -14,7 +14,7 @@ import (
 	"nhooyr.io/websocket"
 )
 
-var ConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
+var OldConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
 	log.Printf("Requested WebSocket - %s", r.RemoteAddr)
 
 	// TODO: Custom config for parameters on admin site
