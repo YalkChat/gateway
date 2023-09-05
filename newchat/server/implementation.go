@@ -15,6 +15,7 @@ import (
 	"yalk/newchat/event"
 	"yalk/newchat/event/handlers"
 	"yalk/newchat/models"
+	"yalk/sessions"
 
 	"nhooyr.io/websocket"
 )
@@ -24,13 +25,15 @@ type serverImpl struct {
 	mu       sync.Mutex
 	handlers map[string]event.Handler
 	db       database.DatabaseOperations
+	sm       sessions.SessionManager
 }
 
-func NewServer(db database.DatabaseOperations) Server {
+func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Server {
 	s := &serverImpl{
 		clients:  make(map[string]client.Client),
 		handlers: make(map[string]event.Handler),
 		db:       db,
+		sm:       sm,
 	}
 
 	s.RegisterEventHandler("ChatMessage", handlers.NewMessageHandler{})

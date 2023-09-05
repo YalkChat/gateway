@@ -22,7 +22,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 
 	// chatServer := server.NewServer(16, conn, sessionsManager)
 	db := database.NewDatabase(conn)
-	newChatServer := newserver.NewServer(db)
+	newChatServer := newserver.NewServer(db, sessionsManager)
 	fmt.Print(newChatServer) // TODO: remove
 	wg.Add(1)
 	go func() {
