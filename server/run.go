@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"yalk/chat/server"
 	"yalk/config"
 	"yalk/database"
 	newserver "yalk/newchat/server"
@@ -21,7 +20,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	sessionLenght := time.Hour * 720
 	sessionsManager := sessions.NewSessionManager(sessionDatabase, sessionLenght)
 
-	chatServer := server.NewServer(16, conn, sessionsManager)
+	// chatServer := server.NewServer(16, conn, sessionsManager)
 	db := database.NewDatabase(conn)
 	newChatServer := newserver.NewServer(db)
 	fmt.Print(newChatServer) // TODO: remove
