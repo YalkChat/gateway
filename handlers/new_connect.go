@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"yalk/appcontext"
 	"yalk/newchat/client"
 	"yalk/newchat/server"
 
@@ -31,9 +32,12 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 	return nil
 }
 
-var ConnectionHandler = cattp.HandlerFunc[server.Server](func(w http.ResponseWriter, r *http.Request, server server.Server) {
+var ConnectionHandler = cattp.HandlerFunc[appcontext.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx appcontext.HandlerContext) {
+	server := ctx.ChatServer()
+	sessionsManager := ctx.SessionManager()
 
-	session, err := sessionsManager.Validate(r)
+	// TODO: remove _ placeholder below
+	_, err := sessionsManager.Validate(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
@@ -45,7 +49,14 @@ var ConnectionHandler = cattp.HandlerFunc[server.Server](func(w http.ResponseWri
 		return
 	}
 
-	client :=
-		fmt.Printf("registered new client: %d", client.ID)
+	// TODO: Find ID here
+	client := client.NewClient("id", conn)
+
+	err = server.RegisterClient(client)
+	if err != nil {
+		// TODO: placeholder
+		return
+	}
+	fmt.Printf("registered new client: %d", client.ID)
 
 })

@@ -1,5 +1,5 @@
 // TODO: this file must be reviewed to where it should go in the file structure
-package context
+package appcontext
 
 import (
 	"yalk/newchat/server"
