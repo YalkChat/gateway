@@ -14,11 +14,11 @@ import (
 
 func RunServer(config *config.Config, conn *gorm.DB) {
 	var wg sync.WaitGroup
+	var sessionLenght = time.Hour * 720
+	var cookieName = "YLK"
 
-	sessionDatabase := sessions.NewDatabase(conn)
-
-	sessionLenght := time.Hour * 720
-	sessionsManager := sessions.NewSessionManager(sessionDatabase, sessionLenght)
+	sessionsDatabase := sessions.NewDatabase(conn)
+	sessionsManager := sessions.NewSessionManager(sessionsDatabase, sessionLenght, cookieName)
 
 	// chatServer := server.NewServer(16, conn, sessionsManager)
 	db := database.NewDatabase(conn)

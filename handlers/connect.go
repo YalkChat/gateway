@@ -19,7 +19,7 @@ var OldConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWri
 
 	// TODO: Custom config for parameters on admin site
 
-	session, err := server.SessionsManager.Validate(server.Db, r, "YLK") // TODO: Separate in other config
+	session, err := server.SessionsManager.Validate(r) // TODO: Separate in other config
 	if err != nil {
 		// logger.Warn("HTTP", "Can't validate session")
 		http.Redirect(w, r, "/login", http.StatusSeeOther)

@@ -1,18 +1,19 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
-	"yalk/chat/server"
 	"yalk/newchat/client"
-	"yalk/sessions"
+	"yalk/newchat/server"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"
 )
 
-func validateSession(r *http.Request) (*sessions.Session, error) {
-	return nil, nil
-}
+// TODO: Removed as simplified in sessionsManager.Validate() below
+// func validateSession(r *http.Request) (*sessions.Session, error) {
+
+// }
 
 func upgradeToWebSocket(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	return nil, nil // TODO: First is a placeholder for conn, change
@@ -30,21 +31,21 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 	return nil
 }
 
-var ConnectionHandler = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
-	sessionsManager := server.SessionsManager
-	cookieName := "YLK"
+var ConnectionHandler = cattp.HandlerFunc[server.Server](func(w http.ResponseWriter, r *http.Request, server server.Server) {
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return err
+		return
 	}
 
 	conn, err := upgradeToWebSocket(w, r)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
-	clientID := srv.RegisterClient(conn, session.AccountID)
-	return nil
+	client :=
+		fmt.Printf("registered new client: %d", client.ID)
+
 })

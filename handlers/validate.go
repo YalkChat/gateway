@@ -16,7 +16,7 @@ var ValidateHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWrite
 		return
 	}
 
-	_, err := context.SessionsManager.Validate(context.Db, r, "YLK")
+	_, err := context.SessionsManager.Validate(r)
 	if err != nil {
 		// TODO: Extend session upon device validation
 		log.Println("Invalid session")

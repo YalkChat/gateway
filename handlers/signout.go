@@ -23,7 +23,7 @@ var SignoutHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter
 		MaxAge: -1,
 	})
 
-	err = context.SessionsManager.Delete(context.Db, cookie.Value) // TODO: Even just a property on the SessionManager is ok
+	err = context.SessionsManager.Delete(cookie.Value) // TODO: Even just a property on the SessionManager is ok
 	if err != nil {
 		log.Println("Error deleting session", err)
 	}

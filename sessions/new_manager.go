@@ -13,8 +13,8 @@ type sessionManagerImpl struct {
 	cookieName     string
 }
 
-func NewSessionManager(db SessionDatabase, lenght time.Duration) SessionManager {
-	return &sessionManagerImpl{db: db, defaultLenght: lenght}
+func NewSessionManager(db SessionDatabase, lenght time.Duration, cookieName string) SessionManager {
+	return &sessionManagerImpl{db: db, defaultLenght: lenght, cookieName: cookieName}
 }
 
 // TODO: Redis will be used for this at some point in development.

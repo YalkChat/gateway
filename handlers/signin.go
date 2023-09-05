@@ -18,7 +18,7 @@ import (
 var SigninHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, context *server.Server) {
 	defer r.Body.Close()
 
-	dbSession, err := context.SessionsManager.Validate(context.Db, r, "YLK")
+	dbSession, err := context.SessionsManager.Validate(r)
 
 	if err != nil && err.Error() != "cookie_missing" {
 		// logger.Err("SESS", "Validation failed")
@@ -88,7 +88,7 @@ var SigninHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter,
 		return
 	}
 
-	session, err := context.SessionsManager.Create(context.Db, token, dbCredentials.ID, time.Time{})
+	session, err := context.SessionsManager.Create(token, dbCredentials.ID, time.Time{})
 	if err != nil {
 		// logger.Err("SESS", fmt.Sprintf("Error creating session: %v", err))
 		w.WriteHeader(http.StatusInternalServerError)
