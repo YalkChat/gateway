@@ -8,6 +8,10 @@ import (
 
 type SessionDB struct{}
 
+func NewDatabase() SessionDatabase {
+	return &SessionDB{}
+}
+
 func (sdb *SessionDB) SaveSession(db *gorm.DB, token string, id uint, lenght time.Time) (*Session, error) {
 	session := &Session{
 		Token:     token,
