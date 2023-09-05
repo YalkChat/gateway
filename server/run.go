@@ -15,7 +15,7 @@ import (
 func RunServer(config *config.Config, conn *gorm.DB) {
 	var wg sync.WaitGroup
 
-	sessionDatabase := sessions.NewDatabase()
+	sessionDatabase := sessions.NewDatabase(conn)
 
 	sessionLenght := time.Hour * 720
 	sessionsManager := sessions.NewSessionManager(sessionDatabase, sessionLenght)
@@ -24,11 +24,12 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	db := database.NewDatabase(conn)
 	newChatServer := newserver.NewServer(db, sessionsManager)
 	fmt.Print(newChatServer) // TODO: remove
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		StartHttpServer(config, chatServer)
-	}()
+	// TODO: enable again when modifying StartHttpServer()
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
+	// 	StartHttpServer(config, newChatServer)
+	// }()
 
 	fmt.Println("server started")
 	wg.Wait()

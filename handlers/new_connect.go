@@ -31,10 +31,10 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 }
 
 var ConnectionHandler = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
-	db := server.Db
+	sessionsManager := server.SessionsManager
 	cookieName := "YLK"
 
-	session, err := server.SessionsManager(db, r, cookieName) // TODO: Separate in other config
+	session, err := sessionsManager.Validate(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return err
