@@ -34,14 +34,14 @@ func NewConnectionHandler(
 	r *http.Request,
 	srv *server.Server,
 	sessionManager sessions.SessionManager,
-) {
+) error {
 	db := srv.Db
 	cookieName := "YLK"
 
 	session, err := sessionManager.Validate(db, r, cookieName) // TODO: Separate in other config
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
+		return err
 	}
 
 	conn, err := upgradeToWebSocket(w, r)
@@ -50,4 +50,5 @@ func NewConnectionHandler(
 	}
 
 	clientID := srv.RegisterClient(conn, session.AccountID)
+	return nil
 }
