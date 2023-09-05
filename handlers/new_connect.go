@@ -6,6 +6,7 @@ import (
 	"yalk/newchat/client"
 	"yalk/sessions"
 
+	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"
 )
 
@@ -29,16 +30,11 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 	return nil
 }
 
-func NewConnectionHandler(
-	w http.ResponseWriter,
-	r *http.Request,
-	srv *server.Server,
-	sessionManager sessions.SessionManager,
-) error {
-	db := srv.Db
+var ConnectionHandler = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
+	db := server.Db
 	cookieName := "YLK"
 
-	session, err := sessionManager.Validate(db, r, cookieName) // TODO: Separate in other config
+	session, err := server.SessionsManager(db, r, cookieName) // TODO: Separate in other config
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return err
@@ -51,4 +47,4 @@ func NewConnectionHandler(
 
 	clientID := srv.RegisterClient(conn, session.AccountID)
 	return nil
-}
+})
