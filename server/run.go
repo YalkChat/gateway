@@ -19,7 +19,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	sessionDatabase := sessions.NewDatabase()
 
 	sessionLenght := time.Hour * 720
-	sessionsManager := sessions.NewSessionManager(conn, sessionLenght)
+	sessionsManager := sessions.NewSessionManager(sessionDatabase, sessionLenght)
 
 	chatServer := server.NewServer(16, conn, sessionsManager)
 	db := database.NewDatabase(conn)
