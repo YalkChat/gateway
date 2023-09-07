@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"yalk/appcontext"
-	"yalk/newchat/client"
-	"yalk/newchat/server"
+	"yalk/chat/client"
+	"yalk/chat/server"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"

@@ -1,8 +1,8 @@
 package server
 
 import (
-	"yalk/newchat/client"
-	"yalk/newchat/models/events"
+	"yalk/chat/client"
+	"yalk/chat/models/events"
 )
 
 type Server interface {

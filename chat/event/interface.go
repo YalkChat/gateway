@@ -2,8 +2,8 @@ package event
 
 import (
 	"encoding/json"
-	"yalk/newchat/database"
-	"yalk/newchat/models/events"
+	"yalk/chat/database"
+	"yalk/chat/models/events"
 )
 
 type Event interface {

@@ -1,6 +1,6 @@
 package server
 
-import "yalk/newchat/event"
+import "yalk/chat/event"
 
 // Register an event handler
 func (s *serverImpl) RegisterEventHandler(eventType string, handler event.Handler) {

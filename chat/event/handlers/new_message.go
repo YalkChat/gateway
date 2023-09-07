@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"yalk/newchat/database"
-	"yalk/newchat/event"
-	"yalk/newchat/models/db"
-	"yalk/newchat/models/events"
+	"yalk/chat/database"
+	"yalk/chat/event"
+	"yalk/chat/models/db"
+	"yalk/chat/models/events"
 )
 
 type NewMessageHandler struct{}

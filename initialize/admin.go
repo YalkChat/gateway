@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"yalk/newchat/models/events"
+	"yalk/chat/models/events"
 
 	"gorm.io/gorm"
 )

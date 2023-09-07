@@ -1,7 +1,7 @@
 package appcontext
 
 import (
-	"yalk/newchat/server"
+	"yalk/chat/server"
 	"yalk/sessions"
 )
 

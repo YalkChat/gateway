@@ -3,8 +3,8 @@ package server
 import (
 	"encoding/json"
 	"log"
-	"yalk/newchat/client"
-	"yalk/newchat/models/events"
+	"yalk/chat/client"
+	"yalk/chat/models/events"
 )
 
 func (s *serverImpl) StartReceiver(client client.Client, quit chan struct{}) {

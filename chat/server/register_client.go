@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"yalk/newchat/client"
+	"yalk/chat/client"
 )
 
 func (s *serverImpl) RegisterClient(client client.Client) error {

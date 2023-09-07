@@ -1,6 +1,6 @@
 package database
 
-import "yalk/newchat/models/db"
+import "yalk/chat/models/db"
 
 // TODO: Evaluate strings arguments used
 // TODO: We could pass the type instance with the ID property set and use .Find() on it

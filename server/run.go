@@ -6,8 +6,8 @@ import (
 	"time"
 	"yalk/config"
 
-	"yalk/newchat/database"
-	"yalk/newchat/server"
+	"yalk/chat/database"
+	"yalk/chat/server"
 	"yalk/sessions"
 
 	"gorm.io/gorm"

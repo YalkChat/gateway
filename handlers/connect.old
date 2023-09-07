@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"yalk/newchat/models/db"
-	"yalk/newchat/server"
+	"yalk/chat/models/db"
+	"yalk/chat/server"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"

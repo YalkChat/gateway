@@ -1,7 +1,7 @@
 package server
 
 // import (
-// 	"yalk/newchat/client"
+// 	"yalk/chat/client"
 // )
 
 // func (s *serverImpl) StartSender(c client.Client, quit chan struct{}) {

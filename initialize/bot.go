@@ -1,8 +1,6 @@
 package initialize
 
 import (
-	"yalk/chat/models"
-
 	"gorm.io/gorm"
 )
 

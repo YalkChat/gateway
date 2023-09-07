@@ -1,7 +1,7 @@
 package database
 
 import (
-	"yalk/newchat/models/db"
+	"yalk/chat/models/db"
 
 	"gorm.io/gorm"
 )
