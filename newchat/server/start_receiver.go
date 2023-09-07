@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"yalk/newchat/client"
-	"yalk/newchat/models"
+	"yalk/newchat/models/events"
 )
 
 func (s *serverImpl) StartReceiver(client client.Client, quit chan struct{}) {
@@ -23,14 +23,14 @@ func (s *serverImpl) StartReceiver(client client.Client, quit chan struct{}) {
 			// TODO: Missing EOF check but unsure if needed
 			if messageType.String() == "MessageText" {
 
-				baseEvent := &models.BaseEvent{} // Assuming BaseEvent is your new RawEvent
+				baseEvent := &events.BaseEvent{} // Assuming BaseEvent is your new RawEvent
 				err := json.Unmarshal(receivedEvent, baseEvent)
 				if err != nil {
 					log.Println("Error unmarshalling:", err)
 					continue
 				}
 				// Create EventWithMetadata and add UserID
-				eventWithMetadata := &models.BaseEventWithMetadata{
+				eventWithMetadata := &events.BaseEventWithMetadata{
 					Event:  baseEvent,
 					UserID: client.ID(), // Assuming you have UserID in your Client struct
 				}

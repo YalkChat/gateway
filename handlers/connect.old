@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"yalk/chat/models"
-	"yalk/chat/server"
+	"yalk/newchat/models/db"
+	"yalk/newchat/server"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"
 )
 
-var OldConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, server *server.Server) {
+var OldConnectHandle = cattp.HandlerFunc[server.Server](func(w http.ResponseWriter, r *http.Request, server server.Server) {
 	log.Printf("Requested WebSocket - %s", r.RemoteAddr)
 
 	// TODO: Custom config for parameters on admin site
@@ -41,7 +41,7 @@ var OldConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWri
 	}
 
 	defer conn.Close(websocket.StatusNormalClosure, "Client disconnected")
-	account := &models.Account{}
+	account := &db.Account{}
 	account.ID = session.AccountID
 
 	if err = account.GetInfo(server.Db); err != nil {
@@ -51,7 +51,7 @@ var OldConnectHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWri
 		return
 	}
 
-	var user *models.User
+	var user *db.User
 	tx := server.Db.Preload("Account").Preload("Chats").Preload("Chats.ChatType").Find(&user, "account_id =?", account.ID)
 	if tx.Error != nil {
 		log.Printf("Can't get user info - %s", r.RemoteAddr)

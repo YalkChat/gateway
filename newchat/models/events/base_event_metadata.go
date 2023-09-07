@@ -1,4 +1,4 @@
-package models
+package events
 
 type BaseEventWithMetadata struct {
 	Event  *BaseEvent

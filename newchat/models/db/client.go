@@ -1,10 +1,11 @@
-package models
+package db
 
 import "time"
 
-type User struct {
+// Client represents a chat client
+type Client struct {
 	ID        string    `gorm:"primaryKey"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
-	Username  string
+	Name      string    `gorm:"uniqueIndex"`
 }

@@ -48,18 +48,18 @@ func main() {
 	}
 	fmt.Println("Config loaded")
 
-	db, err := database.InitializeDb(config)
+	dbConn, err := database.InitializeDb(config)
 	if err != nil {
 		fmt.Printf("failed to inizialize db: %v", err)
 		return
 	}
 	fmt.Println("DB connection initialized")
 
-	if err := initialize.InitializeApp(db); err != nil {
+	if err := initialize.InitializeApp(dbConn); err != nil {
 		fmt.Printf("failed to inizialize app: %v", err)
 		return
 	}
 	fmt.Println("app initialized")
 
-	server.RunServer(config, db)
+	server.RunServer(config, dbConn)
 }

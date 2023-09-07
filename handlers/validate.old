@@ -6,17 +6,18 @@ import (
 
 	"github.com/AleRosmo/cattp"
 
-	"yalk/chat/server"
+	"yalk/appcontext"
 )
 
-var ValidateHandle = cattp.HandlerFunc[*server.Server](func(w http.ResponseWriter, r *http.Request, context *server.Server) {
+var ValidateHandle = cattp.HandlerFunc[appcontext.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx appcontext.HandlerContext) {
 	defer r.Body.Close()
+	sessionsManager := ctx.SessionManager()
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	_, err := context.SessionsManager.Validate(r)
+	_, err := sessionsManager.Validate(r)
 	if err != nil {
 		// TODO: Extend session upon device validation
 		log.Println("Invalid session")

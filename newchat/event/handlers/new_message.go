@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"yalk/database"
-	dbmodels "yalk/database/models"
+	"yalk/newchat/database"
 	"yalk/newchat/event"
-	servermodels "yalk/newchat/models"
+	"yalk/newchat/models/db"
+	"yalk/newchat/models/events"
 )
 
 type NewMessageHandler struct{}
 
-func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *servermodels.BaseEvent) error {
+func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *events.BaseEvent) error {
 
 	// Step 1: Parse baseEvent to Message type
 	newMessage, err := parseMessage(baseEvent)
@@ -45,29 +45,29 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *ser
 	return nil
 }
 
-func saveToDatabase(newMessage *servermodels.Message, db database.DatabaseOperations) error {
-	dbMessage := &dbmodels.Message{
+func saveToDatabase(newMessage *events.Message, database database.DatabaseOperations) error {
+	dbMessage := &db.Message{
 		ChatID:   newMessage.ChatID,
 		ClientID: newMessage.ClientID,
 		Content:  newMessage.Content,
 	}
 
-	if err := db.SaveMessage(dbMessage); err != nil {
+	if err := database.SaveMessage(dbMessage); err != nil {
 		log.Printf("Database operation failed: %v", err)
 		return err
 	}
 	return nil
 }
 
-func parseMessage(baseEvent *servermodels.BaseEvent) (*servermodels.Message, error) {
-	var newMessage *servermodels.Message
+func parseMessage(baseEvent *events.BaseEvent) (*events.Message, error) {
+	var newMessage *events.Message
 	if err := json.Unmarshal(baseEvent.Data, &newMessage); err != nil {
 		return nil, fmt.Errorf("error parsing message: %v", err)
 	}
 	return newMessage, nil
 }
 
-func validateMessageCreate(eventData *servermodels.Message) error {
+func validateMessageCreate(eventData *events.Message) error {
 	// Validate the message content, ChatID, SenderID, etc.
 	// Return an error if validation fails
 	// TODO: Write implementation

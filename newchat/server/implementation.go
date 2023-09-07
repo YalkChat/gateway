@@ -10,11 +10,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"yalk/database"
 	"yalk/newchat/client"
+	"yalk/newchat/database"
 	"yalk/newchat/event"
 	"yalk/newchat/event/handlers"
-	"yalk/newchat/models"
+	"yalk/newchat/models/events"
 	"yalk/sessions"
 
 	"nhooyr.io/websocket"
@@ -72,7 +72,7 @@ func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) 
 // TODO: Revisit for specialized event handling, and make type with UserID metadata
 // TODO: Maybe this could be an interface for all the base event types and have a HandleEvent method?
 // ..Is it useful being only the initial payload? Even for the sake of decoupling, if it makes sense I'll doit.
-func (s *serverImpl) HandleEvent(eventWithMetadata *models.BaseEventWithMetadata) error {
+func (s *serverImpl) HandleEvent(eventWithMetadata *events.BaseEventWithMetadata) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -98,7 +98,7 @@ func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
 	return handler, nil
 }
 
-func (s *serverImpl) SendToChat(message *models.Message) error {
+func (s *serverImpl) SendToChat(message *events.Message) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -123,7 +123,7 @@ func (s *serverImpl) SendToChat(message *models.Message) error {
 	return nil
 }
 
-func (s *serverImpl) BroadcastMessage(message *models.Message) error {
+func (s *serverImpl) BroadcastMessage(message *events.Message) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -160,8 +160,8 @@ func (s *serverImpl) BroadcastMessage(message *models.Message) error {
 }
 
 // TODO: Implement error checking if args are empty
-func newBaseEvent(opcode string, data json.RawMessage, clientID string, eventType string) (*models.BaseEvent, error) {
-	baseEvent := &models.BaseEvent{
+func newBaseEvent(opcode string, data json.RawMessage, clientID string, eventType string) (*events.BaseEvent, error) {
+	baseEvent := &events.BaseEvent{
 		Opcode:   opcode,
 		Data:     data,
 		ClientID: clientID,

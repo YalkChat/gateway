@@ -5,8 +5,9 @@ import (
 	"sync"
 	"time"
 	"yalk/config"
-	"yalk/database"
-	newserver "yalk/newchat/server"
+
+	"yalk/newchat/database"
+	"yalk/newchat/server"
 	"yalk/sessions"
 
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 
 	// chatServer := server.NewServer(16, conn, sessionsManager)
 	db := database.NewDatabase(conn)
-	newChatServer := newserver.NewServer(db, sessionsManager)
+	newChatServer := server.NewServer(db, sessionsManager)
 	fmt.Print(newChatServer) // TODO: remove
 	// TODO: enable again when modifying StartHttpServer()
 	// wg.Add(1)

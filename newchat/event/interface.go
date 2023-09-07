@@ -2,8 +2,8 @@ package event
 
 import (
 	"encoding/json"
-	"yalk/database"
-	"yalk/newchat/models"
+	"yalk/newchat/database"
+	"yalk/newchat/models/events"
 )
 
 type Event interface {
@@ -16,10 +16,10 @@ type Event interface {
 // Handler defines the methods that any event handler must implement
 // TODO: I must chose whether I want to keep the DB here, or use something else
 type Handler interface {
-	HandleEvent(*HandlerContext, *models.BaseEvent) error
+	HandleEvent(*HandlerContext, *events.BaseEvent) error
 }
 
 type HandlerContext struct {
 	DB         database.DatabaseOperations
-	SendToChat func(*models.Message) error
+	SendToChat func(*events.Message) error
 }

@@ -7,10 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func MakeInitialPayload(db *gorm.DB, user *models.User) ([]byte, error) {
+func MakeInitialPayload(dbConn *gorm.DB, user *models.User) ([]byte, error) {
 
 	var chats *[]models.Chat
-	tx := db.Joins("left join chat_users on chat_users.chat_id=chats.id").
+	tx := dbConn.Joins("left join chat_users on chat_users.chat_id=chats.id").
 		Where("chat_users.user_id = ?", user.ID).
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
 			return db.Order("messages.timestamp ASC")
@@ -24,14 +24,14 @@ func MakeInitialPayload(db *gorm.DB, user *models.User) ([]byte, error) {
 
 	var serverAccounts *[]models.Account
 	if user.IsAdmin {
-		tx = db.Find(&serverAccounts)
+		tx = dbConn.Find(&serverAccounts)
 		if tx.Error != nil {
 			return nil, tx.Error
 		}
 	}
 
 	var users *[]models.User
-	tx = db.Find(&users)
+	tx = dbConn.Find(&users)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
