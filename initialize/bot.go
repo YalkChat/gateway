@@ -24,8 +24,7 @@ func createBotUser(db *gorm.DB, botAccount *models.Account) (*models.User, error
 	botUser := &events.User{
 		DisplayedName: "Bot",
 		AvatarUrl:     "/bot.png",
-		Account:       botAccount,
-		StatusName:    "bot"}
+		StatusID:      "bot"}
 
 	if err := botUser.Create(db); err != nil {
 		return nil, err
