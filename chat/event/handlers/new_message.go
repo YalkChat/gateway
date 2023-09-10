@@ -67,10 +67,10 @@ func parseMessage(baseEvent *events.BaseEvent) (*events.Message, error) {
 	return newMessage, nil
 }
 
+// TODO: Important, finish write implementation
 func validateMessageCreate(eventData *events.Message) error {
 	// Validate the message content, ChatID, SenderID, etc.
 	// Return an error if validation fails
-	// TODO: Write implementation
 	// if err != nil {
 	// 	return fmt.Errorf("Validation failed: %v", err)
 	// }
