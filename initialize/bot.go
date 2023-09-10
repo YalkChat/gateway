@@ -1,6 +1,9 @@
 package initialize
 
 import (
+	"yalk/chat/models/events"
+	"yalk/old_chat/models"
+
 	"gorm.io/gorm"
 )
 
@@ -18,7 +21,7 @@ func createBotAccount(db *gorm.DB) (*models.Account, error) {
 }
 
 func createBotUser(db *gorm.DB, botAccount *models.Account) (*models.User, error) {
-	botUser := &models.User{
+	botUser := &events.User{
 		DisplayedName: "Bot",
 		AvatarUrl:     "/bot.png",
 		Account:       botAccount,
