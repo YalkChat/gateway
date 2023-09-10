@@ -29,19 +29,19 @@ func (dbi *DatabaseImpl) GetMessage(messageID string) (*db.Message, error) {
 	return message, nil
 }
 
-func (dbi *DatabaseImpl) GetUsers(chatID string) ([]string, error) {
+func (dbi *DatabaseImpl) GetUsers(chatID string) ([]uint, error) {
 	var chat db.Chat
-	result := dbi.conn.Preload("Users").First(&chat, "id = ?", chatID)
+	result := dbi.conn.Preload("Users").Find(&chat, "id = ?", chatID)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	var clientIDs []string
-	for _, client := range chat.Clients {
-		clientIDs = append(clientIDs, client.ID)
+	var userIDs []uint
+	for _, user := range chat.Users {
+		userIDs = append(userIDs, user.ID)
 	}
 
-	return clientIDs, nil
+	return userIDs, nil
 }
 
 // TODO: Decide what this function should reeturn

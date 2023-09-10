@@ -20,6 +20,7 @@ type Handler interface {
 }
 
 type HandlerContext struct {
-	DB         database.DatabaseOperations
-	SendToChat func(*events.Message) error
+	DB                database.DatabaseOperations
+	SendMessageToChat func(*events.Message) error
+	SendToAll         func()
 }
