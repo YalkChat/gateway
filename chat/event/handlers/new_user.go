@@ -24,7 +24,7 @@ func (h NewUserHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *events
 		return fmt.Errorf("error creating new user: %v", err)
 	}
 
-	ctx.SendToAll()
+	ctx.SendToAll(newDbUser)
 
 	return nil
 }

@@ -9,6 +9,6 @@ import "yalk/chat/models/db"
 type DatabaseOperations interface {
 	SaveMessage(*db.Message) error
 	GetMessage(string) (*db.Message, error)
-	GetUsers(string) ([]string, error)
+	GetUsers(string) ([]uint, error)
 	NewUser(*db.User) (*db.User, error)
 }

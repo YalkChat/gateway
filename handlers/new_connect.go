@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"yalk/appcontext"
+	"yalk/app"
 	"yalk/chat/client"
 	"yalk/chat/server"
 
@@ -32,7 +32,7 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 	return nil
 }
 
-var ConnectionHandler = cattp.HandlerFunc[appcontext.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx appcontext.HandlerContext) {
+var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	server := ctx.ChatServer()
 	sessionsManager := ctx.SessionManager()
 

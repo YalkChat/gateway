@@ -1,4 +1,4 @@
-package appcontext
+package app
 
 import (
 	"yalk/chat/server"

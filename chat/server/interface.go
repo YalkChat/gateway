@@ -11,7 +11,7 @@ type Server interface {
 	// TODO: Should I use a client for models.Message?
 	SendToChat(*events.Message) error
 	BroadcastMessage(*events.Message) error
-	GetClientByID(string) (client.Client, error)
+	GetClientByID(uint) (client.Client, error)
 	HandleEvent(*events.BaseEventWithMetadata) error
 }
 

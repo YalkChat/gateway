@@ -2,14 +2,14 @@ package server
 
 import (
 	"log"
-	"yalk/appcontext"
+	"yalk/app"
 	"yalk/config"
 	"yalk/handlers"
 
 	"github.com/AleRosmo/cattp"
 )
 
-func StartHttpServer(config *config.Config, context appcontext.HandlerContext) error {
+func StartHttpServer(config *config.Config, context app.HandlerContext) error {
 	router := cattp.New(context)
 
 	router.HandleFunc("/ws", handlers.ConnectionHandler)

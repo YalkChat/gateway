@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"yalk/chat/database"
 	"yalk/chat/models/events"
+	"yalk/chat/serialization"
 )
 
 type Event interface {
@@ -21,6 +22,7 @@ type Handler interface {
 
 type HandlerContext struct {
 	DB                database.DatabaseOperations
+	Serializer        serialization.SerializationStrategy
 	SendMessageToChat func(*events.Message) error
-	SendToAll         func()
+	SendNewUser       func(*events.UserCreationEvent) error
 }

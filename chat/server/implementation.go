@@ -21,7 +21,7 @@ import (
 )
 
 type serverImpl struct {
-	clients  map[string]client.Client
+	clients  map[uint]client.Client
 	mu       sync.Mutex
 	handlers map[string]event.Handler
 	db       database.DatabaseOperations
@@ -30,7 +30,7 @@ type serverImpl struct {
 
 func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Server {
 	s := &serverImpl{
-		clients:  make(map[string]client.Client),
+		clients:  make(map[uint]client.Client),
 		handlers: make(map[string]event.Handler),
 		db:       db,
 		sm:       sm,
@@ -40,7 +40,7 @@ func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Serve
 	return s
 }
 
-func (s *serverImpl) GetClientByID(id string) (client.Client, error) {
+func (s *serverImpl) GetClientByID(id uint) (client.Client, error) {
 	client, ok := s.clients[id]
 	if !ok {
 		return nil, fmt.Errorf("client %s not registered", id)

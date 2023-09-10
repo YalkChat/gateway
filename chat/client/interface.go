@@ -6,7 +6,7 @@ import (
 
 type Client interface {
 	// ID returns the unique identifier for the client
-	ID() string
+	ID() uint
 
 	SendMessage(websocket.MessageType, []byte) error
 	SendMessageWithTimeout(websocket.MessageType, []byte) error

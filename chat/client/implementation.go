@@ -9,14 +9,14 @@ import (
 )
 
 type clientImpl struct {
-	id      string
+	id      uint
 	conn    *websocket.Conn
 	ctx     context.Context
 	timeout time.Duration
 }
 
 // TODO: change hardcoded timeout
-func NewClient(id string, conn *websocket.Conn) Client {
+func NewClient(id uint, conn *websocket.Conn) Client {
 	return &clientImpl{
 		id:      id,
 		conn:    conn,
@@ -24,7 +24,7 @@ func NewClient(id string, conn *websocket.Conn) Client {
 	}
 }
 
-func (c *clientImpl) ID() string {
+func (c *clientImpl) ID() uint {
 	// Return the unique identifier for the client
 	return c.id
 }
