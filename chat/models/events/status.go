@@ -1,7 +1,7 @@
 package events
 
 type Status struct {
-	// gorm.Model
+	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Color string `json:"color"`
 }
