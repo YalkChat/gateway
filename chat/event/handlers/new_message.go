@@ -36,7 +36,7 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *eve
 	}
 
 	// Step 4: Send to other clients
-	if err := ctx.SendToChat(newMessage); err != nil {
+	if err := ctx.SendMessageToChat(newMessage); err != nil {
 		log.Printf("Error sending message to chat: %v", err)
 		return err
 	}

@@ -84,7 +84,7 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *events.BaseEventWithMetadata
 	if err != nil {
 		return err
 	}
-	ctx := &event.HandlerContext{DB: s.db, SendToChat: s.SendToChat}
+	ctx := &event.HandlerContext{DB: s.db, SendMessageToChat: s.SendToChat}
 
 	// Pass the event to the appropriate handler
 	return handler.HandleEvent(ctx, baseEvent)

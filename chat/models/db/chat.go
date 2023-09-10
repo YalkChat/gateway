@@ -1,12 +1,13 @@
 package db
 
-import "time"
+import "gorm.io/gorm"
 
 // Chat represents a chat room
 type Chat struct {
-	ID        string    `gorm:"primaryKey"`
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime"`
-	Name      string    `gorm:"uniqueIndex"`
-	Clients   []Client  `gorm:"many2many:chat_clients;"`
+	gorm.Model
+	ChatTypeID uint
+	ChatType   *ChatType
+	Name       string  `gorm:"uniqueIndex"`
+	Users      []*User `gorm:"many2many:chat_clients;"`
+	Messages   []*Message
 }

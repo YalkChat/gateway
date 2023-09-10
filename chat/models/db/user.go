@@ -14,7 +14,7 @@ type User struct {
 	AvatarUrl     string
 	StatusID      string `gorm:"foreignKey:Name"`
 	Status        *Status
-	customStatus  string
+	CustomStatus  string
 	LastLogin     time.Time
 	LastOffline   time.Time
 	IsAdmin       bool

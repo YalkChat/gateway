@@ -40,7 +40,7 @@ func OpenDbConnection(config *config.Config) (*gorm.DB, error) {
 }
 
 func createDbTables(dbConn *gorm.DB) error {
-	if err := dbConn.AutoMigrate(&db.Account{}, &db.User{}, &db.Chat{}, &db.Message{}, &db.ServerSettings{}, &db.Status{}); err != nil {
+	if err := dbConn.AutoMigrate(&db.User{}, &db.Chat{}, &db.Message{}, &db.ServerSettings{}, &db.Status{}); err != nil {
 		return err
 	}
 	return nil
