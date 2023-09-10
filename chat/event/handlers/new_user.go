@@ -18,11 +18,14 @@ func (h NewUserHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *events
 		log.Printf("Error parsing user: %v", err)
 		return err
 	}
-
-	if err := saveToDatabase(newUser, ctx.DB); err != nil {
-		log.Printf("Error sending message to chat: %v", err)
-		return err
+	// TODO: Check if this actually updates the struct with the new ID
+	newDbUser, err := saveNewUserToDb(newUser, ctx.DB)
+	if err != nil {
+		return fmt.Errorf("error creating new user: %v", err)
 	}
+
+	ctx.SendToAll()
+
 	return nil
 }
 
@@ -35,8 +38,10 @@ func parseUser(baseEvent *events.BaseEvent) (*events.User, error) {
 }
 
 // TODO: check whether we can have a better way to return the ID
+// TODO: finish implementation
+// TODO: Could use github.com/ulule/deepcopier
 func saveNewUserToDb(newUser *events.User, database database.DatabaseOperations) (*db.User, error) {
-	dbUser := &db.User{}
+	dbUser := &db.User{Email: newUser.Email}
 
 	// We need to get the new ID back
 	dbUserWithID, err := database.NewUser(dbUser)
