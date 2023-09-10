@@ -1,10 +1,22 @@
 package db
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
-	ID        string    `gorm:"primaryKey"`
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime"`
-	Username  string
+	gorm.Model
+	Email         string
+	Password      string
+	DisplayedName string
+	AvatarUrl     string
+	StatusID      string `gorm:"foreignKey:Name"`
+	Status        *Status
+	customStatus  string
+	LastLogin     time.Time
+	LastOffline   time.Time
+	IsAdmin       bool
+	Chats         []*Chat `gorm:"many2many:chat_users;"`
 }
