@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"yalk/config"
 	"yalk/database"
-	"yalk/initialize"
 	"yalk/server"
 
 	"github.com/joho/godotenv"
@@ -55,11 +54,6 @@ func main() {
 	}
 	fmt.Println("DB connection initialized")
 
-	if err := initialize.InitializeApp(dbConn); err != nil {
-		fmt.Printf("failed to inizialize app: %v", err)
-		return
-	}
-	fmt.Println("app initialized")
-
+	fmt.Println("running server")
 	server.RunServer(config, dbConn)
 }

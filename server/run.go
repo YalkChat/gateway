@@ -8,6 +8,7 @@ import (
 	"yalk/serialization"
 
 	"yalk/chat/database"
+	"yalk/chat/initialize"
 	"yalk/chat/server"
 	"yalk/sessions"
 
@@ -28,6 +29,11 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	serializationStrategy := &serialization.JSONStrategy{} // or &serialization.ProtobufStrategy{}
 
 	db := database.NewDatabase(conn)
+
+	if err := initialize.InitializeApp(db); err != nil {
+		fmt.Printf("failed to inizialize app: %v", err)
+		return
+	}
 	newChatServer := server.NewServer(db, sessionsManager, serializationStrategy)
 	fmt.Print(newChatServer) // TODO: remove
 	// TODO: enable again when modifying StartHttpServer()
