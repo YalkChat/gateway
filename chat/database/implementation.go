@@ -31,7 +31,7 @@ func (dbi *DatabaseImpl) SaveMessage(newMessage *events.Message) (*db.Message, e
 
 }
 
-func (dbi *DatabaseImpl) GetMessage(messageID string) (*db.Message, error) {
+func (dbi *DatabaseImpl) GetMessage(messageID uint) (*db.Message, error) {
 	var message *db.Message
 	if err := dbi.conn.Where("id = ?", messageID).First(&message).Error; err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (dbi *DatabaseImpl) GetMessage(messageID string) (*db.Message, error) {
 	return message, nil
 }
 
-func (dbi *DatabaseImpl) GetUsers(chatID string) ([]uint, error) {
+func (dbi *DatabaseImpl) GetUsers(chatID uint) ([]uint, error) {
 	var chat *db.Chat
 	result := dbi.conn.Preload("Users").Find(&chat, "id = ?", chatID)
 	if result.Error != nil {
