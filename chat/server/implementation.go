@@ -28,12 +28,13 @@ type serverImpl struct {
 	serializer serialization.SerializationStrategy
 }
 
-func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Server {
+func NewServer(db database.DatabaseOperations, sm sessions.SessionManager, serializer serialization.SerializationStrategy) Server {
 	s := &serverImpl{
-		clients:  make(map[uint]client.Client),
-		handlers: make(map[string]event.Handler),
-		db:       db,
-		sm:       sm,
+		clients:    make(map[uint]client.Client),
+		handlers:   make(map[string]event.Handler),
+		db:         db,
+		sm:         sm,
+		serializer: serializer,
 	}
 
 	s.RegisterEventHandler("NewMessage", handlers.NewMessageHandler{})

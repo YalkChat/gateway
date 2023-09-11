@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"yalk/config"
+	"yalk/serialization"
 
 	"yalk/chat/database"
 	"yalk/chat/server"
@@ -22,8 +23,12 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	sessionsManager := sessions.NewSessionManager(sessionsDatabase, sessionLenght, cookieName)
 
 	// chatServer := server.NewServer(16, conn, sessionsManager)
+
+	// Initialize the serialization strategy
+	serializationStrategy := &serialization.JSONStrategy{} // or &serialization.ProtobufStrategy{}
+
 	db := database.NewDatabase(conn)
-	newChatServer := server.NewServer(db, sessionsManager)
+	newChatServer := server.NewServer(db, sessionsManager, serializationStrategy)
 	fmt.Print(newChatServer) // TODO: remove
 	// TODO: enable again when modifying StartHttpServer()
 	// wg.Add(1)
