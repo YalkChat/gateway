@@ -28,13 +28,15 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	// Initialize the serialization strategy
 	serializationStrategy := &serialization.JSONStrategy{} // or &serialization.ProtobufStrategy{}
 
-	db := database.NewDatabase(conn)
+	// Initialize db operations
+	dbOperations := database.NewDatabase(conn)
 
-	if err := initialize.InitializeApp(db); err != nil {
+	// TODO: the name suggests it might not be in the rightr package
+	if err := initialize.InitializeApp(dbOperations); err != nil {
 		fmt.Printf("failed to inizialize app: %v", err)
 		return
 	}
-	newChatServer := server.NewServer(db, sessionsManager, serializationStrategy)
+	newChatServer := server.NewServer(dbOperations, sessionsManager, serializationStrategy)
 	fmt.Print(newChatServer) // TODO: remove
 	// TODO: enable again when modifying StartHttpServer()
 	// wg.Add(1)
