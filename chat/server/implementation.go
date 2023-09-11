@@ -15,6 +15,7 @@ import (
 	"yalk/chat/event/handlers"
 	"yalk/chat/models/events"
 	"yalk/chat/serialization"
+
 	"yalk/sessions"
 )
 
