@@ -36,7 +36,8 @@ func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Serve
 		sm:       sm,
 	}
 
-	s.RegisterEventHandler("ChatMessage", handlers.NewMessageHandler{})
+	s.RegisterEventHandler("NewMessage", handlers.NewMessageHandler{})
+	s.RegisterEventHandler("NewUser", handlers.NewUserHandler{})
 	return s
 }
 
