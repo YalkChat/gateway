@@ -12,7 +12,7 @@ import (
 
 // TODO: Move to use the events models instead of db models
 type DatabaseOperations interface {
-	SaveMessage(*db.Message) (*db.Message, error)
+	SaveMessage(*events.Message) (*db.Message, error)
 	GetMessage(uint) (*db.Message, error)
 	GetUsers(uint) ([]uint, error)
 	NewUserWithPassword(*events.UserCreationEvent) (*db.User, error)
