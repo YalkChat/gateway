@@ -26,12 +26,12 @@ func InitializeApp(dbConn database.DatabaseOperations) error {
 	}
 	log.Printf("Created admin user")
 
-	chatType, err := createChannelType(dbConn)
+	err = createChannelType(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create chat type, error: %v", err)
 		return err
 	}
-	log.Printf("Created channel types: %v", chatType.Type)
+	log.Printf("Created channel types")
 
 	err = createMainChannel(dbConn)
 	if err != nil {

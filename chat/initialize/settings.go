@@ -5,9 +5,10 @@ import (
 	"yalk/chat/models/db"
 )
 
-// TODO: Missing method in DatabaseOperations
 func saveInitialSettings(dbCon database.DatabaseOperations) error {
 	serverSettings := &db.ServerSettings{IsInitialized: true}
-
+	if err := dbCon.SaveServerSettings(serverSettings); err != nil {
+		return err
+	}
 	return nil
 }
