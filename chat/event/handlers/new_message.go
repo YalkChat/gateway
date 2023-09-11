@@ -68,7 +68,7 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *eve
 }
 
 func saveNewMessageToDb(newMessage *events.Message, database database.DatabaseOperations) (*db.Message, error) {
-	newDbMessage, err := database.SaveMessage((*db.Message)(newMessage))
+	newDbMessage, err := database.SaveMessage(newMessage)
 	if err != nil {
 		log.Printf("Database operation failed: %v", err)
 		return nil, err
