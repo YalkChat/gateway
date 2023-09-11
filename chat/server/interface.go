@@ -8,8 +8,8 @@ import (
 type Server interface {
 	RegisterClient(client.Client) error
 	UnregisterClient(client.Client) error
-	SendToChat(*events.BaseEvent, uint) error
-	BroadcastMessage(*events.BaseEvent) error
+	SendChat(*events.BaseEvent, uint) error
+	SendAll(*events.BaseEvent) error
 	GetClientByID(uint) (client.Client, error)
 	HandleEvent(*events.BaseEventWithMetadata) error
 }
