@@ -21,14 +21,3 @@ type User struct {
 	Chats         []*Chat   `json:"chats,omitempty"`
 	// IsOnline      bool      `json:"isOnline,omitempty"` // TODO: If we use status do we need it?
 }
-
-type UserCreationEvent struct {
-	User     User   `json:"user"`
-	Password string `json:"password,omitempty"`
-}
-
-type UserUpdateEvent struct {
-	User     User   `json:"user"`
-	Password string `json:"password,omitempty"`
-	Email    string `json:"email,omitempty"`
-}

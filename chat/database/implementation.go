@@ -2,6 +2,7 @@ package database
 
 import (
 	"yalk/chat/models/db"
+	"yalk/chat/models/events"
 
 	"gorm.io/gorm"
 )
@@ -16,6 +17,7 @@ func NewDatabase(conn *gorm.DB) *DatabaseImpl {
 	}
 }
 
+// TODO: Adapt to accept the
 func (dbi *DatabaseImpl) SaveMessage(message *db.Message) error {
 	return dbi.conn.Create(message).Error
 
@@ -45,9 +47,10 @@ func (dbi *DatabaseImpl) GetUsers(chatID string) ([]uint, error) {
 }
 
 // TODO: Decide what this function should reeturn
-func (dbi *DatabaseImpl) NewUser(newUser *db.User) (*db.User, error) {
+func (dbi *DatabaseImpl) NewUserWithPassword(newUser *events.UserCreationEvent) (*db.User, error) {
+	dbNewUser := &db.User{Email: newUser.Email, Password: newUser.Password}
 	if err := dbi.conn.Create(newUser).Error; err != nil {
 		return nil, err
 	}
-	return newUser, nil
+	return dbNewUser, nil
 }

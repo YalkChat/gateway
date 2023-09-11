@@ -13,7 +13,7 @@ import (
 type NewUserHandler struct{}
 
 func (h NewUserHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *events.BaseEvent) error {
-	newUser, err := parseUser(baseEvent)
+	newUser, err := parseUserCreationEvent(baseEvent)
 	if err != nil {
 		log.Printf("Error parsing user: %v", err)
 		return err
@@ -29,24 +29,22 @@ func (h NewUserHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *events
 	return nil
 }
 
-func parseUser(baseEvent *events.BaseEvent) (*events.User, error) {
-	var newUser *events.User
-	if err := json.Unmarshal(baseEvent.Data, &newUser); err != nil {
-		return nil, fmt.Errorf("error parsing new account: %v", err)
+func parseUserCreationEvent(baseEvent *events.BaseEvent) (*events.UserCreationEvent, error) {
+	var newUserCreationEvent *events.UserCreationEvent
+	if err := json.Unmarshal(baseEvent.Data, &newUserCreationEvent); err != nil {
+		return nil, fmt.Errorf("error parsing new user: %v", err)
 	}
-	return newUser, nil
+	return newUserCreationEvent, nil
 }
 
 // TODO: check whether we can have a better way to return the ID
 // TODO: finish implementation
 // TODO: Could use github.com/ulule/deepcopier
-func saveNewUserToDb(newUser *events.User, database database.DatabaseOperations) (*db.User, error) {
-	dbUser := &db.User{Email: newUser.Email}
-
+func saveNewUserToDb(newUser *events.UserCreationEvent, database database.DatabaseOperations) (*db.User, error) {
 	// We need to get the new ID back
-	dbUserWithID, err := database.NewUser(dbUser)
+	dbNewUser, err := database.NewUserWithPassword(newUser)
 	if err != nil {
 		return nil, fmt.Errorf("error saving new user: %v", err)
 	}
-	return dbUserWithID, nil
+	return dbNewUser, nil
 }
