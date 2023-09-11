@@ -21,8 +21,8 @@ type Handler interface {
 }
 
 type HandlerContext struct {
-	DB                database.DatabaseOperations
-	Serializer        serialization.SerializationStrategy
-	SendMessageToChat func(*events.Message) error
-	SendNewUser       func(*events.UserCreationEvent) error
+	DB         database.DatabaseOperations
+	Serializer serialization.SerializationStrategy
+	SendToChat func(*events.BaseEvent, uint) error
+	SendAll    func(*events.BaseEvent) error
 }

@@ -11,7 +11,7 @@ func (s *serverImpl) RegisterClient(client client.Client) error {
 
 	// Check if client already exists
 	if _, exists := s.clients[client.ID()]; exists {
-		return fmt.Errorf("client with ID %s already registered", client.ID())
+		return fmt.Errorf("client with ID %d already registered", client.ID())
 	}
 
 	// Add client to internal tracking

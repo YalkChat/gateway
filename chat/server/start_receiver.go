@@ -17,7 +17,7 @@ func (s *serverImpl) StartReceiver(client client.Client, quit chan struct{}) {
 			messageType, receivedEvent, err := client.ReadMessage()
 			if err != nil {
 				// Handle the error, possibly by logging it and breaking the loop to stop the receiver
-				log.Printf("Error reading event from client %s: %v", client.ID(), err)
+				log.Printf("Error reading event from client %d: %v", client.ID(), err)
 				break
 			}
 			// TODO: Missing EOF check but unsure if needed
@@ -38,7 +38,7 @@ func (s *serverImpl) StartReceiver(client client.Client, quit chan struct{}) {
 				// Forward the event to the server for handling
 				if err := s.HandleEvent(eventWithMetadata); err != nil {
 					// Handle the error, possibly by logging it
-					log.Printf("Error handling event from client %s: %v", client.ID(), err)
+					log.Printf("Error handling event from client %d: %v", client.ID(), err)
 				}
 			}
 		}

@@ -11,7 +11,7 @@ func (s *serverImpl) UnregisterClient(client client.Client) error {
 
 	// Check if client exists
 	if _, exists := s.clients[client.ID()]; !exists {
-		return fmt.Errorf("client with ID %s not found", client.ID())
+		return fmt.Errorf("client with ID %d not found", client.ID())
 	}
 
 	// Remove client from internal tracking

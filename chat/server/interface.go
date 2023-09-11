@@ -8,9 +8,8 @@ import (
 type Server interface {
 	RegisterClient(client.Client) error
 	UnregisterClient(client.Client) error
-	// TODO: Should I use a client for models.Message?
-	SendToChat(*events.Message) error
-	BroadcastMessage(*events.Message) error
+	SendToChat(*events.BaseEvent, uint) error
+	BroadcastMessage(*events.BaseEvent) error
 	GetClientByID(uint) (client.Client, error)
 	HandleEvent(*events.BaseEventWithMetadata) error
 }

@@ -11,7 +11,7 @@ type Message struct {
 	ID        uint      `gorm:"primaryKey"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
-	ChatID    string    `gorm:"index"`
-	ClientID  string    `gorm:"index"`
+	ChatID    uint      `gorm:"index"`
+	UserID    uint      `gorm:"index"`
 	Content   string    `gorm:"type:text"`
 }

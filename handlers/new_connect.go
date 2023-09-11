@@ -50,13 +50,14 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 	}
 
 	// TODO: Find ID here
-	client := client.NewClient("id", conn)
+	// TODO: 1 is placeholder
+	client := client.NewClient(1, conn)
 
 	err = server.RegisterClient(client)
 	if err != nil {
 		// TODO: placeholder
 		return
 	}
-	fmt.Printf("registered new client: %d", client.ID)
+	fmt.Printf("registered new client: %d", client.ID())
 
 })
