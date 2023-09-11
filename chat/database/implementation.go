@@ -18,8 +18,16 @@ func NewDatabase(conn *gorm.DB) *DatabaseImpl {
 }
 
 // TODO: Adapt to accept the
-func (dbi *DatabaseImpl) SaveMessage(message *db.Message) error {
-	return dbi.conn.Create(message).Error
+func (dbi *DatabaseImpl) SaveMessage(newMessage *events.Message) (*db.Message, error) {
+	dbMessage := &db.Message{
+		ChatID:  newMessage.ChatID,
+		UserID:  newMessage.UserID,
+		Content: newMessage.Content,
+	}
+	if err := dbi.conn.Create(dbMessage).Error; err != nil {
+		return nil, err
+	}
+	return dbMessage, nil
 
 }
 
@@ -32,7 +40,7 @@ func (dbi *DatabaseImpl) GetMessage(messageID string) (*db.Message, error) {
 }
 
 func (dbi *DatabaseImpl) GetUsers(chatID string) ([]uint, error) {
-	var chat db.Chat
+	var chat *db.Chat
 	result := dbi.conn.Preload("Users").Find(&chat, "id = ?", chatID)
 	if result.Error != nil {
 		return nil, result.Error
