@@ -5,6 +5,7 @@ import (
 	"yalk/chat/models/db"
 )
 
+// TODO: Missing method in DatabaseOperations
 func createBotUser(conn database.DatabaseOperations) error {
 	botUser := &db.User{
 		DisplayedName: "Bot",
