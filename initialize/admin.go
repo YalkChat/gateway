@@ -11,7 +11,7 @@ import (
 func createAdminAccount(db *gorm.DB) (*events.User, error) {
 	// ! Hash for default admin's "admin" password in BCrypt, it will not be this and
 	// ! not be set this way.
-	adminUser := &db.User{
+	adminUser := &db.UserCreationEvent{
 		Email:         "admin@example.com",
 		DisplayedName: "admin"}
 

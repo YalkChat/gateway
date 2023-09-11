@@ -13,26 +13,12 @@ func InitializeApp(db *gorm.DB) error {
 		return nil
 	}
 
-	botAccount, err := createBotAccount(db)
-	if err != nil {
-		fmt.Printf("Can't create bot account, error: %v", err)
-		return err
-	}
-	log.Printf("Created bot account: %v", botAccount.Username)
-
 	botUser, err := createBotUser(db, botAccount)
 	if err != nil {
 		fmt.Printf("Can't create bot user, error: %v", err)
 		return err
 	}
-	log.Printf("Created bot account: %v", botUser.DisplayedName)
-
-	adminAccount, err := createAdminAccount(db)
-	if err != nil {
-		fmt.Printf("Can't create admin credentials: %v", err.Error())
-		return err
-	}
-	log.Printf("Created admin credentials: %v", adminAccount.Username)
+	log.Printf("Created bot user: %v", botAccount.DisplayedName)
 
 	adminUser, err := createAdminUser(db, adminAccount)
 	if err != nil {
