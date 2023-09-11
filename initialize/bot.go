@@ -6,18 +6,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func createBotAccount(db *gorm.DB) (*events.User, error) {
-	botAccount := &events.User{
-		Email:    "invalid@example.com",
-		Username: "bot",
-		Password: "none",
-		Verified: false}
+// func createBotUs(db *gorm.DB) (*events.User, error) {
+// 	botAccount := &events.User{
+// 		Email:    "invalid@example.com",
+// 		Username: "bot",
+// 		Password: "none",
+// 		Verified: false}
 
-	if err := botAccount.Create(db); err != nil {
-		return nil, err
-	}
-	return botAccount, nil
-}
+// 	if err := botAccount.Create(db); err != nil {
+// 		return nil, err
+// 	}
+// 	return botAccount, nil
+// }
 
 func createBotUser(db *gorm.DB, botAccount *events.User) (*events.User, error) {
 	botUser := &events.User{
@@ -25,6 +25,7 @@ func createBotUser(db *gorm.DB, botAccount *events.User) (*events.User, error) {
 		AvatarUrl:     "/bot.png",
 		StatusID:      "bot"}
 
+	// TODO: Adapt to new logic
 	if err := botUser.Create(db); err != nil {
 		return nil, err
 	}
