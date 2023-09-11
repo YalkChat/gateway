@@ -15,17 +15,19 @@ import (
 	"yalk/chat/event"
 	"yalk/chat/event/handlers"
 	"yalk/chat/models/events"
+	"yalk/chat/serialization"
 	"yalk/sessions"
 
 	"nhooyr.io/websocket"
 )
 
 type serverImpl struct {
-	clients  map[uint]client.Client
-	mu       sync.Mutex
-	handlers map[string]event.Handler
-	db       database.DatabaseOperations
-	sm       sessions.SessionManager
+	clients    map[uint]client.Client
+	mu         sync.Mutex
+	handlers   map[string]event.Handler
+	db         database.DatabaseOperations
+	sm         sessions.SessionManager
+	serializer serialization.SerializationStrategy
 }
 
 func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Server {
@@ -44,12 +46,12 @@ func NewServer(db database.DatabaseOperations, sm sessions.SessionManager) Serve
 func (s *serverImpl) GetClientByID(id uint) (client.Client, error) {
 	client, ok := s.clients[id]
 	if !ok {
-		return nil, fmt.Errorf("client %s not registered", id)
+		return nil, fmt.Errorf("client %d not registered", id)
 	}
 	return client, nil
 }
 
-func (s *serverImpl) getClientsByChatID(chatID string) ([]client.Client, error) {
+func (s *serverImpl) getClientsByChatID(chatID uint) ([]client.Client, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -85,7 +87,7 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *events.BaseEventWithMetadata
 	if err != nil {
 		return err
 	}
-	ctx := &event.HandlerContext{DB: s.db, SendMessageToChat: s.SendToChat}
+	ctx := &event.HandlerContext{DB: s.db, SendToChat: s.SendToChat}
 
 	// Pass the event to the appropriate handler
 	return handler.HandleEvent(ctx, baseEvent)
@@ -99,20 +101,19 @@ func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
 	return handler, nil
 }
 
-func (s *serverImpl) SendToChat(message *events.Message) error {
+func (s *serverImpl) SendToChat(baseEvent *events.BaseEvent, chatId uint) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Serialize the message back to JSON bytes
-	messageBytes, err := json.Marshal(message)
+	// Find the clients associated with the chatID
+	clients, err := s.getClientsByChatID(chatId)
 	if err != nil {
 		return err
 	}
 
-	// Find the clients associated with the chatID
-	clients, err := s.getClientsByChatID(message.ChatID)
+	messageBytes, err := s.serializer.Serialize(baseEvent)
 	if err != nil {
-		return err
+		return fmt.Errorf("error serializing baseEvent: %v", err)
 	}
 
 	// Send the message to all clients in the chat
@@ -124,44 +125,27 @@ func (s *serverImpl) SendToChat(message *events.Message) error {
 	return nil
 }
 
-func (s *serverImpl) BroadcastMessage(message *events.Message) error {
+func (s *serverImpl) BroadcastMessage(baseEvent *events.BaseEvent) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// TODO: with the observations on top of this file evaluated if
-	// .. the serialization back to Json could happen in an helper function
-	// .. called by the handlers before sending the message, or any better way
-
-	// Serialize the message back to JSON bytes
-	messageBytes, err := json.Marshal(message)
+	messageBytes, err := s.serializer.Serialize(baseEvent)
 	if err != nil {
-		return err
-	}
-
-	// Create a new BaseEvent
-	// TODO: Check where to get the client ID from, if the message is good or anything better
-	// TODO: Check also where to get eventType from
-	baseEvent, err := newBaseEvent("1", messageBytes, message.ClientID, "NewMessage")
-	if err != nil {
-		return fmt.Errorf("error broadcasting message: %v", err)
-	}
-
-	baseEventJSON, err := json.Marshal(baseEvent)
-	if err != nil {
-		return fmt.Errorf("failed to serialize base event: %v", err)
+		return fmt.Errorf("error serializing baseEvent: %v", err)
 	}
 
 	for _, client := range s.clients {
-		if err := client.SendMessageWithTimeout(websocket.MessageText, baseEventJSON); err != nil {
+		if err := client.SendMessageWithTimeout(websocket.MessageText, messageBytes); err != nil {
 			// Handle the error based on your application's needs
-			fmt.Printf("failed to send message to client %s: %v\n", client.ID(), err)
+			fmt.Printf("failed to send message to client %d: %v\n", client.ID(), err)
 		}
 	}
 	return nil
 }
 
 // TODO: Implement error checking if args are empty
-func newBaseEvent(opcode string, data json.RawMessage, clientID string, eventType string) (*events.BaseEvent, error) {
+// TODO: This can become a util for handlers?
+func newBaseEvent(opcode string, data json.RawMessage, clientID uint, eventType string) (*events.BaseEvent, error) {
 	baseEvent := &events.BaseEvent{
 		Opcode:   opcode,
 		Data:     data,
