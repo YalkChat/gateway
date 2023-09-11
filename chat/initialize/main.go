@@ -33,12 +33,12 @@ func InitializeApp(dbConn database.DatabaseOperations) error {
 	}
 	log.Printf("Created channel types: %v", chatType.Type)
 
-	mainChat, err := createMainChannel(dbConn)
+	err = createMainChannel(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create main chat, error: %v", err)
 		return err
 	}
-	log.Printf("Created main channel: %v", mainChat.Name)
+	log.Printf("Created main channel")
 
 	if err = saveInitialSettings(dbConn); err != nil {
 		fmt.Printf("Can't save initial settings, error: %v", err)
