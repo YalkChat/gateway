@@ -30,13 +30,33 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *eve
 	}
 
 	// Step 3: Database Operation
-	if err := saveToDatabase(newMessage, ctx.DB); err != nil {
+	newDbMessage, err := saveNewMessageToDb(newMessage, ctx.DB)
+	if err != nil {
 		log.Printf("Error sending message to chat: %v", err)
 		return err
 	}
 
+	newMessageEvent := &events.Message{
+		ID:      newDbMessage.ID,
+		ChatID:  newDbMessage.ChatID,
+		Content: newDbMessage.Content,
+	}
+
+	// Serialize the new user event
+	serializedData, err := ctx.Serializer.Serialize(newMessageEvent)
+	if err != nil {
+		return fmt.Errorf("error serializing new user: %v", err)
+	}
+
+	newBaseEvent := &events.BaseEvent{
+		Opcode:   "NewMessage", //TODO: This is not the right opcode
+		Data:     serializedData,
+		ClientID: newDbMessage.UserID,
+		Type:     "placeholder",
+	}
+
 	// Send to other clients
-	if err := ctx.SendMessageToChat(newBaseEvent); err != nil {
+	if err := ctx.SendToChat(newBaseEvent, newDbMessage.ChatID); err != nil {
 		log.Printf("Error sending message to chat: %v", err)
 		return err
 	}
@@ -47,18 +67,13 @@ func (h NewMessageHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *eve
 	return nil
 }
 
-func saveToDatabase(newMessage *events.Message, database database.DatabaseOperations) error {
-	dbMessage := &db.Message{
-		ChatID:   newMessage.ChatID,
-		ClientID: newMessage.ClientID,
-		Content:  newMessage.Content,
-	}
-
-	if err := database.SaveMessage(dbMessage); err != nil {
+func saveNewMessageToDb(newMessage *events.Message, database database.DatabaseOperations) (*db.Message, error) {
+	newDbMessage, err := database.SaveMessage((*db.Message)(newMessage))
+	if err != nil {
 		log.Printf("Database operation failed: %v", err)
-		return err
+		return nil, err
 	}
-	return nil
+	return newDbMessage, nil
 }
 
 func parseMessage(baseEvent *events.BaseEvent) (*events.Message, error) {

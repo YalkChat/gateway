@@ -24,7 +24,27 @@ func (h NewUserHandler) HandleEvent(ctx *event.HandlerContext, baseEvent *events
 		return fmt.Errorf("error creating new user: %v", err)
 	}
 
-	ctx.SendToAll(newDbUser)
+	// Create a new User object from the database user
+	newUserEvent := &events.User{
+		ID:    newDbUser.ID,
+		Email: newDbUser.Email,
+		// Add other fields as needed
+	}
+
+	// Serialize the new user event
+	serializedData, err := ctx.Serializer.Serialize(newUserEvent)
+	if err != nil {
+		return fmt.Errorf("error serializing new user: %v", err)
+	}
+
+	newBaseEvent := &events.BaseEvent{
+		Opcode:   "NewUser", //TODO: This is not the right opcode
+		Data:     serializedData,
+		ClientID: newDbUser.ID,
+		Type:     "placeholder",
+	}
+
+	ctx.SendAll(newBaseEvent)
 
 	return nil
 }
