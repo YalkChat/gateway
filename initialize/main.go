@@ -6,41 +6,41 @@ import (
 	"yalk/chat/database"
 )
 
-func InitializeApp(db *database.DatabaseOperations) error {
+func InitializeApp(dbConn database.DatabaseOperations) error {
 
-	if isInitialized := checkIsInitialized(db); isInitialized {
+	if isInitialized := checkIsInitialized(dbConn); isInitialized {
 		return nil
 	}
 
-	botUser, err := createBotUser(db, botAccount)
+	err := createBotUser(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create bot user, error: %v", err)
 		return err
 	}
-	log.Printf("Created bot user: %v", botAccount.DisplayedName)
+	log.Printf("Created bot user")
 
-	adminUser, err := createAdminUser(db, adminAccount)
+	err = createAdminUser(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create admin profile, error: %v", err.Error())
 		return err
 	}
-	log.Printf("Created admin user: %v", adminUser.DisplayedName)
+	log.Printf("Created admin user")
 
-	chatType, err := createChannelType(db)
+	chatType, err := createChannelType(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create chat type, error: %v", err)
 		return err
 	}
 	log.Printf("Created channel types: %v", chatType.Type)
 
-	mainChat, err := createMainChannel(db, adminUser, chatType)
+	mainChat, err := createMainChannel(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create main chat, error: %v", err)
 		return err
 	}
 	log.Printf("Created main channel: %v", mainChat.Name)
 
-	if err = saveInitialSettings(db); err != nil {
+	if err = saveInitialSettings(dbConn); err != nil {
 		fmt.Printf("Can't save initial settings, error: %v", err)
 		return err
 	}

@@ -1,17 +1,13 @@
 package initialize
 
 import (
+	"yalk/chat/database"
 	"yalk/chat/models"
-
-	"gorm.io/gorm"
+	"yalk/chat/models/db"
 )
 
-func createChannelType(db *gorm.DB) (*models.ChatType, error) {
-	chatType := &models.ChatType{Type: "channel"}
+func createChannelType(dbConn database.DatabaseOperations) (*models.ChatType, error) {
+	chatType := &db.ChatType{Name: "channel"}
 
-	tx := db.Create(chatType)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
 	return chatType, nil
 }

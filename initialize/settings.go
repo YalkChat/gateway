@@ -1,16 +1,13 @@
 package initialize
 
 import (
-	"yalk/chat/models"
-
-	"gorm.io/gorm"
+	"yalk/chat/database"
+	"yalk/chat/models/db"
 )
 
-func saveInitialSettings(db *gorm.DB) error {
-	serverSettings := &models.ServerSettings{IsInitialized: true}
-	err := serverSettings.Create(db)
-	if err != nil {
-		return err
-	}
+// TODO: Missing method in DatabaseOperations
+func saveInitialSettings(dbCon database.DatabaseOperations) error {
+	serverSettings := &db.ServerSettings{IsInitialized: true}
+
 	return nil
 }

@@ -1,33 +1,15 @@
 package initialize
 
 import (
-	"yalk/chat/models/events"
-
-	"gorm.io/gorm"
+	"yalk/chat/database"
+	"yalk/chat/models/db"
 )
 
-// func createBotUs(db *gorm.DB) (*events.User, error) {
-// 	botAccount := &events.User{
-// 		Email:    "invalid@example.com",
-// 		Username: "bot",
-// 		Password: "none",
-// 		Verified: false}
-
-// 	if err := botAccount.Create(db); err != nil {
-// 		return nil, err
-// 	}
-// 	return botAccount, nil
-// }
-
-func createBotUser(db *gorm.DB, botAccount *events.User) (*events.User, error) {
-	botUser := &events.User{
+func createBotUser(conn database.DatabaseOperations) error {
+	botUser := &db.User{
 		DisplayedName: "Bot",
 		AvatarUrl:     "/bot.png",
 		StatusID:      "bot"}
 
-	// TODO: Adapt to new logic
-	if err := botUser.Create(db); err != nil {
-		return nil, err
-	}
-	return botUser, nil
+	return nil
 }
