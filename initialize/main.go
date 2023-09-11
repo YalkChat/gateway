@@ -3,11 +3,10 @@ package initialize
 import (
 	"fmt"
 	"log"
-
-	"gorm.io/gorm"
+	"yalk/chat/database"
 )
 
-func InitializeApp(db *gorm.DB) error {
+func InitializeApp(db *database.DatabaseOperations) error {
 
 	if isInitialized := checkIsInitialized(db); isInitialized {
 		return nil
