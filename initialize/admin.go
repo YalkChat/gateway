@@ -25,8 +25,5 @@ func createAdminUser(dbConn *gorm.DB, adminAccount *events.User) (*events.User, 
 		AvatarUrl: "/default.png",
 		StatusID:  "offline"}
 
-	if err := adminUser.Create(dbConn); err != nil {
-		return nil, err
-	}
 	return adminUser, nil
 }
