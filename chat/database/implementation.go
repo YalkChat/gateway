@@ -17,7 +17,6 @@ func NewDatabase(conn *gorm.DB) *DatabaseImpl {
 	}
 }
 
-// TODO: Adapt to accept the
 func (dbi *DatabaseImpl) SaveMessage(newMessage *events.Message) (*db.Message, error) {
 	dbMessage := &db.Message{
 		ChatID:  newMessage.ChatID,
@@ -72,4 +71,57 @@ func (dbi *DatabaseImpl) GetUsersByChatId(chatID uint) ([]*db.User, error) {
 	}
 
 	return chat.Users, nil
+}
+
+// NewUser creates a new user in the database
+func (dbi *DatabaseImpl) NewUser(newUser *events.User) (*db.User, error) {
+	dbNewUser := &db.User{
+		Email: newUser.Email,
+		// Add other fields from events.User to db.User here
+	}
+	if err := dbi.conn.Create(dbNewUser).Error; err != nil {
+		return nil, err
+	}
+	return dbNewUser, nil
+}
+
+// NewChat creates a new chat in the database
+func (dbi *DatabaseImpl) NewChat(newChat *events.Chat) (*db.Chat, error) {
+	dbNewChat := &db.Chat{
+		Name: newChat.Name,
+		// Add other fields from events.Chat to db.Chat here
+	}
+	if err := dbi.conn.Create(dbNewChat).Error; err != nil {
+		return nil, err
+	}
+	return dbNewChat, nil
+}
+
+// NewChatType creates a new chat type in the database
+func (dbi *DatabaseImpl) NewChatType(newChatType *events.ChatType) (*db.ChatType, error) {
+	dbNewChatType := &db.ChatType{
+		Name: newChatType.Name,
+		// Add other fields from events.ChatType to db.ChatType here
+	}
+	if err := dbi.conn.Create(dbNewChatType).Error; err != nil {
+		return nil, err
+	}
+	return dbNewChatType, nil
+}
+
+// IsServerInitialized checks if the server is initialized
+func (dbi *DatabaseImpl) IsServerInitialized() (bool, error) {
+	// Your logic here to check if the server is initialized
+	return true, nil // Placeholder
+}
+
+// SaveServerSettings saves server settings to the database
+func (dbi *DatabaseImpl) SaveServerSettings(newSettings *events.ServerSettings) error {
+	dbSettings := &db.ServerSettings{
+		// Map fields from events.ServerSettings to db.ServerSettings here
+	}
+	if err := dbi.conn.Create(dbSettings).Error; err != nil {
+		return err
+	}
+	return nil
 }
