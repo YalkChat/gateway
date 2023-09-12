@@ -14,6 +14,11 @@ import (
 type DatabaseOperations interface {
 	SaveMessage(*events.Message) (*db.Message, error)
 	GetMessage(uint) (*db.Message, error)
-	GetUsers(uint) ([]uint, error)
+	GetUsers([]uint) ([]*db.User, error)
+	NewUser(*events.User) (*db.User, error)
+	NewChat(*events.Chat) (*db.Chat, error)
+	NewChatType(*events.ChatType) (*db.ChatType, error)
 	NewUserWithPassword(*events.UserCreationEvent) (*db.User, error)
+	IsServerInitialized() (bool, error)
+	SaveServerSettings(*events.ServerSettings) error
 }
