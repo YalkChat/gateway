@@ -39,6 +39,7 @@ func OpenDbConnection(config *config.Config) (*gorm.DB, error) {
 	return gorm, nil
 }
 
+// TODO: Move this to chat/database package?
 func createDbTables(dbConn *gorm.DB) error {
 	if err := dbConn.AutoMigrate(&db.User{}, &db.Chat{}, &db.Message{}, &db.ServerSettings{}, &db.Status{}); err != nil {
 		return err
