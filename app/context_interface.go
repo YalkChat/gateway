@@ -8,5 +8,5 @@ import (
 
 type HandlerContext interface {
 	ChatServer() server.Server
-	SessionManager() sessions.SessionManager
+	SessionsManager() sessions.SessionManager
 }

@@ -10,7 +10,12 @@ type handlerContextImpl struct {
 	sessionsManager sessions.SessionManager
 }
 
-func (hc *handlerContextImpl) Server() server.Server {
+func NewHandlerContext(server server.Server, sessionsManager sessions.SessionManager) HandlerContext {
+	return &handlerContextImpl{server: server, sessionsManager: sessionsManager}
+
+}
+
+func (hc *handlerContextImpl) ChatServer() server.Server {
 	return hc.server
 }
 

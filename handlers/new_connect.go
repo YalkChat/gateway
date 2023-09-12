@@ -34,7 +34,7 @@ func sendInitialPayload(srv *server.Server, clientID string) error {
 
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	server := ctx.ChatServer()
-	sessionsManager := ctx.SessionManager()
+	sessionsManager := ctx.SessionsManager()
 
 	// TODO: remove _ placeholder below
 	_, err := sessionsManager.Validate(r)

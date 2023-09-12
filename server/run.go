@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 	"time"
+	"yalk/app"
 	"yalk/config"
 	"yalk/serialization"
 
@@ -37,13 +38,16 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 		return
 	}
 	newChatServer := server.NewServer(dbOperations, sessionsManager, serializationStrategy)
-	fmt.Print(newChatServer) // TODO: remove
-	// TODO: enable again when modifying StartHttpServer()
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	StartHttpServer(config, newChatServer)
-	// }()
+	// TODO: Add a factory function for app.HandlerContext
+	// TODO: It's not ok to call the method like this
+	// TODO: CHANGE REALLY IT'S HORRIBLE
+	handlerContext := app.NewHandlerContext(newChatServer, sessionsManager)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		StartHttpServer(config, handlerContext)
+	}()
 
 	fmt.Println("server started")
 	wg.Wait()
