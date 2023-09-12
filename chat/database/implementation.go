@@ -62,3 +62,14 @@ func (dbi *DatabaseImpl) NewUserWithPassword(newUser *events.UserCreationEvent) 
 	}
 	return dbNewUser, nil
 }
+
+// GetUsersByChatId retrieves the users associated with a specific chat ID
+func (dbi *DatabaseImpl) GetUsersByChatId(chatID uint) ([]*db.User, error) {
+	var chat db.Chat
+	result := dbi.conn.Preload("Users").Find(&chat, "id = ?", chatID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return chat.Users, nil
+}

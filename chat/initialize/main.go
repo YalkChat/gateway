@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"yalk/chat/database"
+	"yalk/chat/util"
 )
 
+// TODO: Break down further
 func InitializeApp(dbConn database.DatabaseOperations) error {
 
 	if isInitialized := checkIsInitialized(dbConn); isInitialized {
@@ -19,12 +21,15 @@ func InitializeApp(dbConn database.DatabaseOperations) error {
 	}
 	log.Printf("Created bot user")
 
-	err = createAdminUser(dbConn)
+	adminUser, err := createAdminUser(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create admin profile, error: %v", err.Error())
 		return err
 	}
 	log.Printf("Created admin user")
+
+	// Convert db.User to events.User
+	eventAdminUser := util.ConvertDBUserToEventUser(adminUser)
 
 	// TODO: This needs to be moved to events.ChatType, how to do it?
 	channelType, err := createChannelType(dbConn)
@@ -34,7 +39,10 @@ func InitializeApp(dbConn database.DatabaseOperations) error {
 	}
 	log.Printf("Created channel types")
 
-	err = createMainChannel(dbConn, channelType, adminUser)
+	// Convert db.ChannelType to events.User
+	eventChannelType := util.ConvertDbChatTypeToEventChatType(channelType)
+
+	err = createMainChannel(dbConn, eventChannelType, eventAdminUser)
 	if err != nil {
 		fmt.Printf("Can't create main chat, error: %v", err)
 		return err

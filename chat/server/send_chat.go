@@ -38,13 +38,13 @@ func (s *serverImpl) getClientsByChatID(chatID uint) ([]client.Client, error) {
 
 	var clientsInChat []client.Client
 
-	clients, err := s.db.GetUsers(chatID)
+	users, err := s.db.GetUsersByChatId(chatID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, client := range clients {
-		if client, exists := s.clients[client]; exists {
+	for _, user := range users {
+		if client, exists := s.clients[user.ID]; exists {
 			clientsInChat = append(clientsInChat, client)
 
 		}
