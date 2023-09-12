@@ -26,14 +26,15 @@ func InitializeApp(dbConn database.DatabaseOperations) error {
 	}
 	log.Printf("Created admin user")
 
-	err = createChannelType(dbConn)
+	// TODO: This needs to be moved to events.ChatType, how to do it?
+	channelType, err := createChannelType(dbConn)
 	if err != nil {
 		fmt.Printf("Can't create chat type, error: %v", err)
 		return err
 	}
 	log.Printf("Created channel types")
 
-	err = createMainChannel(dbConn)
+	err = createMainChannel(dbConn, channelType, adminUser)
 	if err != nil {
 		fmt.Printf("Can't create main chat, error: %v", err)
 		return err

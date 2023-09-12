@@ -39,7 +39,7 @@ func (dbi *DatabaseImpl) GetMessage(messageID uint) (*db.Message, error) {
 	return message, nil
 }
 
-func (dbi *DatabaseImpl) GetUsers(chatID uint) ([]uint, error) {
+func (dbi *DatabaseImpl) GetClients(chatID uint) ([]uint, error) {
 	var chat *db.Chat
 	result := dbi.conn.Preload("Users").Find(&chat, "id = ?", chatID)
 	if result.Error != nil {

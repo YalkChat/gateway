@@ -4,12 +4,14 @@ import (
 	"yalk/chat/database"
 
 	"yalk/chat/models/db"
+	"yalk/chat/models/events"
 )
 
 func createChannelType(dbConn database.DatabaseOperations) (*db.ChatType, error) {
-	chatType := &db.ChatType{Name: "channel"}
-	if err := dbConn.NewChatType(chatType); err != nil {
+	chatType := &events.ChatType{Name: "channel"}
+	DbChatType, err := dbConn.NewChatType(chatType)
+	if err != nil {
 		return nil, err
 	}
-	return chatType, nil
+	return DbChatType, nil
 }
