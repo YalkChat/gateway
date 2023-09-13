@@ -16,11 +16,11 @@ type clientImpl struct {
 }
 
 // TODO: change hardcoded timeout
-func NewClient(id uint, conn *websocket.Conn) Client {
+func NewClient(id uint, conn *websocket.Conn, timeout time.Duration) Client {
 	return &clientImpl{
 		id:      id,
 		conn:    conn,
-		timeout: time.Second * 5,
+		timeout: timeout,
 	}
 }
 
