@@ -125,3 +125,13 @@ func (dbi *DatabaseImpl) SaveServerSettings(newSettings *events.ServerSettings) 
 	}
 	return nil
 }
+
+// GetUserByID retrieves the user by their ID
+func (dbi *DatabaseImpl) GetUserByID(userID uint) (*db.User, error) {
+	var user *db.User
+	result := dbi.conn.Preload("Chats").Preload("Chats.ChatType").Find(&user, "id = ?", userID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user, nil
+}
