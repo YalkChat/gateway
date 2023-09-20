@@ -6,8 +6,8 @@ import (
 )
 
 type Session struct {
-	ID        uint `gorm:"primaryKey"`
-	AccountID uint
+	ID        uint   `gorm:"primaryKey"`
+	UserID    uint   `gorm:"primaryKey"`
 	Token     string `gorm:"primaryKey"`
 	Created   time.Time
 	ExpiresAt time.Time

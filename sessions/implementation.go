@@ -17,7 +17,7 @@ func NewDatabase(db *gorm.DB) SessionDatabase {
 func (sdb *SessionDB) SaveSession(token string, id uint, lenght time.Time) (*Session, error) {
 	session := &Session{
 		Token:     token,
-		AccountID: id,
+		UserID:    id,
 		ExpiresAt: lenght,
 	}
 	result := sdb.db.Create(session)

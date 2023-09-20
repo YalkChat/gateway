@@ -64,7 +64,7 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 		return
 	}
 
-	user, err :=  .GetUserByID(session.UserID)
+	user, err := server.GetUserByID(session.UserID)
 	if err != nil {
 		handleError(w, err)
 		return
