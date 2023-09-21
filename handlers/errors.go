@@ -1,6 +1,9 @@
 package handlers
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 // Custom error types
 var (
@@ -10,3 +13,17 @@ var (
 	ErrNewClient          = fmt.Errorf("failed to create new client")
 	ErrClientRegistration = fmt.Errorf("failed to register client")
 )
+
+// TODO: Placeholder, finish implementation
+func handleError(w http.ResponseWriter, r *http.Request, err error) {
+	switch err {
+	case ErrSessionValidation:
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	case ErrWebSocketUpgrade, ErrUserFetch, ErrNewClient, ErrClientRegistration:
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+	default:
+		http.Error(w, "Unknown Error", http.StatusInternalServerError)
+	}
+	fmt.Println("error: ", err)
+}
