@@ -3,32 +3,30 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"time"
 	"yalk/app"
 	"yalk/chat/client"
+	"yalk/chat/server"
+	"yalk/config"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"
 )
 
-// TODO: Placeholder, finish implementation
-func handleError(w http.ResponseWriter, r *http.Request, err error) {
-	switch err {
-	case ErrSessionValidation:
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-	case ErrWebSocketUpgrade, ErrUserFetch, ErrNewClient, ErrClientRegistration:
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+func registerNewClient(server server.Server, conn *websocket.Conn, userID uint, config *config.Config) (client.Client, error) {
+	client := client.NewClient(userID, conn, config.ClientTimeout) // TODO: time placeholder
+	if err := server.RegisterClient(client); err != nil {
 
-	default:
-		http.Error(w, "Unknown Error", http.StatusInternalServerError)
+		return nil, ErrClientRegistration
 	}
-	fmt.Println("error: ", err)
+	return client, nil
 }
 
 // TODO: Handle Error must be finished
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
+	defer r.Body.Close()
 	server := ctx.ChatServer()
 	sessionsManager := ctx.SessionsManager()
+	config := ctx.Config()
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
@@ -51,18 +49,11 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 
 	userID := user.ID
 
-	client := client.NewClient(userID, conn, time.Second*5) // TODO: time placeholder
+	client, err := registerNewClient(server, conn, userID, config)
 	if err != nil {
-		handleError(w, r, ErrNewClient)
-		return
-	}
-
-	err = server.RegisterClient(client)
-	if err != nil {
-		handleError(w, r, ErrClientRegistration)
+		handleError(w, r, ErrUserFetch)
 		return
 	}
 
 	fmt.Printf("registered new client: %d", client.ID())
-
 })
