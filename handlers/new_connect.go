@@ -13,31 +13,21 @@ import (
 	"nhooyr.io/websocket"
 )
 
+// TODO: Do these functions that only returns even make sense?
+
 func validateSession(r *http.Request, sessionsManager sessions.SessionManager) (*sessions.Session, error) {
-	session, err := sessionsManager.Validate(r)
-	if err != nil {
-		return nil, err
-	}
-	return session, nil
+	return sessionsManager.Validate(r)
 }
 
 func upgradeToWebSocket(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	conn, err := websocket.Accept(w, r, nil)
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil // TODO: First is a placeholder for conn, change
+	return websocket.Accept(w, r, nil)
 }
 
-func registerNewClient(conn *websocket.Conn, userID uint, srv server.Server) (client.Client, error) {
-	newClient := client.NewClient(userID, conn, time.Second*5) // TODO: time placeholder
-	err := srv.RegisterClient(newClient)
-	if err != nil {
-		return nil, err
-	}
-	return newClient, nil
+func registerNewClient(client client.Client, srv server.Server) error {
+	return srv.RegisterClient(client)
 }
 
+// TODO: Placeholder, finish implementation
 func handleError(w http.ResponseWriter, err error) {
 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
@@ -47,12 +37,12 @@ func sendInitialPayload(srv server.Server, clientID uint) error {
 	return nil
 }
 
+// TODO: Handle Error must be finished
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	server := ctx.ChatServer()
 	sessionsManager := ctx.SessionsManager()
 
-	// TODO: remove _ placeholder below
-	session, err := sessionsManager.Validate(r)
+	session, err := validateSession(r, sessionsManager)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
@@ -70,8 +60,15 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 		return
 	}
 
+	// TODO: More correct to use session.UserID or user.ID()?
 	userID := user.ID
-	client, err := registerNewClient(conn, userID, server)
+
+	client := client.NewClient(userID, conn, time.Second*5) // TODO: time placeholder
+	if err != nil {
+		handleError(w, err)
+	}
+
+	err = registerNewClient(client, server)
 	if err != nil {
 		handleError(w, err)
 		return
