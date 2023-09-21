@@ -76,6 +76,7 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 		handleError(w, err)
 		return
 	}
+	// TODO: Consider if the initial payload should be done by the server instead
 	err = sendInitialPayload(server, client.ID())
 	if err != nil {
 		handleError(w, err)
