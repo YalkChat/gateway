@@ -3,10 +3,12 @@ package app
 
 import (
 	"yalk/chat/server"
+	"yalk/config"
 	"yalk/sessions"
 )
 
 type HandlerContext interface {
 	ChatServer() server.Server
 	SessionsManager() sessions.SessionManager
+	Config() *config.Config
 }

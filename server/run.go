@@ -41,7 +41,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	// TODO: Add a factory function for app.HandlerContext
 	// TODO: It's not ok to call the method like this
 	// TODO: CHANGE REALLY IT'S HORRIBLE
-	handlerContext := app.NewHandlerContext(newChatServer, sessionsManager)
+	handlerContext := app.NewHandlerContext(newChatServer, sessionsManager, config)
 
 	wg.Add(1)
 	go func() {
