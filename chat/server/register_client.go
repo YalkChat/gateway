@@ -5,6 +5,9 @@ import (
 	"yalk/chat/client"
 )
 
+func sendInitialPayload(client client.Client) error {
+	return nil
+}
 func (s *serverImpl) RegisterClient(client client.Client) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -23,6 +26,10 @@ func (s *serverImpl) RegisterClient(client client.Client) error {
 	go s.StartReceiver(client, quit)
 	// go s.StartSender(client, quit)
 
+	err := sendInitialPayload(client)
+	if err != nil {
+		return fmt.Errorf("error sending initial payload to client ID %d: %v", client.ID(), err)
+	}
 	// Notify other components or clients as needed
 
 	return nil
