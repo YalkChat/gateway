@@ -58,7 +58,6 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 		return
 	}
 
-	// TODO: More correct to use session.UserID or user.ID()?
 	userID := user.ID
 
 	client := client.NewClient(userID, conn, time.Second*5) // TODO: time placeholder
