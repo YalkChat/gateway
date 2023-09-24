@@ -6,7 +6,6 @@ import (
 	"yalk/app"
 	"yalk/chat/client"
 	"yalk/chat/server"
-
 	"yalk/config"
 
 	"github.com/AleRosmo/cattp"
@@ -22,21 +21,6 @@ func registerNewClient(server server.Server, conn *websocket.Conn, userID uint, 
 	return client, nil
 }
 
-func upgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	var defaultOptions = &websocket.AcceptOptions{CompressionMode: websocket.CompressionNoContextTakeover, InsecureSkipVerify: true}
-	var defaultSize int64 = 2097152 // 2Mb in bytes
-
-	conn, err := websocket.Accept(w, r, defaultOptions)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		r.Body.Close()
-		return nil, err
-	}
-
-	conn.SetReadLimit(defaultSize)
-	return conn, nil
-}
-
 // TODO: Handle Error must be finished
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	defer r.Body.Close()
@@ -49,9 +33,8 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 		handleError(w, r, ErrSessionValidation)
 		return
 	}
-
 	// Upgrades to WebSocket
-	conn, err := httpServer.UpgradeHttpRequest(w, r)
+	conn, err := srv.UpgradeHttpRequest(w, r)
 	if err != nil {
 		handleError(w, r, ErrWebSocketUpgrade)
 		return

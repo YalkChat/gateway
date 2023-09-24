@@ -8,6 +8,7 @@ package server
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
 	"yalk/chat/client"
 	"yalk/chat/database"
@@ -17,6 +18,8 @@ import (
 	"yalk/chat/serialization"
 
 	"yalk/sessions"
+
+	"nhooyr.io/websocket"
 )
 
 type serverImpl struct {
@@ -69,6 +72,21 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *events.BaseEventWithMetadata
 
 	// Pass the event to the appropriate handler
 	return handler.HandleEvent(ctx, baseEvent)
+}
+
+func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
+	var defaultOptions = &websocket.AcceptOptions{CompressionMode: websocket.CompressionNoContextTakeover, InsecureSkipVerify: true}
+	var defaultSize int64 = 2097152 // 2Mb in bytes
+
+	conn, err := websocket.Accept(w, r, defaultOptions)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		r.Body.Close()
+		return nil, err
+	}
+
+	conn.SetReadLimit(defaultSize)
+	return conn, nil
 }
 
 func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {

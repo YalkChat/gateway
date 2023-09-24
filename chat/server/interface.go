@@ -1,8 +1,11 @@
 package server
 
 import (
+	"net/http"
 	"yalk/chat/client"
 	"yalk/chat/models/events"
+
+	"nhooyr.io/websocket"
 )
 
 type Server interface {
@@ -13,6 +16,7 @@ type Server interface {
 	GetClientByID(uint) (client.Client, error)
 	HandleEvent(*events.BaseEventWithMetadata) error
 	GetUserByID(uint) (*events.User, error)
+	UpgradeHttpRequest(http.ResponseWriter, *http.Request) (*websocket.Conn, error)
 }
 
 // Additional type definitions for Client, Message, etc.
