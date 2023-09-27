@@ -9,6 +9,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"yalk/chat/client"
 	"yalk/chat/database"
@@ -80,7 +81,11 @@ func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request, 
 		CompressionMode:    getWebsocketConnectionMode(config.WebSocketCompressionMode),
 		InsecureSkipVerify: true,
 	}
-	var defaultSize int64 = config.WebSocketReadLimit // 2Mb in bytes
+
+	readLimit, err := strconv.ParseInt(config.WebSocketReadLimit, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	conn, err := websocket.Accept(w, r, defaultOptions)
 	if err != nil {
@@ -89,7 +94,7 @@ func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request, 
 		return nil, err
 	}
 
-	conn.SetReadLimit(defaultSize)
+	conn.SetReadLimit(readLimit)
 	return conn, nil
 }
 
