@@ -77,10 +77,10 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *events.BaseEventWithMetadata
 
 func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request, config *config.Config) (*websocket.Conn, error) {
 	var defaultOptions = &websocket.AcceptOptions{
-		CompressionMode:    websocket.CompressionNoContextTakeover,
+		CompressionMode:    getWebsocketConnectionMode(config.WebSocketCompressionMode),
 		InsecureSkipVerify: true,
 	}
-	var defaultSize int64 = 2097152 // 2Mb in bytes
+	var defaultSize int64 = config.WebSocketReadLimit // 2Mb in bytes
 
 	conn, err := websocket.Accept(w, r, defaultOptions)
 	if err != nil {
@@ -91,6 +91,15 @@ func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request, 
 
 	conn.SetReadLimit(defaultSize)
 	return conn, nil
+}
+
+func getWebsocketConnectionMode(configMode string) websocket.CompressionMode {
+	switch configMode {
+	case "NoContextTakeover":
+		return websocket.CompressionNoContextTakeover
+	default:
+		return websocket.CompressionNoContextTakeover
+	}
 }
 
 func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
