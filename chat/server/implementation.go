@@ -16,6 +16,7 @@ import (
 	"yalk/chat/event/handlers"
 	"yalk/chat/models/events"
 	"yalk/chat/serialization"
+	"yalk/config"
 
 	"yalk/sessions"
 
@@ -74,8 +75,11 @@ func (s *serverImpl) HandleEvent(eventWithMetadata *events.BaseEventWithMetadata
 	return handler.HandleEvent(ctx, baseEvent)
 }
 
-func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	var defaultOptions = &websocket.AcceptOptions{CompressionMode: websocket.CompressionNoContextTakeover, InsecureSkipVerify: true}
+func (s *serverImpl) UpgradeHttpRequest(w http.ResponseWriter, r *http.Request, config *config.Config) (*websocket.Conn, error) {
+	var defaultOptions = &websocket.AcceptOptions{
+		CompressionMode:    websocket.CompressionNoContextTakeover,
+		InsecureSkipVerify: true,
+	}
 	var defaultSize int64 = 2097152 // 2Mb in bytes
 
 	conn, err := websocket.Accept(w, r, defaultOptions)
