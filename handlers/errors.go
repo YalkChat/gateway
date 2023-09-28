@@ -13,6 +13,9 @@ var (
 	ErrUserFetch          = fmt.Errorf("failed to fetch user")
 	ErrNewClient          = fmt.Errorf("failed to create new client")
 	ErrClientRegistration = fmt.Errorf("failed to register client")
+	ErrInvalidMethodGet   = fmt.Errorf("wrong request method, expected get")
+	ErrInvalidMethodPost  = fmt.Errorf("wrong request method, expected post")
+	ErrCookieMissing      = fmt.Errorf("cookie missing")
 )
 
 // TODO: Placeholder, finish implementation
