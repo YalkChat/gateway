@@ -20,12 +20,13 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
-		errors.HandleError(w, r, errors.ErrSessionValidation)
-		return
-	}
+		if err == errors.ErrCookieMissing {
+			errors.HandleError(w, r, errors.ErrSessionValidation)
+		} else {
 
-	if err != nil && err != errors.ErrCookieMissing {
-		errors.HandleError(w, r, err)
+			errors.HandleError(w, r, err)
+		}
+		return
 	}
 
 })
