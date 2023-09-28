@@ -36,7 +36,7 @@ func (sdb *SessionDB) LoadSession(token string) (*Session, error) {
 	return &session, nil
 }
 
-func (sdb *SessionDB) DeleteSession(token token) error {
+func (sdb *SessionDB) DeleteSession(token string) error {
 	result := sdb.db.Where("token = ?", token).Delete(&Session{})
 	return result.Error
 }

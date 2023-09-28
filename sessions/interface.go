@@ -6,13 +6,13 @@ import (
 )
 
 type SessionDatabase interface {
-	SaveSession(token, uint, time.Time) (*Session, error)
-	LoadSession(token) (*Session, error)
+	SaveSession(token string, id uint, lenght time.Time) (*Session, error)
+	LoadSession(string) (*Session, error)
 	DeleteSession(string) error
 }
 
 type SessionManager interface {
-	Create(token, uint, time.Time) (*Session, error)
+	Create(string, uint, time.Time) (*Session, error)
 	Validate(*http.Request) (*Session, error)
-	Delete(token) error
+	Delete(string) error
 }
