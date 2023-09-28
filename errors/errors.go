@@ -1,4 +1,4 @@
-package handlers
+package errors
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ var (
 )
 
 // TODO: Placeholder, finish implementation
-func handleError(w http.ResponseWriter, r *http.Request, err error) {
+func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	switch err {
 	case ErrSessionValidation:
 		http.Redirect(w, r, "/login", http.StatusSeeOther)

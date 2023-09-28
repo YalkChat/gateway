@@ -7,6 +7,7 @@ import (
 	"yalk/chat/client"
 	"yalk/chat/server"
 	"yalk/config"
+	"yalk/errors"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"
@@ -16,7 +17,7 @@ func registerNewClient(server server.Server, conn *websocket.Conn, userID uint, 
 	client := client.NewClient(userID, conn, config.ClientTimeout) // TODO: time placeholder
 	if err := server.RegisterClient(client); err != nil {
 
-		return nil, ErrClientRegistration
+		return nil, errors.ErrClientRegistration
 	}
 	return client, nil
 }
@@ -26,7 +27,7 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 	defer r.Body.Close()
 
 	if r.Method != http.MethodGet {
-		handleError(w, r, ErrInvalidMethodGet)
+		errors.HandleError(w, r, errors.ErrInvalidMethodGet)
 		return
 	}
 
@@ -34,20 +35,20 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
-		handleError(w, r, ErrSessionValidation)
+		errors.HandleError(w, r, errors.ErrSessionValidation)
 		return
 	}
 	// Upgrades to WebSocket
 	// TODO: I still am not convinced of using Config(), besides the Config struct
 	conn, err := srv.UpgradeHttpRequest(w, r, ctx.Config())
 	if err != nil {
-		handleError(w, r, ErrWebSocketUpgrade)
+		errors.HandleError(w, r, errors.ErrWebSocketUpgrade)
 		return
 	}
 
 	user, err := srv.GetUserByID(session.UserID)
 	if err != nil {
-		handleError(w, r, ErrUserFetch)
+		errors.HandleError(w, r, errors.ErrUserFetch)
 		return
 	}
 
@@ -55,7 +56,7 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 
 	client, err := registerNewClient(srv, conn, userID, config)
 	if err != nil {
-		handleError(w, r, ErrUserFetch)
+		errors.HandleError(w, r, errors.ErrUserFetch)
 		return
 	}
 

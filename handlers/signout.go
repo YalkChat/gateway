@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"yalk/app"
+	"yalk/errors"
 
 	"github.com/AleRosmo/cattp"
 )
@@ -24,13 +25,13 @@ var SignoutHandle = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 
 	cookie, err := r.Cookie("YLK")
 	if err != nil {
-		handleError(w, r, http.ErrNoCookie)
+		errors.HandleError(w, r, http.ErrNoCookie)
 		return
 	}
 	clearCookie(w)
 
 	if err = sessionManager.Delete(cookie.Value); err != nil {
-		handleError(w, r, ErrSessionDeletion)
+		errors.HandleError(w, r, errors.ErrSessionDeletion)
 		return
 	}
 	log.Println("Signed out")

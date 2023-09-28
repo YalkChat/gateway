@@ -18,7 +18,6 @@ import (
 	"yalk/chat/models/events"
 	"yalk/chat/serialization"
 	"yalk/config"
-
 	"yalk/sessions"
 
 	"nhooyr.io/websocket"

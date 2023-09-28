@@ -1,9 +1,9 @@
 package sessions
 
 import (
-	"fmt"
 	"net/http"
 	"time"
+	"yalk/errors"
 )
 
 type sessionManagerImpl struct {
@@ -37,7 +37,7 @@ func (sm *sessionManagerImpl) Validate(r *http.Request) (*Session, error) {
 	// Server might have restarted, search DB and compare - fuck them they just log in again
 	cookie, err := r.Cookie(sm.cookieName)
 	if err != nil {
-		return nil, fmt.Errorf("missing cookie")
+		return nil, errors.ErrCookieMissing // Use the custom error type
 	}
 
 	return sm.db.LoadSession(cookie.Value)
