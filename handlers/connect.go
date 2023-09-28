@@ -24,9 +24,13 @@ func registerNewClient(server server.Server, conn *websocket.Conn, userID uint, 
 // TODO: Handle Error must be finished
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	defer r.Body.Close()
-	srv := ctx.ChatServer()
-	sessionsManager := ctx.SessionsManager()
-	config := ctx.Config()
+
+	if r.Method != http.MethodGet {
+		handleError(w, r, ErrInvalidMethodGet)
+		return
+	}
+
+	srv, sessionsManager, config := getContextComponents(ctx)
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
