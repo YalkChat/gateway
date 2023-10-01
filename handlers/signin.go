@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"yalk/app"
+	"yalk/chat/models/events"
 	"yalk/errors"
 
 	"github.com/AleRosmo/cattp"
@@ -20,13 +22,26 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
-		if err == errors.ErrCookieMissing {
-			errors.HandleError(w, r, errors.ErrSessionValidation)
-		} else {
+		handleSessionValidationError(w, r, err)
+		return
+	}
 
-			errors.HandleError(w, r, err)
-		}
+	var userLogin *events.UserLogin
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&userLogin)
+	if err != nil {
+		errors.HandleError(w, r, errors.ErrInvalidJson)
 		return
 	}
 
 })
+
+func handleSessionValidationError(w http.ResponseWriter, r *http.Request, err error) {
+	if err == errors.ErrCookieMissing {
+		errors.HandleError(w, r, errors.ErrSessionValidation)
+	} else {
+
+		errors.HandleError(w, r, err)
+	}
+	return
+}
