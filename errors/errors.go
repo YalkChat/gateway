@@ -27,6 +27,8 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 	case ErrWebSocketUpgrade, ErrUserFetch, ErrNewClient, ErrClientRegistration:
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	case ErrAuthInvalid:
+		http.Error(w, "Invalid authorizaton", http.StatusUnauthorized)
 
 	default:
 		http.Error(w, "Unknown Error", http.StatusInternalServerError)
