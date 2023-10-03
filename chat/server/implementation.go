@@ -116,13 +116,13 @@ func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
 
 // Change return to user event if I need more info basides the user id
 func (s *serverImpl) AuthenticateUser(userLogin events.UserLogin) (string, error) {
-	user, err := s.db.GetUserByUsername(userLogin.Username)
+	dbUser, err := s.db.GetUserByUsername(userLogin.Username)
 	if err != nil {
 		return "", err
 	}
 
 	// Validate the password
-	if !validatePassword(user.HashedPassword, loginPayload.Password) {
+	if !validatePassword(user.Password, loginPayload.Password) {
 		return "", errors.New(errors.ErrInvalidPassword)
 	}
 

@@ -135,3 +135,12 @@ func (dbi *DatabaseImpl) GetUserByID(userID uint) (*db.User, error) {
 	}
 	return user, nil
 }
+
+func (dbi *DatabaseImpl) GetUserByUsername(username string) (*db.User, error) {
+	var user *db.User
+	result := dbi.conn.Where("username = ?", username).First(user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user, nil
+}
