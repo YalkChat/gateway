@@ -3,18 +3,25 @@ package sessions
 import (
 	"net/http"
 	"time"
+	"yalk/encryption"
 	"yalk/errors"
 )
 
 type sessionManagerImpl struct {
-	defaultLenght  time.Duration
-	activeSessions []*Session //TODO: Seems unused, remove
-	db             SessionDatabase
-	cookieName     string
+	defaultLenght     time.Duration
+	activeSessions    []*Session //TODO: Seems unused, remove
+	db                SessionDatabase
+	encryptionService encryption.Service
+	cookieName        string
 }
 
-func NewSessionManager(db SessionDatabase, lenght time.Duration, cookieName string) SessionManager {
-	return &sessionManagerImpl{db: db, defaultLenght: lenght, cookieName: cookieName}
+func NewSessionManager(db SessionDatabase, encryptionService encryption.Service, lenght time.Duration, cookieName string) SessionManager {
+	return &sessionManagerImpl{
+		db:                db,
+		defaultLenght:     lenght,
+		cookieName:        cookieName,
+		encryptionService: encryptionService,
+	}
 }
 
 // TODO: Redis will be used for this at some point in development.

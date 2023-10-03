@@ -6,6 +6,7 @@ import (
 	"time"
 	"yalk/app"
 	"yalk/config"
+	"yalk/encryption"
 	"yalk/serialization"
 
 	"yalk/chat/database"
@@ -22,7 +23,8 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	var cookieName = "YLK"
 
 	sessionsDatabase := sessions.NewDatabase(conn)
-	sessionsManager := sessions.NewSessionManager(sessionsDatabase, sessionLenght, cookieName)
+	encryptionService := &encryption.BcryptService{}
+	sessionsManager := sessions.NewSessionManager(sessionsDatabase, encryptionService, sessionLenght, cookieName)
 
 	// chatServer := server.NewServer(16, conn, sessionsManager)
 
