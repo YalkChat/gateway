@@ -8,6 +8,7 @@ import (
 	"yalk/errors"
 
 	"github.com/AleRosmo/cattp"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
@@ -23,7 +24,13 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 	// TODO: if the session is valid should redirect to main page?
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
-		handleSessionValidationError(w, r, err)
+		errors.HandleError(w, r, err)
+		return
+	}
+
+	if session != nil {
+		// Redirect to main chat page
+		http.Redirect(w, r, "/chat", http.StatusFound)
 		return
 	}
 
@@ -42,8 +49,9 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 })
 
 func handleSessionValidationError(w http.ResponseWriter, r *http.Request, err error) {
+	// TODO: Move this logic to errros package
 	if err == errors.ErrCookieMissing {
-		errors.HandleError(w, r, errors.ErrSessionValidation)
+		errors.HandleError(w, r, err)
 	} else {
 
 		errors.HandleError(w, r, err)
@@ -53,15 +61,20 @@ func handleSessionValidationError(w http.ResponseWriter, r *http.Request, err er
 
 // Change return to user event if I need more info basides the user id
 func authenticateUser(userLogin events.UserLogin) (string, error) {
-	dbUser, err := s.db.GetUserByUsername(userLogin.Username)
+	dbUser, err := srv.GetUserByUsername(userLogin.Username)
 	if err != nil {
 		return "", err
 	}
 
 	// Validate the password
-	if !validatePassword(user.Password, loginPayload.Password) {
-		return "", errors.New(errors.ErrInvalidPassword)
+	if !validatePassword(dbUser.Password, userLogin.Password) {
+		return "", errors.ErrAuthInvalid
 	}
 
-	return user.ID, nil
+	return dbUser.ID, nil
+}
+
+func validatePassword(hashedPassword, plainPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+	return err == nil
 }
