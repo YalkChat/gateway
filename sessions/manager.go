@@ -1,6 +1,8 @@
 package sessions
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 	"time"
 	"yalk/encryption"
@@ -26,7 +28,14 @@ func NewSessionManager(db SessionDatabase, encryptionService encryption.Service,
 
 // TODO: Redis will be used for this at some point in development.
 // TODO: Some decent in error checking would be nice.
-func (sm *sessionManagerImpl) Create(token string, id uint, lenght time.Time) (*Session, error) {
+func (sm *sessionManagerImpl) Create(userId uint, lenght time.Time) (*Session, error) {
+	tokenBytes := make([]byte, 16)
+	_, err := rand.Read(tokenBytes)
+	if err != nil {
+		return nil, err
+	}
+	token := hex.EncodeToString(tokenBytes)
+
 	var _lenght time.Time = time.Now().Add(sm.defaultLenght)
 
 	if !lenght.IsZero() {
