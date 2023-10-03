@@ -19,7 +19,7 @@ type Server interface {
 	GetUserByID(uint) (*events.User, error)
 	GetUserByUsername(username string) (user *events.User, err error)
 	UpgradeHttpRequest(http.ResponseWriter, *http.Request, *config.Config) (*websocket.Conn, error)
-	AuthenticateUser(loginUser events.UserLogin) (userID string, err error)
+	// AuthenticateUser(loginUser events.UserLogin) (userID string, err error) // Unused
 }
 
 // Additional type definitions for Client, Message, etc.

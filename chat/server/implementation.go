@@ -114,21 +114,6 @@ func (s *serverImpl) getHandler(eventType string) (event.Handler, error) {
 	return handler, nil
 }
 
-// Change return to user event if I need more info basides the user id
-func (s *serverImpl) AuthenticateUser(userLogin events.UserLogin) (string, error) {
-	dbUser, err := s.db.GetUserByUsername(userLogin.Username)
-	if err != nil {
-		return "", err
-	}
-
-	// Validate the password
-	if !validatePassword(user.Password, loginPayload.Password) {
-		return "", errors.New(errors.ErrInvalidPassword)
-	}
-
-	return user.ID, nil
-}
-
 // TODO: Implement error checking if args are empty
 // TODO: This can become a util for handlers?
 // func newBaseEvent(opcode string, data json.RawMessage, clientID uint, eventType string) (*events.BaseEvent, error) {
