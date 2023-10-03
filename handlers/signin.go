@@ -8,7 +8,6 @@ import (
 	"yalk/errors"
 
 	"github.com/AleRosmo/cattp"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
@@ -41,9 +40,16 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 		errors.HandleError(w, r, errors.ErrInvalidJson) //TODO: Add in errors package
 		return
 	}
-	userID, err := authenticateUser(*userLogin)
+	userID, err := srv.AuthenticateUser(*userLogin)
 	if err != nil {
 		errors.HandleError(w, r, errors.ErrAuthInvalid) // TODO: Add in errors package
+	}
+
+	// Create a new session
+	sessionID, err := sessionsManager.Create(user)
+	if err != nil {
+		errors.HandleError(w, r, err)
+		return
 	}
 
 })
@@ -57,24 +63,4 @@ func handleSessionValidationError(w http.ResponseWriter, r *http.Request, err er
 		errors.HandleError(w, r, err)
 	}
 	return
-}
-
-// Change return to user event if I need more info basides the user id
-func authenticateUser(userLogin events.UserLogin) (string, error) {
-	dbUser, err := srv.GetUserByUsername(userLogin.Username)
-	if err != nil {
-		return "", err
-	}
-
-	// Validate the password
-	if !validatePassword(dbUser.Password, userLogin.Password) {
-		return "", errors.ErrAuthInvalid
-	}
-
-	return dbUser.ID, nil
-}
-
-func validatePassword(hashedPassword, plainPassword string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
-	return err == nil
 }
