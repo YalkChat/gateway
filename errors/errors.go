@@ -16,6 +16,8 @@ var (
 	ErrInvalidMethodGet   = fmt.Errorf("wrong request method, expected get")
 	ErrInvalidMethodPost  = fmt.Errorf("wrong request method, expected post")
 	ErrCookieMissing      = fmt.Errorf("cookie missing")
+	ErrAuthInvalid        = fmt.Errorf("invalid authentication")
+	ErrInvalidJson        = fmt.Errorf("invalid JSON")
 )
 
 // TODO: Placeholder, finish implementation
