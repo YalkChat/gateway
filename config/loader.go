@@ -21,6 +21,7 @@ type Config struct {
 	ClientTimeout            time.Duration
 	WebSocketCompressionMode string
 	WebSocketReadLimit       string
+	SessionLenght            string
 }
 
 func LoadConfig() (*Config, error) {
@@ -45,6 +46,7 @@ func LoadConfig() (*Config, error) {
 		ClientTimeout:            time.Second * time.Duration(clientTimeout),
 		WebSocketCompressionMode: os.Getenv("WS_COMPRESSION_MODE"),
 		WebSocketReadLimit:       os.Getenv("WS_READ_LIMIT"),
+		SessionLenght:            os.Getenv("SESSION_LENGHT"),
 	}
 
 	v := reflect.ValueOf(config)

@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"time"
 	"yalk/app"
 	"yalk/chat/models/events"
 	"yalk/errors"
@@ -21,13 +23,13 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 	srv, sessionsManager, config := getContextComponents(ctx)
 
 	// TODO: if the session is valid should redirect to main page?
-	session, err := sessionsManager.Validate(r)
+	existingSession, err := sessionsManager.Validate(r)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
 
-	if session != nil {
+	if existingSession != nil {
 		// Redirect to main chat page
 		http.Redirect(w, r, "/chat", http.StatusFound)
 		return
@@ -45,12 +47,28 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 		errors.HandleError(w, r, errors.ErrAuthInvalid) // TODO: Add in errors package
 	}
 
+	sessionLenghtInt, err := strconv.Atoi(config.SessionLenght)
+	if err != nil {
+		errors.HandleError(w, r, errors.ErrInternalServerError)
+	}
+	sessionLenght := time.Minute * time.Duration(sessionLenghtInt)
+
 	// Create a new session
-	sessionID, err := sessionsManager.Create(user)
+	session, err := sessionsManager.Create(userID, sessionLenght)
 	if err != nil {
 		errors.HandleError(w, r, err)
 		return
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    session.Token,
+		Expires:  session.ExpiresAt,
+		HttpOnly: true,
+	})
+
+	w.WriteHeader(http.StatusOK)
+	response := map[string]string{"status": "success", "message": "Succesfully signed in"}
 
 })
 

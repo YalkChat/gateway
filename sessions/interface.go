@@ -12,7 +12,7 @@ type SessionDatabase interface {
 }
 
 type SessionManager interface {
-	Create(userID uint, defaultLenght time.Time) (*Session, error)
+	Create(userID uint, defaultLenght time.Duration) (*Session, error)
 	Validate(*http.Request) (*Session, error)
 	Delete(string) error
 }

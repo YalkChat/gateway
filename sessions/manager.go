@@ -28,7 +28,7 @@ func NewSessionManager(db SessionDatabase, encryptionService encryption.Service,
 
 // TODO: Redis will be used for this at some point in development.
 // TODO: Some decent in error checking would be nice.
-func (sm *sessionManagerImpl) Create(userId uint, lenght time.Time) (*Session, error) {
+func (sm *sessionManagerImpl) Create(userId uint, lenght time.Duration) (*Session, error) {
 	tokenBytes := make([]byte, 16)
 	_, err := rand.Read(tokenBytes)
 	if err != nil {
@@ -38,10 +38,11 @@ func (sm *sessionManagerImpl) Create(userId uint, lenght time.Time) (*Session, e
 
 	var _lenght time.Time = time.Now().Add(sm.defaultLenght)
 
-	if !lenght.IsZero() {
-		// return nil, fmt.Errorf("provided lenght is zero")
-		_lenght = lenght
-	}
+	// TODO: What to do with this?
+	// if lenght != 0 {
+	// 	// return nil, fmt.Errorf("provided lenght is zero")
+	// 	_lenght = lenght
+	// }
 
 	return sm.db.SaveSession(token, userId, _lenght)
 }
