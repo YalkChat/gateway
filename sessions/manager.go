@@ -43,7 +43,7 @@ func (sm *sessionManagerImpl) Create(userId uint, lenght time.Time) (*Session, e
 		_lenght = lenght
 	}
 
-	return sm.db.SaveSession(token, id, _lenght)
+	return sm.db.SaveSession(token, userId, _lenght)
 }
 
 func (sm *sessionManagerImpl) Validate(r *http.Request) (*Session, error) {
