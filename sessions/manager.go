@@ -15,6 +15,7 @@ type sessionManagerImpl struct {
 	db                SessionDatabase
 	encryptionService encryption.Service
 	cookieName        string
+	secureCookie      bool
 }
 
 func NewSessionManager(db SessionDatabase, encryptionService encryption.Service, lenght time.Duration, cookieName string) SessionManager {
@@ -23,6 +24,7 @@ func NewSessionManager(db SessionDatabase, encryptionService encryption.Service,
 		defaultLenght:     lenght,
 		cookieName:        cookieName,
 		encryptionService: encryptionService,
+		secureCookie:      true,
 	}
 }
 
@@ -68,7 +70,7 @@ func (sm *sessionManagerImpl) Extend(session *Session, w http.ResponseWriter) er
 	session.ExpiresAt = time.Now().Add(sm.defaultLenght)
 
 	// Serialize the session back to a token
-	token, err := sm.tokenService.Serialize(session)
+	token, err := sm.encryptionService.Encrypt(session.Token)
 	if err != nil {
 		return err
 	}
