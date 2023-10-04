@@ -23,6 +23,7 @@ func registerNewClient(server server.Server, conn *websocket.Conn, userID uint, 
 }
 
 // TODO: Handle Error must be finished
+// TODO: Break down in smaller functions
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	defer r.Body.Close()
 
@@ -61,4 +62,6 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 	}
 
 	fmt.Printf("registered new client: %d", client.ID())
+
+	// TODO: Missing initial payload
 })
