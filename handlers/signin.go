@@ -60,8 +60,22 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    session.Token,
+		Expires:  session.ExpiresAt,
+		HttpOnly: true,
+	})
+
 	response := map[string]string{"status": "success", "message": "Succesfully signed in"}
+
+	serializedResponse, err := json.Marshal(response)
+	if err != nil {
+		errors.HandleError(w, r, errors.ErrInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(serializedResponse)
 
 })
 
