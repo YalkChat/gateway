@@ -60,13 +60,6 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    session.Token,
-		Expires:  session.ExpiresAt,
-		HttpOnly: true,
-	})
-
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{"status": "success", "message": "Succesfully signed in"}
 
