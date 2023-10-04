@@ -7,7 +7,10 @@ import (
 	"time"
 	"yalk/app"
 	"yalk/chat/models/events"
+	"yalk/chat/server"
+	"yalk/config"
 	"yalk/errors"
+	"yalk/sessions"
 
 	"github.com/AleRosmo/cattp"
 )
@@ -22,42 +25,72 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 
 	srv, sessionsManager, config := getContextComponents(ctx)
 
+	err := validateSession(w, r, sessionsManager)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+
+	userID, err := authenticateUser(w, r, srv)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+
+	// Create a new session
+	err = createSession(userID, w, r, sessionsManager, config)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+
+	err = sendResponse(w, r)
+	if err != nil {
+		errors.HandleError(w, r, err)
+	}
+
+})
+
+func validateSession(w http.ResponseWriter, r *http.Request, sessionsManager sessions.SessionManager) error {
 	// TODO: if the session is valid should redirect to main page?
 	existingSession, err := sessionsManager.Validate(r)
 	if err != nil {
-		errors.HandleError(w, r, err)
-		return
+		return errors.ErrSessionValidation
 	}
 
 	if existingSession != nil {
 		// Redirect to main chat page
-		http.Redirect(w, r, "/chat", http.StatusFound)
-		return
+		// TODO: Is it correct to do the redirection here?
+		return errors.ErrValidSessionExists
+	}
+	return nil
+}
+
+func authenticateUser(w http.ResponseWriter, r *http.Request, srv server.Server) (uint, error) {
+	var userLogin *events.UserLogin
+
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&userLogin)
+	if err != nil {
+		return 0, errors.ErrInvalidJson
 	}
 
-	var userLogin *events.UserLogin
-	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&userLogin)
-	if err != nil {
-		errors.HandleError(w, r, errors.ErrInvalidJson) //TODO: Add in errors package
-		return
-	}
 	userID, err := srv.AuthenticateUser(*userLogin)
 	if err != nil {
-		errors.HandleError(w, r, errors.ErrAuthInvalid) // TODO: Add in errors package
+		return 0, errors.ErrAuthInvalid // TODO: Add in errors package
 	}
 
+	return userID, nil
+}
+
+func createSession(userID uint, w http.ResponseWriter, r *http.Request, sessionsManager sessions.SessionManager, config *config.Config) error {
 	sessionLenghtInt, err := strconv.Atoi(config.SessionLenght)
 	if err != nil {
-		errors.HandleError(w, r, errors.ErrInternalServerError)
+		return errors.ErrInternalServerError
 	}
 	sessionLenght := time.Minute * time.Duration(sessionLenghtInt)
 
-	// Create a new session
 	session, err := sessionsManager.Create(userID, sessionLenght)
 	if err != nil {
-		errors.HandleError(w, r, err)
-		return
+		return errors.ErrSessionCreation
 	}
 
 	http.SetCookie(w, &http.Cookie{
@@ -66,26 +99,18 @@ var SigninHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWr
 		Expires:  session.ExpiresAt,
 		HttpOnly: true,
 	})
+	return nil
+}
 
+func sendResponse(w http.ResponseWriter, r *http.Request) error {
 	response := map[string]string{"status": "success", "message": "Succesfully signed in"}
 
 	serializedResponse, err := json.Marshal(response)
 	if err != nil {
-		errors.HandleError(w, r, errors.ErrInternalServerError)
+		return errors.ErrInternalServerError
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(serializedResponse)
-
-})
-
-func handleSessionValidationError(w http.ResponseWriter, r *http.Request, err error) {
-	// TODO: Move this logic to errros package
-	if err == errors.ErrCookieMissing {
-		errors.HandleError(w, r, err)
-	} else {
-
-		errors.HandleError(w, r, err)
-	}
-	return
+	return nil
 }

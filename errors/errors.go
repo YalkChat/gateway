@@ -7,6 +7,7 @@ import (
 
 // Custom error types
 var (
+	ErrSessionCreation     = fmt.Errorf("session creation failed")
 	ErrSessionValidation   = fmt.Errorf("session validation failed")
 	ErrSessionDeletion     = fmt.Errorf("session deletion failed")
 	ErrWebSocketUpgrade    = fmt.Errorf("websocket upgrade failed")
@@ -19,6 +20,7 @@ var (
 	ErrAuthInvalid         = fmt.Errorf("invalid authentication")
 	ErrInvalidJson         = fmt.Errorf("invalid JSON")
 	ErrInternalServerError = fmt.Errorf("internal server error")
+	ErrValidSessionExists  = fmt.Errorf("valid session exists") //TODO: this is not really an error
 )
 
 // TODO: Placeholder, finish implementation
@@ -30,6 +32,8 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	case ErrAuthInvalid:
 		http.Error(w, "Invalid authorizaton", http.StatusUnauthorized)
+	case ErrValidSessionExists:
+		http.Redirect(w, r, "/chat", http.StatusFound)
 
 	default:
 		http.Error(w, "Unknown Error", http.StatusInternalServerError)
