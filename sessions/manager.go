@@ -63,3 +63,23 @@ func (sm *sessionManagerImpl) Validate(r *http.Request) (*Session, error) {
 func (sm *sessionManagerImpl) Delete(token string) error {
 	return sm.db.DeleteSession(token)
 }
+
+func (sm *sessionManagerImpl) Extend(session *Session, w http.ResponseWriter) error {
+	session.ExpiresAt = time.Now().Add(sm.defaultLenght)
+
+	// Serialize the session back to a token
+	token, err := sm.tokenService.Serialize(session)
+	if err != nil {
+		return err
+	}
+
+	// Set the new token as a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     sm.cookieName,
+		Value:    token,
+		Expires:  session.ExpiresAt,
+		HttpOnly: true,
+		Secure:   sm.secureCookie,
+	})
+	return nil
+}
