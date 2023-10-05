@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"yalk/chat/client"
+	"yalk/chat/models/db"
 	"yalk/chat/models/events"
 	"yalk/config"
 
@@ -16,8 +17,8 @@ type Server interface {
 	SendAll(*events.BaseEvent) error
 	GetClientByID(uint) (client.Client, error)
 	HandleEvent(*events.BaseEventWithMetadata) error
-	GetUserByID(uint) (*events.User, error)
-	GetUserByUsername(username string) (user *events.User, err error)
+	GetUserByID(uint) (*db.User, error)
+	GetUserByUsername(username string) (user *db.User, err error)
 	UpgradeHttpRequest(http.ResponseWriter, *http.Request, *config.Config) (*websocket.Conn, error)
 	AuthenticateUser(loginUser events.UserLogin) (userID uint, err error) // Unused
 }

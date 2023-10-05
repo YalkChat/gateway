@@ -2,6 +2,8 @@ The handlers use the abstractions on the server, which operates with the databas
 We don't do the same with the sessionManager because the chat server doesn't care about HTTP sessions.
 We could consider instead to just add the config in th server type with an interface.
 
+There might be a lot of repetitions in the handlers and it needs to be tackled
+
 
 ## Future Refactoring Considerations
 

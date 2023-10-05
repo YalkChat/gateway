@@ -1,13 +1,9 @@
 package server
 
-import "yalk/chat/models/events"
+import (
+	"yalk/chat/models/db"
+)
 
-func (s *serverImpl) GetUserByUsername(username string) (*events.User, error) {
-	dbUser, err := s.db.GetUserByUsername(username)
-	if err != nil {
-		return nil, err
-	}
-	// Add handle empty fields
-	user := &events.User{ID: dbUser.ID}
-	return user, nil
+func (s *serverImpl) GetUserByUsername(username string) (*db.User, error) {
+	return s.db.GetUserByUsername(username)
 }

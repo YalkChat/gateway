@@ -1,13 +1,9 @@
 package server
 
-import "yalk/chat/models/events"
+import (
+	"yalk/chat/models/db"
+)
 
-func (s *serverImpl) GetUserByID(userID uint) (*events.User, error) {
-	dbUser, err := s.db.GetUserByID(userID)
-	if err != nil {
-		return nil, err
-	}
-	// TODO: Finish implement
-	user := events.User{ID: dbUser.ID}
-	return &user, nil
+func (s *serverImpl) GetUserByID(userID uint) (*db.User, error) {
+	return s.db.GetUserByID(userID)
 }

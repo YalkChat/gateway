@@ -27,12 +27,12 @@ func registerNewClient(server server.Server, conn *websocket.Conn, userID uint, 
 var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.ResponseWriter, r *http.Request, ctx app.HandlerContext) {
 	defer r.Body.Close()
 
+	srv, sessionsManager, config := getContextComponents(ctx)
+
 	if r.Method != http.MethodGet {
 		errors.HandleError(w, r, errors.ErrInvalidMethodGet)
 		return
 	}
-
-	srv, sessionsManager, config := getContextComponents(ctx)
 
 	session, err := sessionsManager.Validate(r)
 	if err != nil {
