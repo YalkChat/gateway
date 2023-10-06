@@ -74,7 +74,7 @@ func (dbi *DatabaseImpl) GetUsersByChatId(chatID uint) ([]*db.User, error) {
 }
 
 // NewUser creates a new user in the database
-func (dbi *DatabaseImpl) NewUser(newUser *events.User) (*db.User, error) {
+func (dbi *DatabaseImpl) NewUser(newUser *db.User) (*db.User, error) {
 	dbNewUser := &db.User{
 		Email: newUser.Email,
 		// Add other fields from events.User to db.User here

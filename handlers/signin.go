@@ -3,10 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-	"time"
 	"yalk/app"
-	"yalk/chat/models/events"
+	"yalk/chat/models/db"
 	"yalk/chat/server"
 	"yalk/config"
 	"yalk/errors"
@@ -63,8 +61,9 @@ func validateSession(w http.ResponseWriter, r *http.Request, sessionsManager ses
 	return nil
 }
 
+// Is this ok or should we use the params?
 func authenticateUser(w http.ResponseWriter, r *http.Request, srv server.Server) (uint, error) {
-	var userLogin *events.UserLogin
+	var userLogin *db.User
 
 	decoder := json.NewDecoder(r.Body)
 
@@ -73,7 +72,7 @@ func authenticateUser(w http.ResponseWriter, r *http.Request, srv server.Server)
 		return 0, errors.ErrInvalidJson
 	}
 
-	userID, err := srv.AuthenticateUser(*userLogin)
+	userID, err := srv.AuthenticateUser(userLogin)
 	if err != nil {
 		return 0, errors.ErrAuthInvalid // TODO: Add in errors package
 	}
@@ -82,11 +81,10 @@ func authenticateUser(w http.ResponseWriter, r *http.Request, srv server.Server)
 }
 
 func createSession(userID uint, w http.ResponseWriter, r *http.Request, sessionsManager sessions.SessionManager, config *config.Config) error {
-	sessionLenghtInt, err := strconv.Atoi(config.SessionLenght)
+	sessionLenght, err := convertSessionLenght(config.SessionLenght)
 	if err != nil {
 		return errors.ErrInternalServerError
 	}
-	sessionLenght := time.Minute * time.Duration(sessionLenghtInt)
 
 	session, err := sessionsManager.Create(userID, sessionLenght)
 	if err != nil {

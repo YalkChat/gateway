@@ -1,21 +1,21 @@
 package server
 
 import (
-	"yalk/chat/models/events"
+	"yalk/chat/models/db"
 	"yalk/errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Change return to user event if I need more info basides the user id
-func (s *serverImpl) AuthenticateUser(userLogin events.UserLogin) (uint, error) {
-	dbUser, err := s.db.GetUserByUsername(userLogin.Username)
+func (s *serverImpl) AuthenticateUser(user *db.User) (uint, error) {
+	dbUser, err := s.db.GetUserByUsername(user.Username)
 	if err != nil {
 		return 0, err
 	}
 
 	// Validate the password
-	if !validatePassword(dbUser.Password, userLogin.Password) {
+	if !validatePassword(dbUser.Password, user.Password) {
 		return 0, errors.ErrAuthInvalid
 	}
 

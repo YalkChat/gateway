@@ -16,7 +16,7 @@ type DatabaseOperations interface {
 	GetUsersByChatId(uint) ([]*db.User, error)
 	GetUserByID(uint) (*db.User, error)
 	GetUserByUsername(username string) (user *db.User, err error)
-	NewUser(*events.User) (*db.User, error)
+	NewUser(*db.User) (*db.User, error)
 	NewChat(*events.Chat) (*db.Chat, error)
 	NewChatType(*events.ChatType) (*db.ChatType, error)
 	NewUserWithPassword(*events.UserCreationEvent) (*db.User, error)
