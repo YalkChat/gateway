@@ -1,1 +1,0 @@
-I must check whether here also makes sense to have args in methods expecting db models or event models

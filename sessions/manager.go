@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 	"yalk/encryption"
-	"yalk/errors"
+
+	errors "github.com/AleRosmo/shared_errors"
 )
 
 type sessionManagerImpl struct {

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"yalk/app"
-	"yalk/chat/client"
-	"yalk/chat/server"
 	"yalk/config"
-	"yalk/errors"
+
+	"github.com/AleRosmo/engine/client"
+	"github.com/AleRosmo/engine/server"
+	errors "github.com/AleRosmo/shared_errors"
 
 	"github.com/AleRosmo/cattp"
 	"nhooyr.io/websocket"

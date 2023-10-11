@@ -7,12 +7,16 @@ import (
 	"yalk/app"
 	"yalk/config"
 	"yalk/encryption"
-	"yalk/serialization"
 
-	"yalk/chat/database"
-	"yalk/chat/initialize"
-	"yalk/chat/server"
 	"yalk/sessions"
+
+	"github.com/AleRosmo/yalk-backend/serialization"
+
+	"github.com/AleRosmo/engine/server"
+
+	"github.com/AleRosmo/engine/initialize"
+
+	"github.com/AleRosmo/engine/database"
 
 	"gorm.io/gorm"
 )

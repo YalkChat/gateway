@@ -3,8 +3,9 @@ package database
 import (
 	"fmt"
 
-	"yalk/chat/models/db"
 	"yalk/config" // XXX: I'm not entirely sure I should do this thing.
+
+	"github.com/AleRosmo/engine/models/db"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

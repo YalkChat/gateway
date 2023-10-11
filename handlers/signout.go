@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 	"yalk/app"
-	"yalk/errors"
 
 	"github.com/AleRosmo/cattp"
+	errors "github.com/AleRosmo/shared_errors"
 )
 
 func clearCookie(w http.ResponseWriter) {

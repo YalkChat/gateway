@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"yalk/app"
-	"yalk/chat/models/db"
-	"yalk/chat/server"
 	"yalk/config"
-	"yalk/errors"
 	"yalk/sessions"
+
+	"github.com/AleRosmo/engine/server"
+
+	"github.com/AleRosmo/engine/models/db"
+
+	errors "github.com/AleRosmo/shared_errors"
 
 	"github.com/AleRosmo/cattp"
 )

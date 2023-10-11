@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"yalk/chat/models"
+	"github.com/AleRosmo/engine/models"
 
 	"gorm.io/gorm"
 )

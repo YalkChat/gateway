@@ -1,9 +1,10 @@
 package app
 
 import (
-	"yalk/chat/server"
 	"yalk/config"
 	"yalk/sessions"
+
+	"github.com/AleRosmo/engine/server"
 )
 
 type handlerContextImpl struct {
