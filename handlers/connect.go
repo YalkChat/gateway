@@ -42,7 +42,7 @@ var ConnectionHandler = cattp.HandlerFunc[app.HandlerContext](func(w http.Respon
 	}
 	// Upgrades to WebSocket
 	// TODO: I still am not convinced of using Config(), besides the Config struct
-	conn, err := srv.UpgradeHttpRequest(w, r, ctx.Config())
+	conn, err := srv.UpgradeHttpRequest(w, r, config.WebSocketCompressionMode, config.WebSocketReadLimit)
 	if err != nil {
 		errors.HandleError(w, r, errors.ErrWebSocketUpgrade)
 		return

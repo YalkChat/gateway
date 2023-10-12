@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"yalk/app"
-	"yalk/errors"
+
+	errors "github.com/AleRosmo/shared_errors"
 
 	"github.com/AleRosmo/engine/models/db"
 

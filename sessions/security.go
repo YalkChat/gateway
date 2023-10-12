@@ -4,8 +4,9 @@ import (
 	"crypto/rand"
 	"crypto/sha512"
 	"encoding/base64"
-	"errors"
 	"log"
+
+	errors "github.com/AleRosmo/shared_errors"
 )
 
 // TODO: Move to bcrypt from b64
@@ -36,7 +37,7 @@ func MatchHash(uuid string, password []byte, salt []byte) error {
 	encoded := base64.StdEncoding.EncodeToString(sum)
 	if encoded != uuid {
 		log.Println("Error matching salted password")
-		return errors.New("err_salt_pass")
+		return errors.ErrPasswordSalt
 	}
 	return nil
 }

@@ -10,11 +10,10 @@ import (
 
 	"yalk/sessions"
 
-	"github.com/AleRosmo/yalk-backend/serialization"
-
 	"github.com/AleRosmo/engine/server"
 
 	"github.com/AleRosmo/engine/initialize"
+	"github.com/AleRosmo/engine/serialization/strategies"
 
 	"github.com/AleRosmo/engine/database"
 
@@ -33,7 +32,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	// chatServer := server.NewServer(16, conn, sessionsManager)
 
 	// Initialize the serialization strategy
-	serializationStrategy := &serialization.JSONStrategy{} // or &serialization.ProtobufStrategy{}
+	serializationStrategy := &strategies.JSONStrategy{} // or &serialization.ProtobufStrategy{}
 
 	// Initialize db operations
 	dbOperations := database.NewDatabase(conn)
@@ -43,7 +42,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 		fmt.Printf("failed to inizialize app: %v", err)
 		return
 	}
-	newChatServer := server.NewServer(dbOperations, sessionsManager, serializationStrategy)
+	newChatServer := server.NewServer(dbOperations, serializationStrategy)
 	// TODO: Add a factory function for app.HandlerContext
 	// TODO: It's not ok to call the method like this
 	// TODO: CHANGE REALLY IT'S HORRIBLE

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"reflect"
 	"strconv"
@@ -52,7 +52,7 @@ func LoadConfig() (*Config, error) {
 	v := reflect.ValueOf(config)
 	for i := 0; i < v.NumField(); i++ {
 		if v.Field(i).String() == "" {
-			return nil, errors.New("missing configuration for " + v.Type().Field(i).Name)
+			return nil, fmt.Errorf("missing configuration for " + v.Type().Field(i).Name)
 		}
 	}
 	return &config, nil
