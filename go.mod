@@ -4,17 +4,17 @@ go 1.21.0
 
 require (
 	github.com/AleRosmo/cattp v0.0.0-20230903041252-1df1a57e3df1
+	github.com/AleRosmo/engine v0.0.0-20231011234010-6038549a07fd
+	github.com/AleRosmo/shared_errors v0.0.0-20231011234210-ab222174ab1a
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.14.0
-	google.golang.org/protobuf v1.31.0
+
 	gorm.io/driver/postgres v1.5.3
 	gorm.io/gorm v1.25.5
 	nhooyr.io/websocket v1.8.7
 )
 
 require (
-	github.com/AleRosmo/engine v0.0.0-20231011222552-8eb39f1e5f26 // indirect
-	github.com/AleRosmo/shared_errors v0.0.0-20231011224936-2d211750e59f // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
