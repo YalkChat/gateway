@@ -2,13 +2,13 @@ package server
 
 import (
 	"fmt"
+	"gateway/app"
+	"gateway/config"
+	"gateway/encryption"
 	"sync"
 	"time"
-	"yalk/app"
-	"yalk/config"
-	"yalk/encryption"
 
-	"yalk/sessions"
+	"gateway/sessions"
 
 	"github.com/AleRosmo/engine/server"
 

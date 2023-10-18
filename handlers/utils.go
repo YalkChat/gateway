@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"gateway/app"
+	"gateway/config"
+	"gateway/sessions"
 	"strconv"
 	"time"
-	"yalk/app"
-	"yalk/config"
-	"yalk/sessions"
 
 	"github.com/AleRosmo/engine/server"
 )

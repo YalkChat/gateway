@@ -3,9 +3,9 @@ package sessions
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"gateway/encryption"
 	"net/http"
 	"time"
-	"yalk/encryption"
 
 	errors "github.com/AleRosmo/shared_errors"
 )

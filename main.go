@@ -17,10 +17,10 @@ package main
 
 import (
 	"fmt"
-	"yalk/config"
-	"yalk/database"
+	"gateway/config"
+	"gateway/database"
 
-	"yalk/server"
+	"gateway/server"
 
 	"github.com/joho/godotenv"
 )

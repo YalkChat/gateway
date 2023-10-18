@@ -1,10 +1,10 @@
 package server
 
 import (
+	"gateway/app"
+	"gateway/config"
+	"gateway/handlers"
 	"log"
-	"yalk/app"
-	"yalk/config"
-	"yalk/handlers"
 
 	"github.com/AleRosmo/cattp"
 )

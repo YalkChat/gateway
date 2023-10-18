@@ -1,9 +1,9 @@
 package main
 
 import (
+	"gateway/config"
 	"os"
 	"testing"
-	"yalk/config"
 )
 
 func TestLoadConfig(t *testing.T) {

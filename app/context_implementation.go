@@ -1,8 +1,8 @@
 package app
 
 import (
-	"yalk/config"
-	"yalk/sessions"
+	"gateway/config"
+	"gateway/sessions"
 
 	"github.com/AleRosmo/engine/server"
 )

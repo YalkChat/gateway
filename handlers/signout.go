@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"gateway/app"
 	"log"
 	"net/http"
-	"yalk/app"
 
 	"github.com/AleRosmo/cattp"
 	errors "github.com/AleRosmo/shared_errors"

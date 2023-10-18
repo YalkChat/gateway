@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"gateway/app"
+	"gateway/config"
+	"gateway/sessions"
 	"net/http"
-	"yalk/app"
-	"yalk/config"
-	"yalk/sessions"
 
 	"github.com/AleRosmo/engine/server"
 

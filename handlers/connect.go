@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	"gateway/app"
+	"gateway/config"
 	"net/http"
-	"yalk/app"
-	"yalk/config"
 
 	"github.com/AleRosmo/engine/client"
 	"github.com/AleRosmo/engine/server"

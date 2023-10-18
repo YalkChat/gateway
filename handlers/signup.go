@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
+	"gateway/app"
 	"net/http"
-	"yalk/app"
 
 	errors "github.com/AleRosmo/shared_errors"
 

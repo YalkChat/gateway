@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"yalk/config" // XXX: I'm not entirely sure I should do this thing.
+	"gateway/config" // XXX: I'm not entirely sure I should do this thing.
 
 	"github.com/AleRosmo/engine/models/db"
 
@@ -25,7 +25,7 @@ func InitializeDb(config *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-// HACK: This should be a private method
+// XXX: This needs to be removed, ChatGateway should not interact directly with DB
 func OpenDbConnection(config *config.Config) (*gorm.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName, config.DbSslMode)
@@ -40,7 +40,6 @@ func OpenDbConnection(config *config.Config) (*gorm.DB, error) {
 	return gorm, nil
 }
 
-// TODO: Move this to chat/database package?
 func createDbTables(dbConn *gorm.DB) error {
 	if err := dbConn.AutoMigrate(&db.User{}, &db.Chat{}, &db.Message{}, &db.ServerSettings{}, &db.Status{}); err != nil {
 		return err

@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"gateway/config"
+	"gateway/database"
 	"testing"
-	"yalk/config"
-	"yalk/database"
 )
 
 func TestOpenDbConnection(t *testing.T) {

@@ -35,7 +35,7 @@ This is the proposal
 ```
 yalk-backend/
 ├── cmd/                  # Application entry points
-│   └── yalk/             # Main application
+│   └── gateway/             # Main application
 │       └── main.go       # Main program
 ├── pkg/                  # Library code
 │   ├── chat/             # Chat-related functionality
