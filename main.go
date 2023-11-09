@@ -18,9 +18,9 @@ package main
 import (
 	"fmt"
 	"gateway/config"
-	"gateway/database"
+	"gateway/http_server"
 
-	"gateway/server"
+	"github.com/YalkChat/database"
 
 	"github.com/joho/godotenv"
 )
@@ -43,18 +43,32 @@ func main() {
 
 	config, err := config.LoadConfig()
 	if err != nil {
-		fmt.Printf("failed to load config: %v", err)
+		fmt.Printf("failed to load ws config: %v", err)
 		return
 	}
-	fmt.Println("Config loaded")
+	fmt.Println("WebSocket Config loaded")
 
-	dbConn, err := database.InitializeDb(config)
+	dbConfig, err := database.LoadConfig()
+	if err != nil {
+		fmt.Printf("failed to load db config: %v", err)
+		return
+	}
+	fmt.Println("Database Config loaded")
+
+	dbConn, err := database.InitializeDb(dbConfig)
 	if err != nil {
 		fmt.Printf("failed to inizialize db: %v", err)
 		return
 	}
 	fmt.Println("DB connection initialized")
 
+	httpConfig, err := http_server.LoadConfig()
+	if err != nil {
+		fmt.Printf("failed to load http config: %v", err)
+		return
+	}
+	fmt.Println("HTTP config loaded")
+
 	fmt.Println("running server")
-	server.RunServer(config, dbConn)
+	runServer(httpConfig, config, dbConn)
 }

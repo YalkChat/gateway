@@ -32,8 +32,10 @@ No, I don't want to copy Discord, I am just learning from their approach
 I'm moving to a more meaningful file structure, the change is driven by the need of separating the concerns and break down the monolithic chat server core into a more modular solution.
 This is the proposal 
 
+
+OUTDATED!
 ```
-yalk-backend/
+gateway/
 ├── cmd/                  # Application entry points
 │   └── gateway/             # Main application
 │       └── main.go       # Main program

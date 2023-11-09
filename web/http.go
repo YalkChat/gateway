@@ -1,15 +1,14 @@
-package server
+package http_server
 
 import (
 	"gateway/app"
-	"gateway/config"
 	"gateway/handlers"
 	"log"
 
 	"github.com/AleRosmo/cattp"
 )
 
-func StartHttpServer(config *config.Config, context app.HandlerContext) error {
+func StartHttpServer(config *Config, context app.HandlerContext) error {
 	router := cattp.New(context)
 
 	router.HandleFunc("/ws", handlers.ConnectionHandler)
@@ -23,9 +22,9 @@ func StartHttpServer(config *config.Config, context app.HandlerContext) error {
 	// router.HandleFunc("/auth/signup", signupHandle)
 
 	netConf := cattp.Config{
-		Host: config.HttpHost,
-		Port: config.HttpPort,
-		URL:  config.HttpUrl}
+		Host: config.Host,
+		Port: config.Port,
+		URL:  config.Url}
 
 	err := router.Listen(&netConf)
 	if err != nil {

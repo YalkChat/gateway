@@ -1,10 +1,11 @@
-package server
+package main
 
 import (
 	"fmt"
 	"gateway/app"
 	"gateway/config"
 	"gateway/encryption"
+	"gateway/http_server"
 	"sync"
 	"time"
 
@@ -20,7 +21,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func RunServer(config *config.Config, conn *gorm.DB) {
+func runServer(httpConfig *http_server.Config, config *config.Config, conn *gorm.DB) {
 	var wg sync.WaitGroup
 	var sessionLenght = time.Hour * 720
 	var cookieName = "YLK"
@@ -51,7 +52,7 @@ func RunServer(config *config.Config, conn *gorm.DB) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		StartHttpServer(config, handlerContext)
+		http_server.StartHttpServer(httpConfig, handlerContext)
 	}()
 
 	fmt.Println("server started")

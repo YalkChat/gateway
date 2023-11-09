@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"gateway/config"
-	"gateway/database"
 	"testing"
+
+	"github.com/YalkChat/database"
 )
 
 func TestOpenDbConnection(t *testing.T) {
 	// Use a test configuration or mock environment variables
-	config := &config.Config{
+	config := &database.Config{
 		DbHost:     "192.168.188.34",
 		DbPort:     "5432",
 		DbUser:     "postgres",
